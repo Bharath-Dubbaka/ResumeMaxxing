@@ -1,11 +1,13 @@
 import { Button } from "@/components/ui/button";
+import FeatureCard from "../components/ui/FeaturedCard";
+import VideoSection from "../components/ui/VideoSection";
 
 export default function Home() {
    return (
-      <div className="min-h-screen bg-gradient-to-br from-pink-100 via-yellow-50 to-blue-100 animate-gradient-xy">
-         <div className="container mx-auto px-4 py-16">
+      <div className="">
+         <div className="">
             {/* Hero Section */}
-            <div className="text-center space-y-8 py-20">
+            <div className="min-h-screen text-center space-y-8 pt-32 bg-gradient-to-br from-purple-200/60 via-slate-50 to-blue-200/60 animate-gradient-xy">
                <h1 className="text-5xl md:text-7xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-900 to-pink-900">
                   AI-Powered Resume Builder
                </h1>
@@ -24,33 +26,24 @@ export default function Home() {
                      View Examples
                   </Button>
                </div>
+               {/* Features Section */}
+               <div className="grid md:grid-cols-3 gap-8 pt-10 mb-10 px-20">
+                  <FeatureCard
+                     title="AI-Powered Writing"
+                     description="Our AI analyzes your experience and generates professional descriptions that highlight your achievements."
+                  />
+                  <FeatureCard
+                     title="ATS-Friendly Templates"
+                     description="Professionally designed templates that are optimized for Applicant Tracking Systems."
+                  />
+                  <FeatureCard
+                     title="Real-Time Editing"
+                     description="Edit and preview your resume in real-time with our intuitive interface."
+                  />
+               </div>
             </div>
-
-            {/* Features Section */}
-            <div className="grid md:grid-cols-3 gap-8 py-20 px-20">
-               <FeatureCard
-                  title="AI-Powered Writing"
-                  description="Our AI analyzes your experience and generates professional descriptions that highlight your achievements."
-               />
-               <FeatureCard
-                  title="ATS-Friendly Templates"
-                  description="Professionally designed templates that are optimized for Applicant Tracking Systems."
-               />
-               <FeatureCard
-                  title="Real-Time Editing"
-                  description="Edit and preview your resume in real-time with our intuitive interface."
-               />
-            </div>
+            <VideoSection />
          </div>
-      </div>
-   );
-}
-
-function FeatureCard({ title, description }) {
-   return (
-      <div className="p-6 rounded-lg bg-white border border-slate-400 hover:border-slate-500 transition-all">
-         <h3 className="text-xl font-semibold text-slate-900 mb-3">{title}</h3>
-         <p className="text-slate-500">{description}</p>
       </div>
    );
 }
