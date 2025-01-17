@@ -1,6 +1,7 @@
 import { Button } from "@/components/ui/button";
 import FeatureCard from "../components/ui/FeaturedCard";
 import VideoSection from "../components/ui/VideoSection";
+import Link from "next/link";
 
 export default function Home() {
    return (
@@ -16,12 +17,14 @@ export default function Home() {
                   technology. Stand out from the crowd and land your dream job.
                </p>
                <div className="space-x-4">
-                  <Button
-                     size="lg"
-                     className="bg-purple-600 hover:bg-purple-700"
-                  >
-                     Get Started
-                  </Button>
+                  <Link href="/userForm">
+                     <Button
+                        size="lg"
+                        className="bg-purple-600 hover:bg-purple-700"
+                     >
+                        Get Started
+                     </Button>
+                  </Link>
                   <Button size="lg" variant="outline">
                      View Examples
                   </Button>
