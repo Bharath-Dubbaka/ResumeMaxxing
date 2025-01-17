@@ -1,23 +1,32 @@
 {
-  "name": "resumemaxxing",
-  "version": "0.1.0",
-  "private": true,
-  "scripts": {
-    "dev": "next dev",
-    "build": "next build",
-    "start": "next start",
-    "lint": "next lint"
-  },
-  "dependencies": {
-    "react": "^19.0.0",
-    "react-dom": "^19.0.0",
-    "next": "15.1.4"
-  },
-  "devDependencies": {
-    "postcss": "^8",
-    "tailwindcss": "^3.4.1",
-    "eslint": "^9",
-    "eslint-config-next": "15.1.4",
-    "@eslint/eslintrc": "^3"
-  }
+   "name": "resumemaxxing",
+   "version": "0.1.0",
+   "private": true,
+   "scripts": {
+      "dev": "next dev",
+      "build": "next build",
+      "start": "next start",
+      "lint": "next lint"
+   },
+   "dependencies": {
+      "next": "^15.0.1",
+      "razorpay": "^2.9.5",
+      "react": "^18.3.1",
+      "react-dom": "^18.3.1",
+      "@radix-ui/react-dialog": "^1.0.5",
+      "@radix-ui/react-slot": "^1.0.2",
+      "class-variance-authority": "^0.7.0",
+      "clsx": "^2.1.0",
+      "lucide-react": "^0.358.0",
+      "tailwind-merge": "^2.2.1",
+      "tailwindcss-animate": "^1.0.7"
+   },
+   "devDependencies": {
+      "postcss": "^8",
+      "tailwindcss": "^3.4.1",
+      "eslint": "^9",
+      "eslint-config-next": "15.1.4",
+      "@eslint/eslintrc": "^3",
+      "autoprefixer": "^10.0.1"
+   }
 }
