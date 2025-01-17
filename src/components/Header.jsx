@@ -4,9 +4,11 @@ import { auth } from "@/services/firebase";
 import { LogOut } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
+import { useRouter } from "next/navigation";
 
 const Header = () => {
-   const { user, userQuota } = useAuth();
+   const { user, userQuota, userDetails } = useAuth();
+   const router = useRouter();
 
    const handleLogout = async () => {
       try {
@@ -76,9 +78,15 @@ const Header = () => {
                            {userQuota.subscription.type} Plan
                         </div>
                      )}
+                     <Button
+                        onClick={() => router.push('/userForm?edit=true')}
+                        className="bg-blue-600 hover:bg-blue-700 text-white"
+                     >
+                        Edit Details
+                     </Button>
                      <button
                         onClick={handleLogout}
-                        className="flex items-center gap-2 px-3 py-2 text-sm font-medium text-slate-700 hover:text-slate-900 bg-white/80 rounded-lg hover:bg-white transition-all duration-200"
+                        className="flex items-center gap-2 px-3 py-2 text-sm font-medium text-slate-700 hover:text-slate-900"
                      >
                         <LogOut size={16} />
                         Logout

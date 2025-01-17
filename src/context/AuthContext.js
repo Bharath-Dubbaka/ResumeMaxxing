@@ -13,6 +13,12 @@ export function AuthProvider({ children }) {
    const [userDetails, setUserDetails] = useState(null);
    const [loading, setLoading] = useState(true);
 
+   const refreshUserDetails = async (uid) => {
+      if (!uid) return;
+      const details = await UserDetailsService.getUserDetails(uid);
+      setUserDetails(details);
+   };
+
    useEffect(() => {
       const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
          if (firebaseUser) {
@@ -52,7 +58,15 @@ export function AuthProvider({ children }) {
    }, []);
 
    return (
-      <AuthContext.Provider value={{ user, userQuota, userDetails, loading }}>
+      <AuthContext.Provider
+         value={{
+            user,
+            userQuota,
+            userDetails,
+            loading,
+            refreshUserDetails,
+         }}
+      >
          {children}
       </AuthContext.Provider>
    );

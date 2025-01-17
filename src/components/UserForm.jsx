@@ -71,7 +71,8 @@ const UserForm = ({ onSave, onCancel, initialData }) => {
       return !isNaN(year) && !isNaN(month) && month >= 1 && month <= 12;
    };
 
-   const handleAddField = (field, value) => {
+   const handleAddField = (e, field, value) => {
+      e.preventDefault(); // Prevent form submission
       if (field === "experience") {
          const experienceValue = {
             ...value,
@@ -96,24 +97,26 @@ const UserForm = ({ onSave, onCancel, initialData }) => {
       }));
    };
 
-   const handleSave = async () => {
-      //   setLoading(true);
+   const handleSave = async (e) => {
+      if (e) {
+         e.preventDefault(); // Prevent form refresh
+      }
+
       try {
+         console.log("Submitting details:", userDetails); // Debug log
          await onSave(userDetails);
       } catch (error) {
-         console.error("Error saving user details:", error);
+         console.error("Error in handleSave:", error);
          alert("Failed to save user details. Please try again.");
-      } finally {
-         //  setLoading(false);
       }
    };
 
    return (
       <div className="max-w-7xl mx-auto pt-18">
-         {/* {loading ? (
-            <LoadingSpinner />
-         ) : ( */}
-         <div className="p-10 bg-gradient-to-br from-slate-900/90 to-slate-800/90 rounded-3xl text-slate-100 backdrop-blur-xl shadow-2xl border border-slate-700/30">
+         <form
+            onSubmit={handleSave}
+            className="p-10 bg-gradient-to-br from-slate-900/90 to-slate-800/90 rounded-3xl text-slate-100 backdrop-blur-xl shadow-2xl border border-slate-700/30"
+         >
             {/* Personal Details */}
             <div className="mb-10 p-8 rounded-2xl bg-gradient-to-br from-slate-800/50 to-slate-900/50 shadow-xl border border-slate-600/20 hover:border-slate-500/30 transition-all duration-300">
                <div className="flex items-center mb-8">
@@ -174,17 +177,16 @@ const UserForm = ({ onSave, onCancel, initialData }) => {
                         Work Experience:
                      </h4>
                      <button
-                        onClick={() =>
-                           handleAddField("experience", {
-                              title: "",
+                        onClick={(e) =>
+                           handleAddField(e, "experience", {
+                              company: "",
+                              position: "",
                               startDate: "",
                               endDate: "",
-                              employer: "",
-                              location: "",
-                              responsibilityType: "skillBased",
-                              customResponsibilities: [],
+                              responsibilities: [],
                            })
                         }
+                        type="button"
                         className="px-6 py-2.5 text-sm font-medium bg-gradient-to-r from-emerald-500 to-teal-500 text-white rounded-xl hover:from-emerald-600 hover:to-teal-600 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 transition-all duration-200 shadow-lg flex items-center gap-2"
                      >
                         <PlusCircle size={18} />
@@ -341,6 +343,7 @@ const UserForm = ({ onSave, onCancel, initialData }) => {
                                        className="flex-1 px-4 py-2 text-sm text-slate-900 bg-white/90 border border-slate-300 rounded-lg outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
                                     />
                                     <button
+                                       type="button"
                                        onClick={() =>
                                           handleChange("experience", [
                                              ...userDetails.experience.slice(
@@ -368,6 +371,7 @@ const UserForm = ({ onSave, onCancel, initialData }) => {
                               )
                            )}
                            <button
+                              type="button"
                               onClick={() =>
                                  handleChange("experience", [
                                     ...userDetails.experience.slice(0, index),
@@ -393,6 +397,7 @@ const UserForm = ({ onSave, onCancel, initialData }) => {
                               onClick={() =>
                                  handleRemoveField("experience", index)
                               }
+                              type="button"
                            >
                               <Trash2 size={16} className="mr-1" />
                               Remove Experience
@@ -411,6 +416,7 @@ const UserForm = ({ onSave, onCancel, initialData }) => {
                         Education:
                      </h4>
                      <button
+                        type="button"
                         onClick={() =>
                            handleAddField("education", {
                               degree: "",
@@ -469,6 +475,7 @@ const UserForm = ({ onSave, onCancel, initialData }) => {
                         </div>
                         <button
                            className="px-4 py-2 text-sm font-medium bg-gradient-to-r from-rose-500 to-pink-500 text-white rounded-lg hover:from-rose-600 hover:to-pink-600 focus:outline-none focus:ring-2 focus:ring-rose-500 transition-colors duration-200 flex items-center"
+                           type="button"
                            onClick={() => handleRemoveField("education", index)}
                         >
                            <Trash2 size={16} className="mr-1" />
@@ -485,6 +492,7 @@ const UserForm = ({ onSave, onCancel, initialData }) => {
                         Certifications:
                      </h4>
                      <button
+                        type="button"
                         onClick={() => handleAddField("certifications", "")}
                         className="px-6 py-2.5 text-sm font-medium bg-gradient-to-r from-emerald-500 to-teal-500 text-white rounded-xl hover:from-emerald-600 hover:to-teal-600 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 transition-all duration-200 shadow-lg flex items-center gap-2"
                      >
@@ -512,6 +520,7 @@ const UserForm = ({ onSave, onCancel, initialData }) => {
                            onClick={() =>
                               handleRemoveField("certifications", index)
                            }
+                           type="button"
                         >
                            Remove
                         </button>
@@ -533,6 +542,7 @@ const UserForm = ({ onSave, onCancel, initialData }) => {
                            })
                         }
                         className="px-6 py-2.5 text-sm font-medium bg-gradient-to-r from-emerald-500 to-teal-500 text-white rounded-xl hover:from-emerald-600 hover:to-teal-600 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 transition-all duration-200 shadow-lg flex items-center gap-2"
+                        type="button"
                      >
                         <PlusCircle size={18} />
                         Add Project
@@ -568,6 +578,7 @@ const UserForm = ({ onSave, onCancel, initialData }) => {
                         <button
                            className="px-4 py-2 text-sm font-medium bg-gradient-to-r from-rose-500 to-pink-500 text-white rounded-lg hover:from-rose-600 hover:to-pink-600 focus:outline-none focus:ring-2 focus:ring-rose-500 transition-colors duration-200 flex items-center"
                            onClick={() => handleRemoveField("projects", index)}
+                           type="button"
                         >
                            Remove
                         </button>
@@ -579,7 +590,7 @@ const UserForm = ({ onSave, onCancel, initialData }) => {
             {/* Save and Cancel Buttons */}
             <div className="mt-8 flex justify-center gap-4">
                <button
-                  onClick={handleSave}
+                  type="submit"
                   className="flex items-center gap-2 px-8 py-3 text-sm font-medium bg-gradient-to-r from-blue-500 to-indigo-500 text-white rounded-lg hover:from-blue-600 hover:to-indigo-600 focus:outline-none focus:ring-2 focus:ring-blue-500/50 transition-all duration-200 shadow-lg"
                >
                   <Save size={18} />
@@ -587,6 +598,7 @@ const UserForm = ({ onSave, onCancel, initialData }) => {
                </button>
                {hasUserDetailsData(userDetails) && (
                   <button
+                     type="button" // Prevent form submission
                      onClick={onCancel}
                      className="flex items-center gap-2 px-8 py-3 text-sm font-medium bg-gradient-to-r from-rose-500 to-pink-500 text-white rounded-lg hover:from-rose-600 hover:to-pink-600 focus:outline-none focus:ring-2 focus:ring-rose-500/50 transition-all duration-200 shadow-lg"
                   >
@@ -595,8 +607,7 @@ const UserForm = ({ onSave, onCancel, initialData }) => {
                   </button>
                )}
             </div>
-         </div>
-         ){/* } */}
+         </form>
       </div>
    );
 };

@@ -1,48 +1,64 @@
 "use client";
 import { useAuth } from "@/context/AuthContext";
-import { auth } from "@/services/firebase";
-import { GoogleAuthProvider, signInWithPopup } from "firebase/auth";
-import { QuotaService } from "@/services/QuotaService";
 import UserForm from "@/components/UserForm";
 import LoadingSpinner from "@/components/LoadingSpinner";
-import Header from "@/components/Header";
+import { useRouter, useSearchParams } from "next/navigation";
+import { useEffect, useState } from "react";
+import { UserDetailsService } from "@/services/UserDetailsService";
 
 export default function UserFormPage() {
-   const { user, userDetails, loading } = useAuth();
+   const { user, userDetails, loading, refreshUserDetails } = useAuth();
+   const router = useRouter();
+   const searchParams = useSearchParams();
+   const isEditing = searchParams.get("edit") === "true";
+   const [isSaving, setIsSaving] = useState(false);
 
-   const handleGoogleLogin = async () => {
+   useEffect(() => {
+      if (!loading) {
+         // If no user, redirect to home
+         if (!user) {
+            router.push("/");
+            return;
+         }
+
+         // Only redirect if not editing and user has details
+         if (userDetails && !isEditing) {
+            router.push("/dashboard");
+            return;
+         }
+      }
+   }, [loading, user, userDetails, router, isEditing]);
+
+   const handleSaveDetails = async (details) => {
       try {
-         console.log("Starting Google login...");
-         const provider = new GoogleAuthProvider();
-         const result = await signInWithPopup(auth, provider);
-         console.log("Login successful:", result.user);
+         if (!user) return;
 
-         // Initialize quota for new users
-         const quota = await QuotaService.getUserQuota(result.user.uid);
-         console.log("User quota initialized:", quota);
+         setIsSaving(true);
+         console.log("Saving user details:", details);
+         await UserDetailsService.saveUserDetails(user.uid, details);
+         await refreshUserDetails(user.uid);
+         console.log("Details saved successfully");
+         router.push("/dashboard");
       } catch (error) {
-         console.error("Login error:", error);
+         console.error("Error saving user details:", error);
+         alert("Failed to save details. Please try again.");
+      } finally {
+         setIsSaving(false);
       }
    };
 
-   if (loading) return <LoadingSpinner />;
+   if (loading || isSaving) return <LoadingSpinner />;
+   if (!user) return null;
 
    return (
       <div className="min-h-screen bg-gradient-to-br from-purple-200/60 via-slate-50 to-blue-200/60">
-         {!user ? (
-            <div className="flex items-center justify-center h-[calc(100vh-64px)]">
-               <button
-                  onClick={handleGoogleLogin}
-                  className="bg-purple-600 hover:bg-purple-700 px-5 py-2 text-sm font-bold rounded-lg flex items-center gap-2 text-white transition-all duration-200"
-               >
-                  Sign in with Google
-               </button>
-            </div>
-         ) : (
-            <div className="container mx-auto py-8 px-4">
-               <UserForm initialData={userDetails} />
-            </div>
-         )}
+         <div className="container mx-auto py-8 px-4">
+            <UserForm
+               initialData={userDetails}
+               onSave={handleSaveDetails}
+               onCancel={() => router.push("/dashboard")}
+            />
+         </div>
       </div>
    );
 }
