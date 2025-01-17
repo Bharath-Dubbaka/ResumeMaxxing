@@ -1,9 +1,19 @@
 "use client";
-import { Trash2, PlusCircle, Save, X } from "lucide-react";
 import { useState, useEffect } from "react";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
-import LoadingSpinner from "./LoadingSpinner";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { PlusCircle, Save, Trash2, X } from "lucide-react";
+import {
+   Select,
+   SelectContent,
+   SelectItem,
+   SelectTrigger,
+   SelectValue,
+} from "@/components/ui/select";
 
 const UserForm = ({ onSave, onCancel, initialData }) => {
    const [userDetails, setUserDetails] = useState(() => {
@@ -21,89 +31,51 @@ const UserForm = ({ onSave, onCancel, initialData }) => {
       };
    });
 
-   //    const [loading, setLoading] = useState(false);
-
-   const hasUserDetailsData = (details) => {
-      if (details.fullName || details.email || details.phone) {
-         return true;
-      }
-      if (
-         details.experience.length > 0 ||
-         details.education.length > 0 ||
-         details.certifications.length > 0 ||
-         details.projects.length > 0
-      ) {
-         return true;
-      }
-      return false;
+   const isValidDate = (dateString) => {
+      if (!dateString) return false;
+      const date = new Date(dateString);
+      return date instanceof Date && !isNaN(date);
    };
-
-   useEffect(() => {
-      if (initialData) {
-         setUserDetails(initialData);
-      }
-   }, [initialData]);
 
    const handleChange = (field, value) => {
       setUserDetails({ ...userDetails, [field]: value });
    };
 
-   const handleDateChange = (date, field, index) => {
+   const handleDateChange = (date, field, index, section) => {
       if (date) {
          const year = date.getFullYear();
-         const month = date.getMonth() + 1; // Month is 0-indexed
-         const formattedDate = `${year}-${month.toString().padStart(2, "0")}`; // YYYY-MM
+         const month = date.getMonth() + 1;
+         const formattedDate = `${year}-${month.toString().padStart(2, "0")}`;
 
-         handleChange("experience", [
-            ...userDetails.experience.slice(0, index),
+         handleChange(section, [
+            ...userDetails[section].slice(0, index),
             {
-               ...userDetails.experience[index],
+               ...userDetails[section][index],
                [field]: formattedDate,
             },
-            ...userDetails.experience.slice(index + 1),
+            ...userDetails[section].slice(index + 1),
          ]);
       }
    };
 
-   const isValidDate = (dateString) => {
-      if (!dateString) return false;
-      const [year, month] = dateString.split("-").map(Number);
-      return !isNaN(year) && !isNaN(month) && month >= 1 && month <= 12;
-   };
-
    const handleAddField = (e, field, value) => {
-      e.preventDefault(); // Prevent form submission
-      if (field === "experience") {
-         const experienceValue = {
-            ...value,
-            responsibilityType: "skillBased",
-         };
-         setUserDetails((prevDetails) => ({
-            ...prevDetails,
-            [field]: [...prevDetails[field], experienceValue],
-         }));
-      } else {
-         setUserDetails((prevDetails) => ({
-            ...prevDetails,
-            [field]: [...prevDetails[field], value],
-         }));
-      }
+      e.preventDefault();
+      setUserDetails((prev) => ({
+         ...prev,
+         [field]: [...prev[field], value],
+      }));
    };
 
    const handleRemoveField = (field, index) => {
-      setUserDetails((prevDetails) => ({
-         ...prevDetails,
-         [field]: prevDetails[field].filter((_, i) => i !== index),
+      setUserDetails((prev) => ({
+         ...prev,
+         [field]: prev[field].filter((_, i) => i !== index),
       }));
    };
 
    const handleSave = async (e) => {
-      if (e) {
-         e.preventDefault(); // Prevent form refresh
-      }
-
+      e.preventDefault();
       try {
-         console.log("Submitting details:", userDetails); // Debug log
          await onSave(userDetails);
       } catch (error) {
          console.error("Error in handleSave:", error);
@@ -112,213 +84,121 @@ const UserForm = ({ onSave, onCancel, initialData }) => {
    };
 
    return (
-      <div className="max-w-7xl mx-auto pt-18">
-         <form
-            onSubmit={handleSave}
-            className="p-10 bg-gradient-to-br from-slate-900/90 to-slate-800/90 rounded-3xl text-slate-100 backdrop-blur-xl shadow-2xl border border-slate-700/30"
-         >
-            {/* Personal Details */}
-            <div className="mb-10 p-8 rounded-2xl bg-gradient-to-br from-slate-800/50 to-slate-900/50 shadow-xl border border-slate-600/20 hover:border-slate-500/30 transition-all duration-300">
-               <div className="flex items-center mb-8">
-                  <h3 className="text-3xl font-bold bg-gradient-to-r from-sky-400 via-blue-400 to-indigo-400 bg-clip-text text-transparent">
-                     Personal Details:
-                  </h3>
-                  <span className="ml-4 px-3 py-1 text-xs font-medium text-rose-300/90 bg-rose-500/10 rounded-full border border-rose-500/20">
-                     Can be updated later
-                  </span>
-               </div>
-               <div className="flex justify-between gap-8">
-                  <div className="w-1/3 group">
-                     <label className="block text-sm font-medium text-slate-400 mb-2 ml-1 group-hover:text-blue-400 transition-colors duration-200">
-                        Full Name
-                     </label>
-                     <input
-                        type="text"
-                        placeholder="Enter your full name"
-                        value={userDetails.fullName}
-                        onChange={(e) =>
-                           handleChange("fullName", e.target.value)
-                        }
-                        className="w-full px-4 py-3 text-sm text-slate-900 bg-white/95 rounded-xl outline-none focus:ring-2 focus:ring-blue-500/50 border-2 border-transparent hover:border-blue-500/30 transition-all duration-200 shadow-sm"
-                     />
-                  </div>
-                  <div className="w-1/3 group">
-                     <label className="block text-sm font-medium text-slate-400 mb-2 ml-1 group-hover:text-blue-400 transition-colors duration-200">
-                        Email Address
-                     </label>
-                     <input
-                        type="email"
-                        placeholder="Enter your email"
-                        value={userDetails.email}
-                        onChange={(e) => handleChange("email", e.target.value)}
-                        className="w-full px-4 py-3 text-sm text-slate-900 bg-white/95 rounded-xl outline-none focus:ring-2 focus:ring-blue-500/50 border-2 border-transparent hover:border-blue-500/30 transition-all duration-200 shadow-sm"
-                     />
-                  </div>
-                  <div className="w-1/3 group">
-                     <label className="block text-sm font-medium text-slate-400 mb-2 ml-1 group-hover:text-blue-400 transition-colors duration-200">
-                        Phone Number
-                     </label>
-                     <input
-                        type="text"
-                        placeholder="Enter your phone number"
-                        value={userDetails.phone}
-                        onChange={(e) => handleChange("phone", e.target.value)}
-                        className="w-full px-4 py-3 text-sm text-slate-900 bg-white/95 rounded-xl outline-none focus:ring-2 focus:ring-blue-500/50 border-2 border-transparent hover:border-blue-500/30 transition-all duration-200 shadow-sm"
-                     />
-                  </div>
-               </div>
-            </div>
+      <div className="min-h-screen max-w-5xl mx-auto rounded-xl bg-gradient-to-br from-purple-100 via-pink-50 to-purple-100 py-10">
+         <div className="max-w-4xl mx-auto px-4">
+            <form onSubmit={handleSave} className="space-y-6">
+               {/* Personal Details Card */}
+               <Card className="bg-white/90 shadow-lg border-0 backdrop-blur-xl rounded-xl">
+                  <CardHeader className="border-b bg-white/50 px-6 py-4">
+                     <CardTitle className="text-xl font-semibold text-gray-800">
+                        Personal Details
+                     </CardTitle>
+                  </CardHeader>
+                  <CardContent className="p-6">
+                     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <div className="space-y-2">
+                           <Label className="text-sm font-medium text-gray-700">
+                              Full Name
+                           </Label>
+                           <Input
+                              className="h-10"
+                              value={userDetails.fullName}
+                              onChange={(e) =>
+                                 handleChange("fullName", e.target.value)
+                              }
+                              placeholder="Enter your full name"
+                           />
+                        </div>
+                        <div className="space-y-2">
+                           <Label className="text-sm font-medium text-gray-700">
+                              Email
+                           </Label>
+                           <Input
+                              className="h-10"
+                              type="email"
+                              value={userDetails.email}
+                              onChange={(e) =>
+                                 handleChange("email", e.target.value)
+                              }
+                              placeholder="Enter your email"
+                           />
+                        </div>
+                        <div className="space-y-2">
+                           <Label className="text-sm font-medium text-gray-700">
+                              Phone
+                           </Label>
+                           <Input
+                              className="h-10"
+                              value={userDetails.phone}
+                              onChange={(e) =>
+                                 handleChange("phone", e.target.value)
+                              }
+                              placeholder="Enter your phone number"
+                           />
+                        </div>
+                     </div>
+                  </CardContent>
+               </Card>
 
-            <div className="space-y-10">
-               {/* Experience Section */}
-               <div className="p-8 rounded-2xl bg-gradient-to-br from-slate-800/50 to-slate-900/50 shadow-xl border border-slate-600/20 hover:border-slate-500/30 transition-all duration-300">
-                  <div className="flex items-center justify-between mb-8">
-                     <h4 className="text-3xl font-bold bg-gradient-to-r from-sky-400 via-blue-400 to-indigo-400 bg-clip-text text-transparent">
-                        Work Experience:
-                     </h4>
-                     <button
+               {/* Experience Card */}
+               <Card className="bg-white/90 shadow-lg border-0 backdrop-blur-xl rounded-xl">
+                  <CardHeader className="border-b bg-white/50 px-6 py-4 flex flex-row items-center justify-between">
+                     <CardTitle className="text-xl font-semibold text-gray-800">
+                        Work Experience
+                     </CardTitle>
+                     <Button
+                        type="button"
                         onClick={(e) =>
                            handleAddField(e, "experience", {
-                              company: "",
-                              position: "",
+                              title: "",
+                              employer: "",
                               startDate: "",
                               endDate: "",
-                              responsibilities: [],
+                              location: "",
+                              responsibilityType: "skillBased",
+                              customResponsibilities: [],
                            })
                         }
-                        type="button"
-                        className="px-6 py-2.5 text-sm font-medium bg-gradient-to-r from-emerald-500 to-teal-500 text-white rounded-xl hover:from-emerald-600 hover:to-teal-600 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 transition-all duration-200 shadow-lg flex items-center gap-2"
+                        className="bg-indigo-600 hover:bg-indigo-700 text-white"
                      >
-                        <PlusCircle size={18} />
+                        <PlusCircle className="mr-2 h-4 w-4" />
                         Add Experience
-                     </button>
-                  </div>
-                  {userDetails.experience.map((exp, index) => (
-                     <div key={index} className="mb-6 last:mb-0">
-                        <div className="inline-block px-4 py-2.5 text-sm font-semibold bg-gradient-to-r from-blue-500 to-indigo-500 text-white rounded-lg mb-6">
-                           Experience {index + 1}
-                        </div>
-                        <div className="flex justify-between">
-                           <input
-                              type="text"
-                              placeholder="Job Title"
-                              value={exp.title}
-                              onChange={(e) =>
-                                 handleChange("experience", [
-                                    ...userDetails.experience.slice(0, index),
-                                    { ...exp, title: e.target.value },
-                                    ...userDetails.experience.slice(index + 1),
-                                 ])
-                              }
-                              className="w-[19%] px-4 py-2.5 text-sm text-slate-900 bg-white/90 border border-slate-300 rounded-lg outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
-                           />
-                           <input
-                              type="text"
-                              placeholder="Employer"
-                              value={exp.employer}
-                              onChange={(e) =>
-                                 handleChange("experience", [
-                                    ...userDetails.experience.slice(0, index),
-                                    { ...exp, employer: e.target.value },
-                                    ...userDetails.experience.slice(index + 1),
-                                 ])
-                              }
-                              className="w-[19%] px-4 py-2.5 text-sm text-slate-900 bg-white/90 border border-slate-300 rounded-lg outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
-                           />
-                           {/* START END DATES */}
-                           <div className="max-w-[19%]">
-                              <DatePicker
-                                 selected={
-                                    isValidDate(exp.startDate)
-                                       ? new Date(
-                                            Number(exp.startDate.split("-")[0]),
-                                            Number(
-                                               exp.startDate.split("-")[1]
-                                            ) - 1
-                                         ) // Correct Date creation
-                                       : null
-                                 }
-                                 onChange={(date) =>
-                                    handleDateChange(date, "startDate", index)
-                                 }
-                                 placeholderText="Start Date"
-                                 dateFormat="MM-yyyy"
-                                 showMonthYearPicker
-                                 className="w-full px-4 py-2.5 text-sm text-slate-900 bg-white/90 border border-slate-300 rounded-lg outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
-                              />
-                           </div>
-                           <div className="max-w-[19%]">
-                              <DatePicker
-                                 selected={
-                                    isValidDate(exp.endDate)
-                                       ? new Date(
-                                            Number(exp.endDate.split("-")[0]),
-                                            Number(exp.endDate.split("-")[1]) -
-                                               1
-                                         ) // Correct Date creation
-                                       : null
-                                 }
-                                 onChange={(date) =>
-                                    handleDateChange(date, "endDate", index)
-                                 }
-                                 placeholderText="End Date"
-                                 dateFormat="MM-yyyy"
-                                 showMonthYearPicker
-                                 className="w-full px-4 py-2.5 text-sm text-slate-900 bg-white/90 border border-slate-300 rounded-lg outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
-                              />
-                           </div>
-
-                           <input
-                              type="text"
-                              placeholder="Location (Optional)"
-                              value={exp.location}
-                              onChange={(e) =>
-                                 handleChange("experience", [
-                                    ...userDetails.experience.slice(0, index),
-                                    { ...exp, location: e.target.value },
-                                    ...userDetails.experience.slice(index + 1),
-                                 ])
-                              }
-                              className="w-[19%] px-4 py-2.5 text-sm text-slate-900 bg-white/90 border border-slate-300 rounded-lg outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
-                           />
-                        </div>
-
-                        <div className="flex items-center gap-4 mt-6">
-                           <h5 className="text-sm font-semibold">
-                              Generate other responsibilities based on:
-                           </h5>
-                           <select
-                              value={exp.responsibilityType}
-                              onChange={(e) =>
-                                 handleChange("experience", [
-                                    ...userDetails.experience.slice(0, index),
-                                    {
-                                       ...exp,
-                                       responsibilityType: e.target.value,
-                                    },
-                                    ...userDetails.experience.slice(index + 1),
-                                 ])
-                              }
-                              className="px-4 py-2 text-sm text-slate-900 bg-white/90 border border-slate-300 rounded-lg outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
-                           >
-                              <option value="skillBased">Current Skills</option>
-                              <option value="titleBased">Role Title</option>
-                           </select>
-                        </div>
-
-                        <div className="mt-4">
-                           <h5 className="text-sm font-semibold mb-2">
-                              Custom Responsibilities:
-                           </h5>
-                           {exp.customResponsibilities?.map(
-                              (resp, respIndex) => (
-                                 <div
-                                    key={respIndex}
-                                    className="flex items-center gap-2 mb-2"
-                                 >
-                                    <input
-                                       type="text"
-                                       value={resp}
+                     </Button>
+                  </CardHeader>
+                  <CardContent className="p-6 space-y-6">
+                     {userDetails.experience.map((exp, index) => (
+                        <Card key={index} className="border shadow-sm">
+                           <CardContent className="p-6">
+                              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                                 <div className="space-y-2">
+                                    <Label className="text-sm font-medium text-gray-700">
+                                       Job Title
+                                    </Label>
+                                    <Input
+                                       className="h-10"
+                                       value={exp.title}
+                                       onChange={(e) =>
+                                          handleChange("experience", [
+                                             ...userDetails.experience.slice(
+                                                0,
+                                                index
+                                             ),
+                                             { ...exp, title: e.target.value },
+                                             ...userDetails.experience.slice(
+                                                index + 1
+                                             ),
+                                          ])
+                                       }
+                                       placeholder="Enter job title"
+                                    />
+                                 </div>
+                                 <div className="space-y-2">
+                                    <Label className="text-sm font-medium text-gray-700">
+                                       Employer
+                                    </Label>
+                                    <Input
+                                       className="h-10"
+                                       value={exp.employer}
                                        onChange={(e) =>
                                           handleChange("experience", [
                                              ...userDetails.experience.slice(
@@ -327,24 +207,73 @@ const UserForm = ({ onSave, onCancel, initialData }) => {
                                              ),
                                              {
                                                 ...exp,
-                                                customResponsibilities:
-                                                   exp.customResponsibilities.map(
-                                                      (r, i) =>
-                                                         i === respIndex
-                                                            ? e.target.value
-                                                            : r
-                                                   ),
+                                                employer: e.target.value,
                                              },
                                              ...userDetails.experience.slice(
                                                 index + 1
                                              ),
                                           ])
                                        }
-                                       className="flex-1 px-4 py-2 text-sm text-slate-900 bg-white/90 border border-slate-300 rounded-lg outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                                       placeholder="Enter employer"
                                     />
-                                    <button
-                                       type="button"
-                                       onClick={() =>
+                                 </div>
+                              </div>
+
+                              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+                                 <div className="space-y-2">
+                                    <Label className="text-sm font-medium text-gray-700">
+                                       Start Date
+                                    </Label>
+                                    <DatePicker
+                                       selected={
+                                          isValidDate(exp.startDate)
+                                             ? new Date(exp.startDate)
+                                             : null
+                                       }
+                                       onChange={(date) =>
+                                          handleDateChange(
+                                             date,
+                                             "startDate",
+                                             index,
+                                             "experience"
+                                          )
+                                       }
+                                       dateFormat="MM/yyyy"
+                                       showMonthYearPicker
+                                       className="w-full h-10 rounded-md border border-input"
+                                    />
+                                 </div>
+                                 <div className="space-y-2">
+                                    <Label className="text-sm font-medium text-gray-700">
+                                       End Date
+                                    </Label>
+                                    <DatePicker
+                                       selected={
+                                          isValidDate(exp.endDate)
+                                             ? new Date(exp.endDate)
+                                             : null
+                                       }
+                                       onChange={(date) =>
+                                          handleDateChange(
+                                             date,
+                                             "endDate",
+                                             index,
+                                             "experience"
+                                          )
+                                       }
+                                       dateFormat="MM/yyyy"
+                                       showMonthYearPicker
+                                       className="w-full h-10 rounded-md border border-input"
+                                    />
+                                 </div>
+                                 <div className="space-y-2">
+                                    <Label className="text-sm font-medium text-gray-700">
+                                       Location
+                                    </Label>
+                                    <Input
+                                       className="h-10"
+                                       value={exp.location}
+                                       onChange={(e) =>
                                           handleChange("experience", [
                                              ...userDetails.experience.slice(
                                                 0,
@@ -352,262 +281,727 @@ const UserForm = ({ onSave, onCancel, initialData }) => {
                                              ),
                                              {
                                                 ...exp,
-                                                customResponsibilities:
-                                                   exp.customResponsibilities.filter(
-                                                      (_, i) => i !== respIndex
-                                                   ),
+                                                location: e.target.value,
                                              },
                                              ...userDetails.experience.slice(
                                                 index + 1
                                              ),
                                           ])
                                        }
-                                       className="px-2 py-2 text-sm font-medium bg-gradient-to-r from-rose-500 to-pink-500 text-white rounded-lg hover:from-rose-600 hover:to-pink-600 focus:outline-none focus:ring-2 focus:ring-rose-500 transition-colors duration-200 flex items-center"
-                                    >
-                                       <Trash2 size={16} className="mr-1" />
-                                       Remove
-                                    </button>
+                                       placeholder="Enter location"
+                                    />
                                  </div>
-                              )
-                           )}
-                           <button
-                              type="button"
-                              onClick={() =>
-                                 handleChange("experience", [
-                                    ...userDetails.experience.slice(0, index),
-                                    {
-                                       ...exp,
-                                       customResponsibilities: [
-                                          ...(exp.customResponsibilities || []),
-                                          "",
-                                       ],
-                                    },
-                                    ...userDetails.experience.slice(index + 1),
-                                 ])
-                              }
-                              className="px-4 py-2 text-sm font-medium bg-gradient-to-r from-purple-500 to-violet-500 text-white rounded-lg hover:from-purple-600 hover:to-violet-600 focus:outline-none focus:ring-2 focus:ring-pink-500 transition-colors duration-200 flex items-center"
-                           >
-                              Add Responsibility
-                           </button>
-                        </div>
-                        {/* REMOVE EXPERIENCE BTN */}
-                        <div className="flex flex-col items-center">
-                           <button
-                              className="px-4 py-2 mt-4 text-sm font-medium bg-gradient-to-r from-rose-500 to-pink-500 text-white rounded-lg hover:from-rose-600 hover:to-pink-600 focus:outline-none focus:ring-2 focus:ring-rose-500 transition-colors duration-200 flex items-center"
-                              onClick={() =>
-                                 handleRemoveField("experience", index)
-                              }
-                              type="button"
-                           >
-                              <Trash2 size={16} className="mr-1" />
-                              Remove Experience
-                           </button>
-                        </div>
+                              </div>
 
-                        <hr className="border-slate-700 my-6" />
-                     </div>
-                  ))}
-               </div>
+                              <div className="space-y-4">
+                                 <div className="flex items-center gap-4">
+                                    <Label className="text-sm font-medium text-gray-700">
+                                       Generate responsibilities based on:
+                                    </Label>
+                                    <Select
+                                       value={exp.responsibilityType}
+                                       onValueChange={(value) =>
+                                          handleChange("experience", [
+                                             ...userDetails.experience.slice(
+                                                0,
+                                                index
+                                             ),
+                                             {
+                                                ...exp,
+                                                responsibilityType: value,
+                                             },
+                                             ...userDetails.experience.slice(
+                                                index + 1
+                                             ),
+                                          ])
+                                       }
+                                    >
+                                       <SelectTrigger className="w-[180px] h-10">
+                                          <SelectValue placeholder="Select type" />
+                                       </SelectTrigger>
+                                       <SelectContent>
+                                          <SelectItem value="skillBased">
+                                             Current Skills
+                                          </SelectItem>
+                                          <SelectItem value="titleBased">
+                                             Role Title
+                                          </SelectItem>
+                                       </SelectContent>
+                                    </Select>
+                                 </div>
 
-               {/* Education Section */}
-               <div className="p-8 rounded-2xl bg-gradient-to-br from-slate-800/50 to-slate-900/50 shadow-xl border border-slate-600/20 hover:border-slate-500/30 transition-all duration-300">
-                  <div className="flex items-center justify-between mb-8">
-                     <h4 className="text-3xl font-bold bg-gradient-to-r from-sky-400 via-blue-400 to-indigo-400 bg-clip-text text-transparent">
-                        Education:
-                     </h4>
-                     <button
+                                 <div className="space-y-2">
+                                    <Label className="text-sm font-medium text-gray-700">
+                                       Custom Responsibilities
+                                    </Label>
+                                    <div className="space-y-2">
+                                       {exp.customResponsibilities.map(
+                                          (resp, respIndex) => (
+                                             <div
+                                                key={respIndex}
+                                                className="flex gap-2"
+                                             >
+                                                <Input
+                                                   className="h-11 px-4 border-gray-200 hover:border-gray-300 focus:border-indigo-500 transition-colors"
+                                                   value={resp}
+                                                   onChange={(e) => {
+                                                      const newResponsibilities =
+                                                         [
+                                                            ...exp.customResponsibilities,
+                                                         ];
+                                                      newResponsibilities[
+                                                         respIndex
+                                                      ] = e.target.value;
+                                                      handleChange(
+                                                         "experience",
+                                                         [
+                                                            ...userDetails.experience.slice(
+                                                               0,
+                                                               index
+                                                            ),
+                                                            {
+                                                               ...exp,
+                                                               customResponsibilities:
+                                                                  newResponsibilities,
+                                                            },
+                                                            ...userDetails.experience.slice(
+                                                               index + 1
+                                                            ),
+                                                         ]
+                                                      );
+                                                   }}
+                                                   placeholder="Enter responsibility"
+                                                />
+                                                <Button
+                                                   type="button"
+                                                   variant="destructive"
+                                                   size="icon"
+                                                   onClick={() => {
+                                                      const newResponsibilities =
+                                                         exp.customResponsibilities.filter(
+                                                            (_, i) =>
+                                                               i !== respIndex
+                                                         );
+                                                      handleChange(
+                                                         "experience",
+                                                         [
+                                                            ...userDetails.experience.slice(
+                                                               0,
+                                                               index
+                                                            ),
+                                                            {
+                                                               ...exp,
+                                                               customResponsibilities:
+                                                                  newResponsibilities,
+                                                            },
+                                                            ...userDetails.experience.slice(
+                                                               index + 1
+                                                            ),
+                                                         ]
+                                                      );
+                                                   }}
+                                                >
+                                                   <X className="h-4 w-4" />
+                                                </Button>
+                                             </div>
+                                          )
+                                       )}
+                                       <Button
+                                          type="button"
+                                          variant="outline"
+                                          onClick={() => {
+                                             handleChange("experience", [
+                                                ...userDetails.experience.slice(
+                                                   0,
+                                                   index
+                                                ),
+                                                {
+                                                   ...exp,
+                                                   customResponsibilities: [
+                                                      ...exp.customResponsibilities,
+                                                      "",
+                                                   ],
+                                                },
+                                                ...userDetails.experience.slice(
+                                                   index + 1
+                                                ),
+                                             ]);
+                                          }}
+                                       >
+                                          <PlusCircle className="mr-2 h-4 w-4" />
+                                          Add Responsibility
+                                       </Button>
+                                    </div>
+                                 </div>
+
+                                 <Button
+                                    type="button"
+                                    variant="destructive"
+                                    onClick={() =>
+                                       handleRemoveField("experience", index)
+                                    }
+                                    className="mt-6"
+                                 >
+                                    <Trash2 className="mr-2 h-4 w-4" />
+                                    Remove Experience
+                                 </Button>
+                              </div>
+                           </CardContent>
+                        </Card>
+                     ))}
+                  </CardContent>
+               </Card>
+
+               {/* Education Card */}
+               <Card className="bg-white/90 shadow-lg border-0 backdrop-blur-xl rounded-xl">
+                  <CardHeader className="border-b bg-white/50 px-6 py-4 flex flex-row items-center justify-between">
+                     <CardTitle className="text-xl font-semibold text-gray-800">
+                        Education
+                     </CardTitle>
+                     <Button
                         type="button"
-                        onClick={() =>
-                           handleAddField("education", {
+                        onClick={(e) =>
+                           handleAddField(e, "education", {
                               degree: "",
                               institution: "",
-                              year: "",
+                              startDate: "",
+                              endDate: "",
+                              location: "",
+                              grade: "",
                            })
                         }
-                        className="px-6 py-2.5 text-sm font-medium bg-gradient-to-r from-emerald-500 to-teal-500 text-white rounded-xl hover:from-emerald-600 hover:to-teal-600 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 transition-all duration-200 shadow-lg flex items-center gap-2"
+                        className="bg-indigo-600 hover:bg-indigo-700 text-white"
                      >
-                        <PlusCircle size={18} />
+                        <PlusCircle className="mr-2 h-4 w-4" />
                         Add Education
-                     </button>
-                  </div>
-                  {userDetails.education.map((edu, index) => (
-                     <div key={index} className="space-y-3 mb-4">
-                        <div className="grid grid-cols-3 gap-3">
-                           <input
-                              type="text"
-                              placeholder="Degree"
-                              value={edu.degree}
-                              onChange={(e) =>
-                                 handleChange("education", [
-                                    ...userDetails.education.slice(0, index),
-                                    { ...edu, degree: e.target.value },
-                                    ...userDetails.education.slice(index + 1),
-                                 ])
-                              }
-                              className="px-4 py-2.5 text-sm text-slate-900 bg-white/90 border border-slate-300 rounded-lg outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
-                           />
-                           <input
-                              type="text"
-                              placeholder="Institution"
-                              value={edu.institution}
-                              onChange={(e) =>
-                                 handleChange("education", [
-                                    ...userDetails.education.slice(0, index),
-                                    { ...edu, institution: e.target.value },
-                                    ...userDetails.education.slice(index + 1),
-                                 ])
-                              }
-                              className="px-4 py-2.5 text-sm text-slate-900 bg-white/90 border border-slate-300 rounded-lg outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
-                           />
-                           <input
-                              type="text"
-                              placeholder="Year"
-                              value={edu.year}
-                              onChange={(e) =>
-                                 handleChange("education", [
-                                    ...userDetails.education.slice(0, index),
-                                    { ...edu, year: e.target.value },
-                                    ...userDetails.education.slice(index + 1),
-                                 ])
-                              }
-                              className="px-4 py-2.5 text-sm text-slate-900 bg-white/90 border border-slate-300 rounded-lg outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
-                           />
-                        </div>
-                        <button
-                           className="px-4 py-2 text-sm font-medium bg-gradient-to-r from-rose-500 to-pink-500 text-white rounded-lg hover:from-rose-600 hover:to-pink-600 focus:outline-none focus:ring-2 focus:ring-rose-500 transition-colors duration-200 flex items-center"
-                           type="button"
-                           onClick={() => handleRemoveField("education", index)}
-                        >
-                           <Trash2 size={16} className="mr-1" />
-                           Remove
-                        </button>
-                     </div>
-                  ))}
-               </div>
+                     </Button>
+                  </CardHeader>
+                  <CardContent className="p-6 space-y-6">
+                     {userDetails.education.map((edu, index) => (
+                        <Card key={index} className="border shadow-sm">
+                           <CardContent className="p-6">
+                              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                                 <div className="space-y-2">
+                                    <Label className="text-sm font-medium text-gray-700">
+                                       Degree
+                                    </Label>
+                                    <Input
+                                       className="h-10"
+                                       value={edu.degree}
+                                       onChange={(e) =>
+                                          handleChange("education", [
+                                             ...userDetails.education.slice(
+                                                0,
+                                                index
+                                             ),
+                                             { ...edu, degree: e.target.value },
+                                             ...userDetails.education.slice(
+                                                index + 1
+                                             ),
+                                          ])
+                                       }
+                                       placeholder="Enter degree/course"
+                                    />
+                                 </div>
+                                 <div className="space-y-2">
+                                    <Label className="text-sm font-medium text-gray-700">
+                                       Institution
+                                    </Label>
+                                    <Input
+                                       className="h-10"
+                                       value={edu.institution}
+                                       onChange={(e) =>
+                                          handleChange("education", [
+                                             ...userDetails.education.slice(
+                                                0,
+                                                index
+                                             ),
+                                             {
+                                                ...edu,
+                                                institution: e.target.value,
+                                             },
+                                             ...userDetails.education.slice(
+                                                index + 1
+                                             ),
+                                          ])
+                                       }
+                                       placeholder="Enter institution name"
+                                    />
+                                 </div>
+                              </div>
 
-               {/* Certifications Section */}
-               <div className="p-8 rounded-2xl bg-gradient-to-br from-slate-800/50 to-slate-900/50 shadow-xl border border-slate-600/20 hover:border-slate-500/30 transition-all duration-300">
-                  <div className="flex items-center justify-between mb-8">
-                     <h4 className="text-3xl font-bold bg-gradient-to-r from-sky-400 via-blue-400 to-indigo-400 bg-clip-text text-transparent">
-                        Certifications:
-                     </h4>
-                     <button
+                              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+                                 <div className="space-y-2">
+                                    <Label className="text-sm font-medium text-gray-700">
+                                       Start Date
+                                    </Label>
+                                    <DatePicker
+                                       selected={
+                                          isValidDate(edu.startDate)
+                                             ? new Date(edu.startDate)
+                                             : null
+                                       }
+                                       onChange={(date) =>
+                                          handleDateChange(
+                                             date,
+                                             "startDate",
+                                             index,
+                                             "education"
+                                          )
+                                       }
+                                       dateFormat="MM/yyyy"
+                                       showMonthYearPicker
+                                       className="w-full h-10 rounded-md border border-input"
+                                    />
+                                 </div>
+                                 <div className="space-y-2">
+                                    <Label className="text-sm font-medium text-gray-700">
+                                       End Date
+                                    </Label>
+                                    <DatePicker
+                                       selected={
+                                          isValidDate(edu.endDate)
+                                             ? new Date(edu.endDate)
+                                             : null
+                                       }
+                                       onChange={(date) =>
+                                          handleDateChange(
+                                             date,
+                                             "endDate",
+                                             index,
+                                             "education"
+                                          )
+                                       }
+                                       dateFormat="MM/yyyy"
+                                       showMonthYearPicker
+                                       className="w-full h-10 rounded-md border border-input"
+                                    />
+                                 </div>
+                                 <div className="space-y-2">
+                                    <Label className="text-sm font-medium text-gray-700">
+                                       Grade/GPA
+                                    </Label>
+                                    <Input
+                                       className="h-10"
+                                       value={edu.grade}
+                                       onChange={(e) =>
+                                          handleChange("education", [
+                                             ...userDetails.education.slice(
+                                                0,
+                                                index
+                                             ),
+                                             { ...edu, grade: e.target.value },
+                                             ...userDetails.education.slice(
+                                                index + 1
+                                             ),
+                                          ])
+                                       }
+                                       placeholder="Enter grade/GPA"
+                                    />
+                                 </div>
+                              </div>
+
+                              <Button
+                                 type="button"
+                                 variant="destructive"
+                                 onClick={() =>
+                                    handleRemoveField("education", index)
+                                 }
+                                 className="mt-6"
+                              >
+                                 <Trash2 className="mr-2 h-4 w-4" />
+                                 Remove Education
+                              </Button>
+                           </CardContent>
+                        </Card>
+                     ))}
+                  </CardContent>
+               </Card>
+
+               {/* Certifications Card */}
+               <Card className="bg-white/90 shadow-lg border-0 backdrop-blur-xl rounded-xl">
+                  <CardHeader className="border-b bg-white/50 px-6 py-4 flex flex-row items-center justify-between">
+                     <CardTitle className="text-xl font-semibold text-gray-800">
+                        Certifications
+                     </CardTitle>
+                     <Button
                         type="button"
-                        onClick={() => handleAddField("certifications", "")}
-                        className="px-6 py-2.5 text-sm font-medium bg-gradient-to-r from-emerald-500 to-teal-500 text-white rounded-xl hover:from-emerald-600 hover:to-teal-600 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 transition-all duration-200 shadow-lg flex items-center gap-2"
+                        onClick={(e) =>
+                           handleAddField(e, "certifications", {
+                              name: "",
+                              issuer: "",
+                              date: "",
+                              expiryDate: "",
+                              credentialId: "",
+                           })
+                        }
+                        className="bg-indigo-600 hover:bg-indigo-700 text-white"
                      >
-                        <PlusCircle size={18} />
+                        <PlusCircle className="mr-2 h-4 w-4" />
                         Add Certification
-                     </button>
-                  </div>
-                  {userDetails.certifications.map((cert, index) => (
-                     <div key={index} className="flex items-center gap-3 mb-3">
-                        <input
-                           type="text"
-                           placeholder="Certification"
-                           value={cert}
-                           onChange={(e) =>
-                              handleChange("certifications", [
-                                 ...userDetails.certifications.slice(0, index),
-                                 e.target.value,
-                                 ...userDetails.certifications.slice(index + 1),
-                              ])
-                           }
-                           className="flex-1 px-4 py-2.5 text-sm text-slate-900 bg-white/90 border border-slate-300 rounded-lg outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
-                        />
-                        <button
-                           className="px-4 py-2 text-sm font-medium bg-gradient-to-r from-rose-500 to-pink-500 text-white rounded-lg hover:from-rose-600 hover:to-pink-600 focus:outline-none focus:ring-2 focus:ring-rose-500 transition-colors duration-200 flex items-center"
-                           onClick={() =>
-                              handleRemoveField("certifications", index)
-                           }
-                           type="button"
-                        >
-                           Remove
-                        </button>
-                     </div>
-                  ))}
-               </div>
+                     </Button>
+                  </CardHeader>
+                  <CardContent className="p-6 space-y-6">
+                     {userDetails.certifications.map((cert, index) => (
+                        <Card key={index} className="border shadow-sm">
+                           <CardContent className="p-6">
+                              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                                 <div className="space-y-2">
+                                    <Label className="text-sm font-medium text-gray-700">
+                                       Certification Name
+                                    </Label>
+                                    <Input
+                                       className="h-10"
+                                       value={cert.name}
+                                       onChange={(e) =>
+                                          handleChange("certifications", [
+                                             ...userDetails.certifications.slice(
+                                                0,
+                                                index
+                                             ),
+                                             { ...cert, name: e.target.value },
+                                             ...userDetails.certifications.slice(
+                                                index + 1
+                                             ),
+                                          ])
+                                       }
+                                       placeholder="Enter certification name"
+                                    />
+                                 </div>
+                                 <div className="space-y-2">
+                                    <Label className="text-sm font-medium text-gray-700">
+                                       Issuing Organization
+                                    </Label>
+                                    <Input
+                                       className="h-10"
+                                       value={cert.issuer}
+                                       onChange={(e) =>
+                                          handleChange("certifications", [
+                                             ...userDetails.certifications.slice(
+                                                0,
+                                                index
+                                             ),
+                                             {
+                                                ...cert,
+                                                issuer: e.target.value,
+                                             },
+                                             ...userDetails.certifications.slice(
+                                                index + 1
+                                             ),
+                                          ])
+                                       }
+                                       placeholder="Enter issuing organization"
+                                    />
+                                 </div>
+                              </div>
 
-               {/* Projects Section */}
-               <div className="p-8 rounded-2xl bg-gradient-to-br from-slate-800/50 to-slate-900/50 shadow-xl border border-slate-600/20 hover:border-slate-500/30 transition-all duration-300">
-                  <div className="flex items-center justify-between mb-8">
-                     <h4 className="text-3xl font-bold bg-gradient-to-r from-sky-400 via-blue-400 to-indigo-400 bg-clip-text text-transparent">
-                        Projects:
-                     </h4>
-                     <button
-                        onClick={() =>
-                           handleAddField("projects", {
+                              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+                                 <div className="space-y-2">
+                                    <Label className="text-sm font-medium text-gray-700">
+                                       Issue Date
+                                    </Label>
+                                    <DatePicker
+                                       selected={
+                                          isValidDate(cert.date)
+                                             ? new Date(cert.date)
+                                             : null
+                                       }
+                                       onChange={(date) =>
+                                          handleDateChange(
+                                             date,
+                                             "date",
+                                             index,
+                                             "certifications"
+                                          )
+                                       }
+                                       dateFormat="MM/yyyy"
+                                       showMonthYearPicker
+                                       className="w-full h-10 rounded-md border border-input"
+                                    />
+                                 </div>
+                                 <div className="space-y-2">
+                                    <Label className="text-sm font-medium text-gray-700">
+                                       Expiry Date (Optional)
+                                    </Label>
+                                    <DatePicker
+                                       selected={
+                                          isValidDate(cert.expiryDate)
+                                             ? new Date(cert.expiryDate)
+                                             : null
+                                       }
+                                       onChange={(date) =>
+                                          handleDateChange(
+                                             date,
+                                             "expiryDate",
+                                             index,
+                                             "certifications"
+                                          )
+                                       }
+                                       dateFormat="MM/yyyy"
+                                       showMonthYearPicker
+                                       className="w-full h-10 rounded-md border border-input"
+                                    />
+                                 </div>
+                                 <div className="space-y-2">
+                                    <Label className="text-sm font-medium text-gray-700">
+                                       Credential ID
+                                    </Label>
+                                    <Input
+                                       className="h-10"
+                                       value={cert.credentialId}
+                                       onChange={(e) =>
+                                          handleChange("certifications", [
+                                             ...userDetails.certifications.slice(
+                                                0,
+                                                index
+                                             ),
+                                             {
+                                                ...cert,
+                                                credentialId: e.target.value,
+                                             },
+                                             ...userDetails.certifications.slice(
+                                                index + 1
+                                             ),
+                                          ])
+                                       }
+                                       placeholder="Enter credential ID"
+                                    />
+                                 </div>
+                              </div>
+
+                              <Button
+                                 type="button"
+                                 variant="destructive"
+                                 onClick={() =>
+                                    handleRemoveField("certifications", index)
+                                 }
+                                 className="mt-6"
+                              >
+                                 <Trash2 className="mr-2 h-4 w-4" />
+                                 Remove Certification
+                              </Button>
+                           </CardContent>
+                        </Card>
+                     ))}
+                  </CardContent>
+               </Card>
+
+               {/* Projects Card */}
+               <Card className="bg-white/90 shadow-lg border-0 backdrop-blur-xl rounded-xl">
+                  <CardHeader className="border-b bg-white/50 px-6 py-4 flex flex-row items-center justify-between">
+                     <CardTitle className="text-xl font-semibold text-gray-800">
+                        Projects
+                     </CardTitle>
+                     <Button
+                        type="button"
+                        onClick={(e) =>
+                           handleAddField(e, "projects", {
                               name: "",
                               description: "",
+                              technologies: "",
+                              startDate: "",
+                              endDate: "",
+                              link: "",
                            })
                         }
-                        className="px-6 py-2.5 text-sm font-medium bg-gradient-to-r from-emerald-500 to-teal-500 text-white rounded-xl hover:from-emerald-600 hover:to-teal-600 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 transition-all duration-200 shadow-lg flex items-center gap-2"
-                        type="button"
+                        className="bg-indigo-600 hover:bg-indigo-700 text-white"
                      >
-                        <PlusCircle size={18} />
+                        <PlusCircle className="mr-2 h-4 w-4" />
                         Add Project
-                     </button>
-                  </div>
-                  {userDetails.projects.map((proj, index) => (
-                     <div key={index} className="space-y-3 mb-6 last:mb-0">
-                        <input
-                           type="text"
-                           placeholder="Project Name"
-                           value={proj.name}
-                           onChange={(e) =>
-                              handleChange("projects", [
-                                 ...userDetails.projects.slice(0, index),
-                                 { ...proj, name: e.target.value },
-                                 ...userDetails.projects.slice(index + 1),
-                              ])
-                           }
-                           className="w-full px-4 py-2.5 text-sm text-slate-900 bg-white/90 border border-slate-300 rounded-lg outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
-                        />
-                        <textarea
-                           placeholder="Description"
-                           value={proj.description}
-                           onChange={(e) =>
-                              handleChange("projects", [
-                                 ...userDetails.projects.slice(0, index),
-                                 { ...proj, description: e.target.value },
-                                 ...userDetails.projects.slice(index + 1),
-                              ])
-                           }
-                           className="w-full px-4 py-2.5 text-sm text-slate-900 bg-white/90 border border-slate-300 rounded-lg outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 min-h-[100px] resize-y"
-                        />
-                        <button
-                           className="px-4 py-2 text-sm font-medium bg-gradient-to-r from-rose-500 to-pink-500 text-white rounded-lg hover:from-rose-600 hover:to-pink-600 focus:outline-none focus:ring-2 focus:ring-rose-500 transition-colors duration-200 flex items-center"
-                           onClick={() => handleRemoveField("projects", index)}
-                           type="button"
-                        >
-                           Remove
-                        </button>
-                     </div>
-                  ))}
-               </div>
-            </div>
+                     </Button>
+                  </CardHeader>
+                  <CardContent className="p-6 space-y-6">
+                     {userDetails.projects.map((project, index) => (
+                        <Card key={index} className="border shadow-sm">
+                           <CardContent className="p-6">
+                              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                                 <div className="space-y-2">
+                                    <Label className="text-sm font-medium text-gray-700">
+                                       Project Name
+                                    </Label>
+                                    <Input
+                                       className="h-10"
+                                       value={project.name}
+                                       onChange={(e) =>
+                                          handleChange("projects", [
+                                             ...userDetails.projects.slice(
+                                                0,
+                                                index
+                                             ),
+                                             {
+                                                ...project,
+                                                name: e.target.value,
+                                             },
+                                             ...userDetails.projects.slice(
+                                                index + 1
+                                             ),
+                                          ])
+                                       }
+                                       placeholder="Enter project name"
+                                    />
+                                 </div>
+                                 <div className="space-y-2">
+                                    <Label className="text-sm font-medium text-gray-700">
+                                       Technologies Used
+                                    </Label>
+                                    <Input
+                                       className="h-10"
+                                       value={project.technologies}
+                                       onChange={(e) =>
+                                          handleChange("projects", [
+                                             ...userDetails.projects.slice(
+                                                0,
+                                                index
+                                             ),
+                                             {
+                                                ...project,
+                                                technologies: e.target.value,
+                                             },
+                                             ...userDetails.projects.slice(
+                                                index + 1
+                                             ),
+                                          ])
+                                       }
+                                       placeholder="Enter technologies used"
+                                    />
+                                 </div>
+                              </div>
 
-            {/* Save and Cancel Buttons */}
-            <div className="mt-8 flex justify-center gap-4">
-               <button
-                  type="submit"
-                  className="flex items-center gap-2 px-8 py-3 text-sm font-medium bg-gradient-to-r from-blue-500 to-indigo-500 text-white rounded-lg hover:from-blue-600 hover:to-indigo-600 focus:outline-none focus:ring-2 focus:ring-blue-500/50 transition-all duration-200 shadow-lg"
-               >
-                  <Save size={18} />
-                  Save Details
-               </button>
-               {hasUserDetailsData(userDetails) && (
-                  <button
-                     type="button" // Prevent form submission
-                     onClick={onCancel}
-                     className="flex items-center gap-2 px-8 py-3 text-sm font-medium bg-gradient-to-r from-rose-500 to-pink-500 text-white rounded-lg hover:from-rose-600 hover:to-pink-600 focus:outline-none focus:ring-2 focus:ring-rose-500/50 transition-all duration-200 shadow-lg"
-                  >
-                     <X size={18} />
-                     Cancel
-                  </button>
-               )}
-            </div>
-         </form>
+                              <div className="space-y-2 mb-6">
+                                 <Label className="text-sm font-medium text-gray-700">
+                                    Description
+                                 </Label>
+                                 <Input
+                                    className="h-10"
+                                    value={project.description}
+                                    onChange={(e) =>
+                                       handleChange("projects", [
+                                          ...userDetails.projects.slice(
+                                             0,
+                                             index
+                                          ),
+                                          {
+                                             ...project,
+                                             description: e.target.value,
+                                          },
+                                          ...userDetails.projects.slice(
+                                             index + 1
+                                          ),
+                                       ])
+                                    }
+                                    placeholder="Enter project description"
+                                 />
+                              </div>
+
+                              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+                                 <div className="space-y-2">
+                                    <Label className="text-sm font-medium text-gray-700">
+                                       Start Date
+                                    </Label>
+                                    <DatePicker
+                                       selected={
+                                          isValidDate(project.startDate)
+                                             ? new Date(project.startDate)
+                                             : null
+                                       }
+                                       onChange={(date) =>
+                                          handleDateChange(
+                                             date,
+                                             "startDate",
+                                             index,
+                                             "projects"
+                                          )
+                                       }
+                                       dateFormat="MM/yyyy"
+                                       showMonthYearPicker
+                                       className="w-full h-10 rounded-md border border-input"
+                                    />
+                                 </div>
+                                 <div className="space-y-2">
+                                    <Label className="text-sm font-medium text-gray-700">
+                                       End Date
+                                    </Label>
+                                    <DatePicker
+                                       selected={
+                                          isValidDate(project.endDate)
+                                             ? new Date(project.endDate)
+                                             : null
+                                       }
+                                       onChange={(date) =>
+                                          handleDateChange(
+                                             date,
+                                             "endDate",
+                                             index,
+                                             "projects"
+                                          )
+                                       }
+                                       dateFormat="MM/yyyy"
+                                       showMonthYearPicker
+                                       className="w-full h-10 rounded-md border border-input"
+                                    />
+                                 </div>
+                                 <div className="space-y-2">
+                                    <Label className="text-sm font-medium text-gray-700">
+                                       Project Link
+                                    </Label>
+                                    <Input
+                                       className="h-10"
+                                       value={project.link}
+                                       onChange={(e) =>
+                                          handleChange("projects", [
+                                             ...userDetails.projects.slice(
+                                                0,
+                                                index
+                                             ),
+                                             {
+                                                ...project,
+                                                link: e.target.value,
+                                             },
+                                             ...userDetails.projects.slice(
+                                                index + 1
+                                             ),
+                                          ])
+                                       }
+                                       placeholder="Enter project link"
+                                    />
+                                 </div>
+                              </div>
+
+                              <Button
+                                 type="button"
+                                 variant="destructive"
+                                 onClick={() =>
+                                    handleRemoveField("projects", index)
+                                 }
+                                 className="mt-6"
+                              >
+                                 <Trash2 className="mr-2 h-4 w-4" />
+                                 Remove Project
+                              </Button>
+                           </CardContent>
+                        </Card>
+                     ))}
+                  </CardContent>
+               </Card>
+
+               {/* Form Actions */}
+               <div className="sticky bottom-0 py-4 bg-white/80 backdrop-blur-xl border-t shadow-lg">
+                  <div className="max-w-4xl mx-auto px-4 flex justify-end gap-4">
+                     <Button type="button" variant="outline" onClick={onCancel}>
+                        <X className="mr-2 h-4 w-4" />
+                        Cancel
+                     </Button>
+                     <Button
+                        type="submit"
+                        className="bg-indigo-600 hover:bg-indigo-700 text-white"
+                     >
+                        <Save className="mr-2 h-4 w-4" />
+                        Save Details
+                     </Button>
+                  </div>
+               </div>
+            </form>
+         </div>
       </div>
    );
 };

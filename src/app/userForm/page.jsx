@@ -51,8 +51,8 @@ export default function UserFormPage() {
    if (!user) return null;
 
    return (
-      <div className="min-h-screen bg-gradient-to-br from-purple-200/60 via-slate-50 to-blue-200/60">
-         <div className="container mx-auto py-8 px-4">
+      <div className="min-h-screen bg-white">
+         <div className="container mx-auto py-8 px-4 pt-28">
             <UserForm
                initialData={userDetails}
                onSave={handleSaveDetails}
