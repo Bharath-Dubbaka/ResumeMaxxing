@@ -1,8 +1,8 @@
 "use client";
+import { Spinner } from "@/components/ui/spinner";
 import { useAuth } from "@/context/AuthContext";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
-import LoadingSpinner from "@/components/LoadingSpinner";
 
 export default function DashboardPage() {
    const { user, userDetails, loading } = useAuth();
@@ -21,7 +21,7 @@ export default function DashboardPage() {
       }
    }, [loading, user, userDetails, router]);
 
-   if (loading) return <LoadingSpinner />;
+   if (loading) return <Spinner className="w-12 h-12 border-4 text-pink-600" />;
    if (!user || !userDetails) return null;
 
    return (

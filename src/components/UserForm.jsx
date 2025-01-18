@@ -14,8 +14,10 @@ import {
    SelectTrigger,
    SelectValue,
 } from "@/components/ui/select";
+import { Spinner } from "@/components/ui/spinner";
 
 const UserForm = ({ onSave, onCancel, initialData }) => {
+   const [isLoading, setIsLoading] = useState(false);
    const [userDetails, setUserDetails] = useState(() => {
       if (initialData) {
          return initialData;
@@ -75,11 +77,14 @@ const UserForm = ({ onSave, onCancel, initialData }) => {
 
    const handleSave = async (e) => {
       e.preventDefault();
+      setIsLoading(true);
       try {
          await onSave(userDetails);
       } catch (error) {
          console.error("Error in handleSave:", error);
          alert("Failed to save user details. Please try again.");
+      } finally {
+         setIsLoading(false);
       }
    };
 
@@ -335,7 +340,7 @@ const UserForm = ({ onSave, onCancel, initialData }) => {
                                        Custom Responsibilities
                                     </Label>
                                     <div className="space-y-2">
-                                       {exp.customResponsibilities.map(
+                                       {exp.customResponsibilities?.map(
                                           (resp, respIndex) => (
                                              <div
                                                 key={respIndex}
@@ -987,16 +992,31 @@ const UserForm = ({ onSave, onCancel, initialData }) => {
                {/* Form Actions */}
                <div className="sticky bottom-0 py-4 bg-white/80 backdrop-blur-xl border-t shadow-lg">
                   <div className="max-w-4xl mx-auto px-4 flex justify-end gap-4">
-                     <Button type="button" variant="outline" onClick={onCancel}>
+                     <Button
+                        type="button"
+                        variant="outline"
+                        onClick={onCancel}
+                        disabled={isLoading}
+                     >
                         <X className="mr-2 h-4 w-4" />
                         Cancel
                      </Button>
                      <Button
                         type="submit"
                         className="bg-indigo-600 hover:bg-indigo-700 text-white"
+                        disabled={isLoading}
                      >
-                        <Save className="mr-2 h-4 w-4" />
-                        Save Details
+                        {isLoading ? (
+                           <>
+                              <Spinner className="w-4 h-4 border-2 mr-2" />
+                              <p className="text-pink-600 font-medium">Saving...</p>
+                           </>
+                        ) : (
+                           <>
+                              <Save className="mr-2 h-4 w-4" />
+                              Save Details
+                           </>
+                        )}
                      </Button>
                   </div>
                </div>

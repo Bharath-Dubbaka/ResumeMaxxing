@@ -10,16 +10,20 @@ import UserForm from "@/components/UserForm";
 import { useAuth } from "@/context/AuthContext";
 import { useRouter } from "next/navigation";
 import { UserDetailsService } from "@/services/UserDetailsService";
+import { useState } from "react";
+import { Spinner } from "@/components/ui/spinner";
 
 export default function Home() {
    const router = useRouter();
    const { user, userDetails } = useAuth();
+   const [isLoading, setIsLoading] = useState(false);
 
    const handleGetStarted = async () => {
       try {
+         setIsLoading(true);
+
          // If user is already logged in
          if (user) {
-            // If user has details, go to dashboard, else go to userForm
             if (userDetails) {
                router.push("/dashboard");
             } else {
@@ -47,8 +51,23 @@ export default function Home() {
          }
       } catch (error) {
          console.error("Login error:", error);
+      } finally {
+         setIsLoading(false);
       }
    };
+
+   if (isLoading) {
+      return (
+         <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-purple-200/60 via-pink-50 to-blue-200/60">
+            <div className="text-center space-y-4">
+               <Spinner className="w-12 h-12 border-4 text-purple-600" />
+               <p className="text-gray-600 font-medium">
+                  Setting up your account...
+               </p>
+            </div>
+         </div>
+      );
+   }
 
    return (
       <div className="">
