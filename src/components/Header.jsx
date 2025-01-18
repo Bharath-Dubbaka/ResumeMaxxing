@@ -1,5 +1,7 @@
 "use client";
-import { useAuth } from "@/context/AuthContext";
+import { useSelector, useDispatch } from 'react-redux';
+import { logout } from '@/store/slices/authSlice';
+import { clearFirebaseData } from '@/store/slices/firebaseSlice';
 import { auth } from "@/services/firebase";
 import { LogOut } from "lucide-react";
 import Link from "next/link";
@@ -7,13 +9,17 @@ import { Button } from "@/components/ui/button";
 import { useRouter } from "next/navigation";
 
 const Header = () => {
-   const { user, userQuota, userDetails } = useAuth();
+   const { user } = useSelector((state) => state.auth);
+   const { userQuota, userDetails } = useSelector((state) => state.firebase);
+   const dispatch = useDispatch();
    const router = useRouter();
 
    const handleLogout = async () => {
       try {
          console.log("Logging out...");
          await auth.signOut();
+         dispatch(logout());
+         dispatch(clearFirebaseData());
          console.log("Logout successful");
       } catch (error) {
          console.error("Logout error:", error);
@@ -21,7 +27,7 @@ const Header = () => {
    };
 
    return (
-      <header className="border-b bg-white/50 backdrop-blur-md fixed top-0 w-full z-50">
+      <header className="border-b bg-white/70 backdrop-blur-md fixed top-0 w-full z-50">
          <div className="container mx-auto px-4">
             <div className="flex items-center justify-between h-16">
                {/* Logo */}

@@ -89,7 +89,7 @@ const UserForm = ({ onSave, onCancel, initialData }) => {
    };
 
    return (
-      <div className="min-h-screen max-w-5xl mx-auto rounded-xl bg-gradient-to-br from-purple-100 via-pink-50 to-purple-100 py-10">
+      <div className="min-h-screen max-w-5xl mx-auto rounded-xl py-10 bg-teal-100/40 backdrop-blur-sm shadow-xl border border-white/10">
          <div className="max-w-4xl mx-auto px-4">
             <form onSubmit={handleSave} className="space-y-6">
                {/* Personal Details Card */}
@@ -1009,7 +1009,9 @@ const UserForm = ({ onSave, onCancel, initialData }) => {
                         {isLoading ? (
                            <>
                               <Spinner className="w-4 h-4 border-2 mr-2" />
-                              <p className="text-pink-600 font-medium">Saving...</p>
+                              <p className="text-pink-600 font-medium">
+                                 Saving...
+                              </p>
                            </>
                         ) : (
                            <>

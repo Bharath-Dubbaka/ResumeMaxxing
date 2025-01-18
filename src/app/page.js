@@ -6,23 +6,25 @@ import Link from "next/link";
 import { auth } from "@/services/firebase";
 import { GoogleAuthProvider, signInWithPopup } from "firebase/auth";
 import { QuotaService } from "@/services/QuotaService";
-import UserForm from "@/components/UserForm";
-import { useAuth } from "@/context/AuthContext";
-import { useRouter } from "next/navigation";
 import { UserDetailsService } from "@/services/UserDetailsService";
+import { useRouter } from "next/navigation";
+import { useSelector, useDispatch } from "react-redux";
+import { setUser } from "@/store/slices/authSlice";
+import { setUserDetails, setUserQuota } from "@/store/slices/firebaseSlice";
 import { useState } from "react";
 import { Spinner } from "@/components/ui/spinner";
 
 export default function Home() {
    const router = useRouter();
-   const { user, userDetails } = useAuth();
+   const dispatch = useDispatch();
+   const { user } = useSelector((state) => state.auth);
+   const { userDetails } = useSelector((state) => state.firebase);
    const [isLoading, setIsLoading] = useState(false);
 
    const handleGetStarted = async () => {
       try {
          setIsLoading(true);
 
-         // If user is already logged in
          if (user) {
             if (userDetails) {
                router.push("/dashboard");
@@ -32,17 +34,28 @@ export default function Home() {
             return;
          }
 
-         // For new sign in
          const provider = new GoogleAuthProvider();
          const result = await signInWithPopup(auth, provider);
 
-         // Initialize quota for new users
-         await QuotaService.getUserQuota(result.user.uid);
+         // Update Redux store with user data
+         dispatch(
+            setUser({
+               email: result.user.email,
+               name: result.user.displayName,
+               picture: result.user.photoURL,
+               uid: result.user.uid,
+            })
+         );
 
-         // Check if user details exist in Firebase
+         // Initialize quota and update Redux store
+         const quota = await QuotaService.getUserQuota(result.user.uid);
+         dispatch(setUserQuota(quota));
+
+         // Get user details and update Redux store
          const details = await UserDetailsService.getUserDetails(
             result.user.uid
          );
+         dispatch(setUserDetails(details));
 
          if (details) {
             router.push("/dashboard");
