@@ -13,13 +13,28 @@ import { setUser } from "@/store/slices/authSlice";
 import { setUserDetails, setUserQuota } from "@/store/slices/firebaseSlice";
 import { useState } from "react";
 import { Spinner } from "@/components/ui/spinner";
+import { useEffect } from "react";
 
 export default function Home() {
    const router = useRouter();
-   const dispatch = useDispatch();
-   const { user } = useSelector((state) => state.auth);
    const { userDetails } = useSelector((state) => state.firebase);
    const [isLoading, setIsLoading] = useState(false);
+   const dispatch = useDispatch();
+   const { user } = useSelector((state) => state.auth);
+
+   useEffect(() => {
+      if (user) {
+         const unsubscribe = QuotaService.listenToUserQuota(
+            user.uid,
+            (quota) => {
+               dispatch(setUserQuota(quota)); // Dispatch action to update quota in Redux store
+            }
+         );
+
+         // Cleanup the listener on unmount
+         return () => unsubscribe();
+      }
+   }, [user, dispatch]);
 
    const handleGetStarted = async () => {
       try {
@@ -86,7 +101,7 @@ export default function Home() {
       <div className="">
          <div className="">
             {/* Hero Section */}
-            <div className="min-h-screen text-center space-y-8 pt-32 bg-gradient-to-br from-purple-200/60 via-pink-50 to-blue-200/60 animate-gradient-xy">
+            <div className="min-h-screen text-center space-y-8 pt-40 bg-gradient-to-br from-purple-200/60 via-pink-50 to-blue-200/60 animate-gradient-xy">
                <h1 className="text-5xl md:text-7xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-900 to-pink-900">
                   AI-Powered Resume Builder
                </h1>

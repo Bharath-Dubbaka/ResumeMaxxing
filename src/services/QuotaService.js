@@ -1,6 +1,6 @@
 // src/services/QuotaServices.tsx
 import { db } from "./firebase";
-import { doc, getDoc, setDoc, updateDoc } from "firebase/firestore";
+import { doc, getDoc, setDoc, updateDoc, onSnapshot } from "firebase/firestore";
 
 export class QuotaService {
    static DEFAULT_FREE_QUOTA = {
@@ -30,7 +30,6 @@ export class QuotaService {
       const docSnap = await getDoc(userRef);
 
       if (!docSnap.exists()) {
-         // Initialize with default free quota
          const defaultQuota = this.DEFAULT_FREE_QUOTA;
          await setDoc(userRef, defaultQuota);
          return defaultQuota;
@@ -48,7 +47,6 @@ export class QuotaService {
          },
       };
 
-      // Check if quota needs to be refreshed
       if (await this.shouldRefreshQuota(quota)) {
          return await this.refreshQuota(uid, quota);
       }
@@ -57,11 +55,9 @@ export class QuotaService {
    }
 
    static async shouldRefreshQuota(quota) {
+      if (!quota?.subscription?.endDate) return true;
       const currentDate = new Date();
       const endDate = new Date(quota.subscription.endDate);
-
-      // Simply check if current date is past the end date
-      // This works for both free and premium users
       return currentDate > endDate;
    }
 
@@ -69,9 +65,11 @@ export class QuotaService {
       const userRef = doc(db, "quotas", uid);
       const currentDate = new Date();
 
-      // If premium subscription has ended, revert to free
+      // Add null check and default to expired if no valid subscription
       const hasExpired =
+         !currentQuota?.subscription?.endDate ||
          new Date(currentQuota.subscription.endDate) < currentDate;
+
       const newQuota = hasExpired
          ? {
               ...this.DEFAULT_FREE_QUOTA,
@@ -110,6 +108,12 @@ export class QuotaService {
       const userRef = doc(db, "quotas", uid);
       const quota = await this.getUserQuota(uid);
 
+      // Check if quota needs refresh before incrementing
+      if (await this.shouldRefreshQuota(quota)) {
+         await this.refreshQuota(uid, quota);
+         return;
+      }
+
       quota[type].used += 1;
       await updateDoc(userRef, {
          [`${type}.used`]: quota[type].used,
@@ -132,5 +136,18 @@ export class QuotaService {
       };
 
       await setDoc(userRef, premiumQuota);
+      return premiumQuota; // Return the new quota
+   }
+
+   static listenToUserQuota(uid, callback) {
+      const userRef = doc(db, "quotas", uid);
+      return onSnapshot(userRef, (doc) => {
+         if (doc.exists()) {
+            const data = doc.data();
+            callback(data);
+         } else {
+            console.error("No such document!");
+         }
+      });
    }
 }

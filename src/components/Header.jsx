@@ -59,7 +59,7 @@ const Header = () => {
                   </Link>
                </nav>
 
-               {/* Auth Buttons */}
+               {/* Auth Buttons and Quota Display */}
                {user ? (
                   <div className="flex items-center gap-4">
                      <div className="flex items-center gap-3">
@@ -80,8 +80,19 @@ const Header = () => {
                         </div>
                      </div>
                      {userQuota && (
-                        <div className="text-xs text-slate-700 bg-white/80 px-3 py-1 rounded-full">
-                           {userQuota.subscription.type} Plan
+                        <div className="flex items-center gap-2">
+                           <div className="text-xs text-slate-700 bg-white/80 px-3 py-1 rounded-full">
+                              {userQuota.subscription.type} Plan
+                           </div>
+                           <div className="text-xs text-slate-700 bg-white/80 px-3 py-1 rounded-full">
+                              Parsing: {userQuota.parsing.used}/{userQuota.parsing.limit}
+                           </div>
+                           <div className="text-xs text-slate-700 bg-white/80 px-3 py-1 rounded-full">
+                              Downloads: {userQuota.downloads.used}/{userQuota.downloads.limit}
+                           </div>
+                           <div className="text-xs text-slate-700 bg-white/80 px-3 py-1 rounded-full">
+                              Generates: {userQuota.generates.used}/{userQuota.generates.limit}
+                           </div>
                         </div>
                      )}
                      <Button
