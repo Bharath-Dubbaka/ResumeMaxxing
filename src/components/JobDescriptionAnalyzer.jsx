@@ -47,7 +47,6 @@ export default function JobDescriptionAnalyzer() {
          {
             "technicalSkills": [array of strings],
             "yearsOfExperience": number,
-            "softSkills": [array of strings],
             "roleDescriptions": [
                {
                   "title": string,
@@ -151,7 +150,7 @@ export default function JobDescriptionAnalyzer() {
                         </div>
                      </div>
 
-                     <div>
+                     {/* <div>
                         <h3 className="text-lg font-semibold mb-3">
                            Soft Skills
                         </h3>
@@ -165,7 +164,7 @@ export default function JobDescriptionAnalyzer() {
                               </span>
                            ))}
                         </div>
-                     </div>
+                     </div> */}
 
                      <div>
                         <h3 className="text-lg font-semibold mb-3">

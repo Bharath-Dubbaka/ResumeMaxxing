@@ -25,9 +25,11 @@ export default function DashboardPage() {
    if (!user || !userDetails) return null;
 
    return (
-      <div className="container mx-auto py-8 px-4 mt-16">
-         <h1 className="text-3xl font-bold mb-8">Dashboard</h1>
-         <JobDescriptionAnalyzer />
+      <div className="min-h-screen bg-gradient-to-br from-purple-200/60 via-pink-50 to-blue-200/60 animate-gradient-xy">
+         <div className="container py-8 mt-16 rounded-xl">
+            <h1 className="text-3xl font-bold mb-8 ">- Dashboard</h1>
+            <JobDescriptionAnalyzer />
+         </div>
       </div>
    );
 }
