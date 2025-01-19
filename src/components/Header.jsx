@@ -33,7 +33,7 @@ const Header = () => {
                {/* Logo */}
                <Link href="/" className="flex items-center space-x-2">
                   <span className="text-3xl font-bold bg-gradient-to-r from-blue-900 to-pink-900 bg-clip-text text-transparent">
-                     ResumeMaxxing
+                     ResumeMaXXing
                   </span>
                </Link>
 

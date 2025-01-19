@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from "react";
-import { Download, EditIcon } from "lucide-react";
+import { Download, Edit } from "lucide-react";
+import { Button } from "./ui/button";
+import { Spinner } from "./ui/spinner";
 
 const cleanJsonResponse = (response) => {
    try {
@@ -27,21 +29,17 @@ const ResumePreview = ({
    userDetails,
 }) => {
    const [isEditing, setIsEditing] = useState(false);
-   const [resumeData, setResumeData] = useState(
-      typeof initialResumeContent === "string"
-         ? JSON.parse(initialResumeContent)
-         : initialResumeContent
-   );
-
+   const [resumeData, setResumeData] = useState(null);
    const [addedToCustom, setAddedToCustom] = useState(null);
 
    useEffect(() => {
-      // Update resumeData whenever refresh or initialResumeContent changes
-      setResumeData(
-         typeof initialResumeContent === "string"
-            ? JSON.parse(initialResumeContent)
-            : initialResumeContent
-      );
+      if (initialResumeContent) {
+         setResumeData(
+            typeof initialResumeContent === "string"
+               ? JSON.parse(initialResumeContent)
+               : initialResumeContent
+         );
+      }
    }, [initialResumeContent, refresh]);
 
    const handleEdit = (field, value) => {
@@ -109,22 +107,13 @@ const ResumePreview = ({
       );
    };
 
-   //Loader
    if (loading) {
       return (
          <div className="flex flex-col items-center justify-center h-64 space-y-4">
-            {/* Spinner */}
-            <div className="relative">
-               <div className="w-16 h-16 border-4 border-blue-400 border-t-transparent rounded-full animate-spin"></div>
-               <div className="absolute inset-0 flex items-center justify-center text-blue-400 text-sm font-bold"></div>
-            </div>
-
-            {/* Text */}
+            <Spinner className="w-16 h-16" />
             <p className="text-lg font-semibold text-blue-600 text-center">
-               ResumeOnFly is generating your resume, please hold on.
+               Generating your resume, please hold on.
             </p>
-
-            {/* Subtext */}
             <p className="text-sm text-gray-500 text-center">
                This process may take a few moments. We appreciate your patience!
             </p>
@@ -133,40 +122,27 @@ const ResumePreview = ({
    }
 
    return (
-      <div className="mt-4 space-y-4">
-         {/* <button
-            onClick={generateResume}
-            disabled={loading}
-            className="w-full bg-purple-600 hover:bg-purple-700 text-white py-2 px-4 rounded-lg font-bold text-sm"
-         >
-            {loading ? (
-               <div className="flex items-center justify-center gap-2">
-                  <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                  Generating Resume...
-               </div>
-            ) : (
-               "Generate Resume"
-            )}
-         </button> */}
-
+      <div className="space-y-4">
          {resumeData && (
             <div className="space-y-4">
                <div className="flex gap-4">
-                  <button
+                  <Button
                      onClick={() => setIsEditing(!isEditing)}
-                     className="flex-1 flex items-center justify-center gap-2 py-3 px-4 rounded-lg font-bold text-base bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-700 hover:to-indigo-600 text-white"
+                     className="flex-1 flex items-center justify-center gap-2"
+                     variant={isEditing ? "default" : "outline"}
                   >
                      {isEditing ? "Save Changes" : "Edit Resume"}
-                     <EditIcon size={16} /> {/* Add edit icon here */}
-                  </button>
+                     <Edit className="w-4 h-4" />
+                  </Button>
 
-                  <button
+                  <Button
                      onClick={downloadAsWord}
-                     className="flex-1 flex items-center justify-center gap-2 bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white py-3 px-4 rounded-lg font-bold text-base"
+                     className="flex-1 flex items-center justify-center gap-2"
+                     variant="outline"
                   >
-                     <Download size={16} />
+                     <Download className="w-4 h-4" />
                      Download as Word
-                  </button>
+                  </Button>
                </div>
 
                {/* PREVIEW */}
@@ -495,15 +471,15 @@ const ResumePreview = ({
                                  Certifications
                               </h2>
                               <ul className="list-disc ml-6">
-                                 {resumeData.certifications.map(
-                                    (cert, index) => (
-                                       <li key={index} className="mb-2">
-                                          <span className="font-semibold">
-                                             {cert}
-                                          </span>
-                                       </li>
-                                    )
-                                 )}
+                              {resumeData.certifications.map((cert, index) => (
+                                 <li key={index} className="mb-2">
+                                    <span className="font-semibold">
+                                       {typeof cert === "string"
+                                          ? cert
+                                          : cert.name || "Unnamed Certification"}
+                                    </span>
+                                 </li>
+                              ))}
                               </ul>
                            </div>
                         )}
@@ -515,18 +491,18 @@ const ResumePreview = ({
                               Projects
                            </h2>
                            <ul className="list-disc ml-6">
-                              {resumeData.projects.map((project, index) => (
-                                 <li key={index} className="mb-4">
-                                    <div className="flex flex-col">
-                                       <span className="font-semibold">
-                                          {project.name}
-                                       </span>
-                                       <span className="text-sm text-gray-600">
-                                          {project.description}
-                                       </span>
-                                    </div>
-                                 </li>
-                              ))}
+                           {resumeData.projects.map((project, index) => (
+                              <li key={index} className="mb-4">
+                                 <div className="flex flex-col">
+                                    <span className="font-semibold">
+                                       {project.name || "Unnamed Project"}
+                                    </span>
+                                    <span className="text-sm text-gray-600">
+                                       {project.description || "No description available"}
+                                    </span>
+                                 </div>
+                              </li>
+                           ))}
                            </ul>
                         </div>
                      )}
