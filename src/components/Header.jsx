@@ -1,7 +1,7 @@
 "use client";
-import { useSelector, useDispatch } from 'react-redux';
-import { logout } from '../store/slices/authSlice';
-import { clearFirebaseData } from '../store/slices/firebaseSlice';
+import { useSelector, useDispatch } from "react-redux";
+import { logout } from "../store/slices/authSlice";
+import { clearFirebaseData } from "../store/slices/firebaseSlice";
 import { auth } from "../services/firebase";
 import { LogOut } from "lucide-react";
 import Link from "next/link";
@@ -38,7 +38,7 @@ const Header = () => {
                </Link>
 
                {/* Navigation */}
-               <nav className="hidden md:flex items-center space-x-8">
+               {/* <nav className="hidden md:flex items-center space-x-8">
                   <Link
                      href="/templates"
                      className="text-slate-600 hover:text-slate-900"
@@ -57,7 +57,7 @@ const Header = () => {
                   >
                      About
                   </Link>
-               </nav>
+               </nav> */}
 
                {/* Auth Buttons and Quota Display */}
                {user ? (
@@ -85,18 +85,21 @@ const Header = () => {
                               {userQuota.subscription.type} Plan
                            </div>
                            <div className="text-xs text-slate-700 bg-white/80 px-3 py-1 rounded-full">
-                              Parsing: {userQuota.parsing.used}/{userQuota.parsing.limit}
+                              Parsing: {userQuota.parsing.used}/
+                              {userQuota.parsing.limit}
                            </div>
                            <div className="text-xs text-slate-700 bg-white/80 px-3 py-1 rounded-full">
-                              Downloads: {userQuota.downloads.used}/{userQuota.downloads.limit}
+                              Downloads: {userQuota.downloads.used}/
+                              {userQuota.downloads.limit}
                            </div>
                            <div className="text-xs text-slate-700 bg-white/80 px-3 py-1 rounded-full">
-                              Generates: {userQuota.generates.used}/{userQuota.generates.limit}
+                              Generates: {userQuota.generates.used}/
+                              {userQuota.generates.limit}
                            </div>
                         </div>
                      )}
                      <Button
-                        onClick={() => router.push('/userForm?edit=true')}
+                        onClick={() => router.push("/userForm?edit=true")}
                         className="bg-blue-600 hover:bg-blue-700 text-white"
                      >
                         Edit Details

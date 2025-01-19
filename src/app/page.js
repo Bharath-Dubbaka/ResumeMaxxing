@@ -106,8 +106,9 @@ export default function Home() {
                   AI-Powered Resume Builder
                </h1>
                <p className="text-slate-900 text-xl md:text-2xl max-w-2xl mx-auto">
-                  Create professional resumes in minutes with our advanced AI
-                  technology. Stand out from the crowd and land your dream job.
+                  Make this in typing style Create professional resumes in
+                  minutes with our advanced AI technology. Stand out from the
+                  crowd and land your dream job.
                </p>
                <div className="space-x-4">
                   <Button
