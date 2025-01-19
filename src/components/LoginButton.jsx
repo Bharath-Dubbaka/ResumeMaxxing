@@ -1,8 +1,7 @@
 "use client";
-import { useAuth } from "@/context/AuthContext";
-import { auth } from "@/services/firebase";
+import { auth } from "../services/firebase";
 import { GoogleAuthProvider, signInWithPopup } from "firebase/auth";
-import { QuotaService } from "@/services/QuotaService";
+import { QuotaService } from "../services/QuotaService";
 
 export default function LoginButton() {
    const handleGoogleLogin = async () => {

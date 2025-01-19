@@ -9,10 +9,7 @@ const initialState = {
 
 const firebaseSlice = createSlice({
    name: "firebase",
-   initialState: {
-      userQuota: null,
-      userDetails: null,
-   },
+   initialState,
    reducers: {
       setUserDetails: (state, action) => {
          state.userDetails = action.payload;

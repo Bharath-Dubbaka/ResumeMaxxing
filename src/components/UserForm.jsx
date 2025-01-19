@@ -1,11 +1,15 @@
-"use client";
 import { useState, useEffect } from "react";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "../components/ui/button";
+import { Input } from "../components/ui/input";
+import { Label } from "../components/ui/label";
+import {
+   Card,
+   CardContent,
+   CardHeader,
+   CardTitle,
+} from "../components/ui/card";
 import { PlusCircle, Save, Trash2, X } from "lucide-react";
 import {
    Select,
@@ -13,8 +17,8 @@ import {
    SelectItem,
    SelectTrigger,
    SelectValue,
-} from "@/components/ui/select";
-import { Spinner } from "@/components/ui/spinner";
+} from "../components/ui/select";
+import { Spinner } from "../components/ui/spinner";
 
 const UserForm = ({ onSave, onCancel, initialData }) => {
    const [isLoading, setIsLoading] = useState(false);

@@ -1,9 +1,9 @@
 "use client";
-import { Spinner } from "@/components/ui/spinner";
+import { Spinner } from "../../components/ui/spinner";
 import { useSelector } from "react-redux";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
-import JobDescriptionAnalyzer from "@/components/JobDescriptionAnalyzer";
+import JobDescriptionAnalyzer from "../../components/JobDescriptionAnalyzer";
 
 export default function DashboardPage() {
    const { user, loading } = useSelector((state) => state.auth);

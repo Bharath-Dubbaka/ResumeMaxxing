@@ -2,8 +2,8 @@
 
 import { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { setUserQuota } from "@/store/slices/firebaseSlice";
-import { QuotaService } from "@/services/QuotaService";
+import { setUserQuota } from "../store/slices/firebaseSlice";
+import { QuotaService } from "../services/QuotaService";
 
 const FirestoreSubscription = () => {
    const dispatch = useDispatch();

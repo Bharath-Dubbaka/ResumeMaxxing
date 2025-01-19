@@ -1,5 +1,5 @@
-import { GoogleGenerativeAI } from "@google/generative-ai";
-import { QuotaService } from "@/services/QuotaService";
+import { GoogleGenerativeAI } from "google/generative-ai";
+import { QuotaService } from "../../../services/QuotaService";
 
 const genAI = new GoogleGenerativeAI(process.env.GOOGLE_GEMINI_API_KEY);
 

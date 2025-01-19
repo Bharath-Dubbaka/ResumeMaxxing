@@ -1,11 +1,11 @@
 "use client";
-import UserForm from "@/components/UserForm";
+import UserForm from "../../components/UserForm";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
-import { UserDetailsService } from "@/services/UserDetailsService";
-import { Spinner } from "@/components/ui/spinner";
+import { UserDetailsService } from "../../services/UserDetailsService";
+import { Spinner } from "../../components/ui/spinner";
 import { useSelector, useDispatch } from "react-redux";
-import { setUserDetails } from "@/store/slices/firebaseSlice";
+import { setUserDetails } from "../../store/slices/firebaseSlice";
 
 export default function UserFormPage() {
    const { user, loading } = useSelector((state) => state.auth);

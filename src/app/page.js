@@ -1,18 +1,18 @@
 "use client";
-import { Button } from "@/components/ui/button";
+import { Button } from "../components/ui/button";
 import FeatureCard from "../components/ui/FeaturedCard";
 import VideoSection from "../components/ui/VideoSection";
 import Link from "next/link";
-import { auth } from "@/services/firebase";
+import { auth } from "../services/firebase";
 import { GoogleAuthProvider, signInWithPopup } from "firebase/auth";
-import { QuotaService } from "@/services/QuotaService";
-import { UserDetailsService } from "@/services/UserDetailsService";
+import { QuotaService } from "../services/QuotaService";
+import { UserDetailsService } from "../services/UserDetailsService";
 import { useRouter } from "next/navigation";
 import { useSelector, useDispatch } from "react-redux";
-import { setUser } from "@/store/slices/authSlice";
-import { setUserDetails, setUserQuota } from "@/store/slices/firebaseSlice";
+import { setUser } from "../store/slices/authSlice";
+import { setUserDetails, setUserQuota } from "../store/slices/firebaseSlice";
 import { useState } from "react";
-import { Spinner } from "@/components/ui/spinner";
+import { Spinner } from "../components/ui/spinner";
 import { useEffect } from "react";
 
 export default function Home() {

@@ -1,11 +1,16 @@
 "use client";
 import { useState } from "react";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Spinner } from "@/components/ui/spinner";
-import { Textarea } from "@/components/ui/textarea";
+import { Button } from "../components/ui/button";
+import {
+   Card,
+   CardContent,
+   CardHeader,
+   CardTitle,
+} from "../components/ui/card";
+import { Spinner } from "../components/ui/spinner";
+import { Textarea } from "../components/ui/textarea";
 import { useSelector } from "react-redux";
-import { QuotaService } from "@/services/QuotaService";
+import { QuotaService } from "../services/QuotaService";
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { JsonParser } from "jsonparse";
 

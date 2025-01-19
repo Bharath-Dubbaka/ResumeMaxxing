@@ -1,11 +1,11 @@
 "use client";
 import { useSelector, useDispatch } from 'react-redux';
-import { logout } from '@/store/slices/authSlice';
-import { clearFirebaseData } from '@/store/slices/firebaseSlice';
-import { auth } from "@/services/firebase";
+import { logout } from '../store/slices/authSlice';
+import { clearFirebaseData } from '../store/slices/firebaseSlice';
+import { auth } from "../services/firebase";
 import { LogOut } from "lucide-react";
 import Link from "next/link";
-import { Button } from "@/components/ui/button";
+import { Button } from "../components/ui/button";
 import { useRouter } from "next/navigation";
 
 const Header = () => {

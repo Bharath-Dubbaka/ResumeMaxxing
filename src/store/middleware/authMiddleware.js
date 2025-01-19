@@ -1,9 +1,9 @@
-import { auth } from "@/services/firebase";
+import { auth } from "../../services/firebase";
 import { onAuthStateChanged } from "firebase/auth";
 import { setUser, setLoading } from "../slices/authSlice";
 import { setUserDetails, setUserQuota } from "../slices/firebaseSlice";
-import { QuotaService } from "@/services/QuotaService";
-import { UserDetailsService } from "@/services/UserDetailsService";
+import { QuotaService } from "../../services/QuotaService";
+import { UserDetailsService } from "../../services/UserDetailsService";
 
 export const createAuthMiddleware = (store) => {
    onAuthStateChanged(auth, async (firebaseUser) => {
