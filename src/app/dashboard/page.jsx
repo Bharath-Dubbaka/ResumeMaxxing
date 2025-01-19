@@ -4,6 +4,7 @@ import { useSelector } from "react-redux";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 import JobDescriptionAnalyzer from "../../components/JobDescriptionAnalyzer";
+import ResumeGenerator from "../../components/ResumeGenerator";
 
 export default function DashboardPage() {
    const { user, loading } = useSelector((state) => state.auth);
@@ -29,6 +30,7 @@ export default function DashboardPage() {
          <div className="container py-8 mt-16 rounded-xl">
             <h1 className="text-3xl font-bold mb-8 ">- Dashboard</h1>
             <JobDescriptionAnalyzer />
+            <ResumeGenerator />
          </div>
       </div>
    );
