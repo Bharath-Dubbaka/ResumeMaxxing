@@ -7,7 +7,7 @@ import {
    CardTitle,
 } from "../components/ui/card";
 import { Spinner } from "../components/ui/spinner";
-import { useSelector } from "react-redux";
+import { useSelector, useDispatch } from "react-redux";
 import { QuotaService } from "../services/QuotaService";
 import OpenAI from "openai";
 import ResumePreview from "./ResumePreview";
@@ -27,27 +27,72 @@ const openai = new OpenAI({
    dangerouslyAllowBrowser: true,
 });
 
+const calculateTotalExperience = (experiences) => {
+   let totalMonths = 0;
+
+   experiences.forEach((exp) => {
+      if (exp.startDate && exp.endDate) {
+         const [startYear, startMonth] = exp.startDate.split("-").map(Number);
+         const [endYear, endMonth] = exp.endDate.split("-").map(Number);
+
+         // Calculate the total months between start and end dates
+         const months = (endYear - startYear) * 12 + (endMonth - startMonth);
+         const validMonths = Math.max(0, months); // Ensure no negative months
+         totalMonths += validMonths;
+      }
+   });
+
+   // Convert total months to years and round to 1 decimal place
+   return (totalMonths / 12).toFixed(1);
+};
+
+
+// Clean the JSON response to remove any extra text or formatting
+function cleanJsonResponse(response) {
+   try {
+      const jsonMatch = response.match(/{[\s\S]*}/);
+      if (jsonMatch) {
+         const cleanedJson = jsonMatch[0];
+         return JSON.stringify(JSON.parse(cleanedJson));
+      } else {
+         throw new Error("No valid JSON found in the response.");
+      }
+   } catch (error) {
+      console.error("Error cleaning JSON response:", error);
+      throw new Error("Failed to parse JSON from response.");
+   }
+      }
+
 const ResumeGenerator = () => {
+   const dispatch = useDispatch();
    const { user } = useSelector((state) => state.auth);
    const { userDetails } = useSelector((state) => state.firebase);
+   const { skills: technicalSkills } = useSelector((state) => state.skills);
    const [resumeContent, setResumeContent] = useState(null);
    const [loading, setLoading] = useState(false);
    const [refreshPreview, setRefreshPreview] = useState(false);
+
+   const totalExperience = userDetails?.experience 
+   ? calculateTotalExperience(userDetails.experience) 
+   : 0;
 
    const generateResponsibilities = async (
       experience,
       technicalSkills,
       skillMappings
    ) => {
-      const relevantSkills = technicalSkills.filter((skill) => {
-         const mapping = skillMappings.find((m) => m.skill === skill);
-         return mapping?.experienceMappings.includes(experience.title);
-      });
+
+      // const relevantSkills = technicalSkills.filter((skill) => {
+      //    const mapping = skillMappings.find((m) => m.skill === skill);
+      //    return mapping?.experienceMappings.includes(experience.title);
+      // });
+console.log(technicalSkills, "technicalSkillsINRES");
+console.log(experience, "experienceINRES");
 
       const prompt =
          experience.responsibilityType === "skillBased"
             ? `Generate EXACTLY 8 detailed technical responsibilities that:
-         1. Use ONLY these technical skills: ${relevantSkills.join(", ")}
+         1. Use ONLY these technical skills: ${technicalSkills.join(", ")}
          2. MUST NOT mention or reference the job title
          3. Focus purely on technical implementation and achievements
          4. Each responsibility should demonstrate hands-on technical work
@@ -88,6 +133,9 @@ const ResumeGenerator = () => {
       technicalSkills,
       latestRole
    ) => {
+      console.log(technicalSkills, "technicalSkillsINSUMM");
+      console.log(latestRole, "latestRoleINSUMM");
+      console.log(totalExperience, "totalExperienceINSUMM");
       const prompt = `Generate a detailed professional summary that:
       1. Highlights ${totalExperience} years of total experience
       2. Incorporates key technical skills: ${technicalSkills.join(", ")}
@@ -134,11 +182,7 @@ const ResumeGenerator = () => {
 
       setLoading(true);
       try {
-         // Here you would integrate with your job description analysis to get technical skills
-         // For now using placeholder data
-         const technicalSkills = ["React", "JavaScript", "Node.js"];
-         const totalExperience = "5";
-
+         // Generate responsibilities for each experience separately
          const generatedResponsibilities = await Promise.all(
             userDetails.experience.map((exp) =>
                generateResponsibilities(exp, technicalSkills, [])
@@ -198,11 +242,22 @@ const ResumeGenerator = () => {
          return; // Exit the function if no quota
       }
 
+         // Clean and validate the response
+         const cleanedContent = cleanJsonResponse(
+            JSON.stringify(resumeContent)
+         );
+         const resumeData = JSON.parse(cleanedContent);
+
       // Directly use the resumeContent assuming it is already cleaned
       // console.log(resumeContent, "ResumeContent inside downloadAsWord");
-      const resumeData = JSON.parse(resumeContent); // resumeContent is now used directly without cleaning
+      // const resumeData = JSON.parse(resumeContent); 
       // console.log(resumeData, "after json  inside downloadAsWord");
       try {
+          // If resumeContent is a string, parse it; if it's an object, use it directly
+          const resumeData = typeof resumeContent === 'string' 
+          ? JSON.parse(cleanJsonResponse(resumeContent))
+          : resumeContent;
+          
          const doc = new Document({
             sections: [
                {

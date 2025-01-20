@@ -48,14 +48,7 @@ const ResumePreview = ({
          [field]: value,
       };
       setResumeData(updatedData);
-
-      try {
-         const jsonString = JSON.stringify(updatedData);
-         const cleanedJson = cleanJsonResponse(jsonString);
-         onUpdate(cleanedJson);
-      } catch (error) {
-         console.error("Error processing resume data:", error);
-      }
+      onUpdate(updatedData);
    };
 
    const handleExperienceEdit = (expIndex, field, value) => {

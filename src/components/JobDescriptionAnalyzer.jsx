@@ -9,14 +9,16 @@ import {
 } from "../components/ui/card";
 import { Spinner } from "../components/ui/spinner";
 import { Textarea } from "../components/ui/textarea";
-import { useSelector } from "react-redux";
+import { useSelector, useDispatch } from "react-redux";
 import { QuotaService } from "../services/QuotaService";
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { JsonParser } from "jsonparse";
+import { setSkills } from "../store/slices/skillsSlice";
+
 
 const genAI = new GoogleGenerativeAI(
    process.env.NEXT_PUBLIC_GOOGLE_GEMINI_API_KEY
-);
+); 
 
 export default function JobDescriptionAnalyzer() {
    const { user } = useSelector((state) => state.auth);
@@ -24,6 +26,7 @@ export default function JobDescriptionAnalyzer() {
    const [jobDescription, setJobDescription] = useState("");
    const [isAnalyzing, setIsAnalyzing] = useState(false);
    const [analysis, setAnalysis] = useState(null);
+   const dispatch = useDispatch();
 
    const analyzeJobDescription = async () => {
       setIsAnalyzing(true);
@@ -91,8 +94,9 @@ export default function JobDescriptionAnalyzer() {
 
          const analysisResult = JSON.parse(jsonMatch[0]);
          setAnalysis(analysisResult);
-
+         dispatch(setSkills(analysisResult.technicalSkills)); // Instead of dispatch(analysisResult.skills)
          await QuotaService.incrementUsage(user.uid, "parsing");
+         console.log(analysisResult, "analysisResultfromANAlyser");
          return analysisResult;
       } catch (error) {
          console.error("Analysis of JD error:", error);
