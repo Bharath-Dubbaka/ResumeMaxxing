@@ -11,6 +11,8 @@ import { useSelector, useDispatch } from "react-redux";
 import { QuotaService } from "../services/QuotaService";
 import OpenAI from "openai";
 import ResumePreview from "./ResumePreview";
+import { UserDetailsService } from "../services/UserDetailsService";
+import { setUserDetails } from "../store/slices/firebaseSlice";
 import {
    Document,
    Packer,
@@ -76,28 +78,20 @@ const ResumeGenerator = () => {
    ? calculateTotalExperience(userDetails.experience) 
    : 0;
 
-   const generateResponsibilities = async (
-      experience,
-      technicalSkills,
-      skillMappings
-   ) => {
+   const generateResponsibilities = async (experience, technicalSkills) => {
 
-      // const relevantSkills = technicalSkills.filter((skill) => {
-      //    const mapping = skillMappings.find((m) => m.skill === skill);
-      //    return mapping?.experienceMappings.includes(experience.title);
-      // });
-console.log(technicalSkills, "technicalSkillsINRES");
-console.log(experience, "experienceINRES");
+      console.log(technicalSkills, "technicalSkillsINRES");
+      console.log(experience, "experienceINRES");
 
       const prompt =
          experience.responsibilityType === "skillBased"
-            ? `Generate EXACTLY 8 detailed technical responsibilities that:
+         ? `Generate EXACTLY 8 detailed technical responsibilities that:
          1. Use ONLY these technical skills: ${technicalSkills.join(", ")}
          2. MUST NOT mention or reference the job title
          3. Focus purely on technical implementation and achievements
          4. Each responsibility should demonstrate hands-on technical work
          Return ONLY an array of 8 responsibilities in JSON format.`
-            : `Generate EXACTLY 8 detailed responsibilities that:
+         : `Generate EXACTLY 8 detailed responsibilities that:
          1. Are specific to the role of ${experience.title}
          2. MUST NOT mention any technical skills
          3. Focus on business impact and role-specific achievements
@@ -183,12 +177,13 @@ console.log(experience, "experienceINRES");
       setLoading(true);
       try {
          // Generate responsibilities for each experience separately
-         const generatedResponsibilities = await Promise.all(
+         const generatedExperiences = await Promise.all(
             userDetails.experience.map((exp) =>
-               generateResponsibilities(exp, technicalSkills, [])
+               generateResponsibilities(exp, technicalSkills)
             )
          );
 
+         // Get latest role for professional summary
          const latestRole = userDetails.experience[0]?.title || "Professional";
          const generatedSummary = await generateProfessionalSummary(
             totalExperience,
@@ -196,19 +191,19 @@ console.log(experience, "experienceINRES");
             latestRole
          );
 
-         const resumeContent = {
+         // Create the complete resume content
+         const newResumeContent = {
             fullName: userDetails.fullName,
             contactInformation: `${userDetails.email} | ${userDetails.phone}`,
             professionalSummary: generatedSummary,
             technicalSkills: technicalSkills.join(", "),
             professionalExperience: userDetails.experience.map(
                (exp, index) => ({
-                  title: exp.title,
-                  employer: exp.employer,
-                  startDate: exp.startDate,
-                  endDate: exp.endDate,
-                  location: exp.location,
-                  responsibilities: generatedResponsibilities[index],
+                  ...exp,
+                  responsibilities: [
+                     ...generatedExperiences[index], // Use generatedExperiences here
+                     ...(exp.customResponsibilities || [])
+                  ]
                })
             ),
             education: userDetails.education || [],
@@ -216,48 +211,86 @@ console.log(experience, "experienceINRES");
             projects: userDetails.projects || [],
          };
 
-         setResumeContent(resumeContent);
-         setRefreshPreview(!refreshPreview);
+         setResumeContent(newResumeContent);
+         setRefreshPreview((prev) => !prev);
 
          await QuotaService.incrementUsage(user.uid, "generates");
       } catch (error) {
          console.error("Error generating resume:", error);
-         alert("Error generating resume content. Please try again.");
+         alert("Failed to generate resume. Please try again.");
       } finally {
          setLoading(false);
       }
    };
 
    const handleSaveCustomResponsibility = async (expIndex, responsibility) => {
-      // Implement your custom responsibility saving logic here
-      // This could involve updating Firebase or your backend
-      console.log("Saving custom responsibility:", { expIndex, responsibility });
+      try {
+         if (!user?.uid) {
+            alert("Please login to save custom responsibilities");
+            return;
+         }
+
+         // Get current experience
+         const experience = userDetails.experience[expIndex];
+         
+         // Check if responsibility already exists
+         if (experience?.customResponsibilities?.includes(responsibility)) {
+            alert("This responsibility is already saved!");
+            return;
+         }
+
+         // Create new array with existing and new responsibilities
+         const updatedCustomResponsibilities = [
+            ...(experience.customResponsibilities || []),
+            responsibility
+         ];
+
+         // Update the experience array
+         const updatedExperiences = [...userDetails.experience];
+         updatedExperiences[expIndex] = {
+            ...experience,
+            customResponsibilities: updatedCustomResponsibilities
+         };
+
+         // Create updated user details
+         const updatedUserDetails = {
+            ...userDetails,
+            experience: updatedExperiences
+         };
+
+         // Save to Firestore
+         await UserDetailsService.saveUserDetails(user.uid, updatedUserDetails);
+         
+         // Update Redux store with the correct action
+         dispatch(setUserDetails(updatedUserDetails));
+
+         // Show success message
+         alert("Responsibility saved successfully!");
+
+      } catch (error) {
+         console.error("Error saving custom responsibility:", error);
+         alert("Failed to save responsibility. Please try again.");
+      }
    };
 
    const downloadAsWord = async () => {
       // Check quota before proceeding
       const hasQuota = await QuotaService.checkQuota(user?.uid, "downloads");
       if (!hasQuota) {
-         alert("Download quota exceeded. Please upgrade your plan."); // Alert for user feedback
-         return; // Exit the function if no quota
+         alert("Download quota exceeded. Please upgrade your plan.");
+         return;
       }
 
-         // Clean and validate the response
-         const cleanedContent = cleanJsonResponse(
-            JSON.stringify(resumeContent)
-         );
-         const resumeData = JSON.parse(cleanedContent);
-
-      // Directly use the resumeContent assuming it is already cleaned
-      // console.log(resumeContent, "ResumeContent inside downloadAsWord");
-      // const resumeData = JSON.parse(resumeContent); 
-      // console.log(resumeData, "after json  inside downloadAsWord");
       try {
-          // If resumeContent is a string, parse it; if it's an object, use it directly
-          const resumeData = typeof resumeContent === 'string' 
-          ? JSON.parse(cleanJsonResponse(resumeContent))
-          : resumeContent;
-          
+         // If resumeContent is a string, parse it; if it's an object, use it directly
+         const resumeData = typeof resumeContent === 'string' 
+            ? JSON.parse(cleanJsonResponse(resumeContent))
+            : resumeContent;
+
+         if (!resumeData || !resumeData.professionalExperience) {
+            throw new Error("Invalid resume data");
+         }
+
          const doc = new Document({
             sections: [
                {

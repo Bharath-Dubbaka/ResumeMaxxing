@@ -21,7 +21,6 @@ const cleanJsonResponse = (response) => {
 const ResumePreview = ({
    initialResumeContent,
    onUpdate,
-   //    generateResume,
    downloadAsWord,
    refresh,
    loading,
@@ -30,17 +29,23 @@ const ResumePreview = ({
 }) => {
    const [isEditing, setIsEditing] = useState(false);
    const [resumeData, setResumeData] = useState(null);
-   const [addedToCustom, setAddedToCustom] = useState(null);
+   const [savedResponsibilities, setSavedResponsibilities] = useState({});
 
    useEffect(() => {
-      if (initialResumeContent) {
-         setResumeData(
-            typeof initialResumeContent === "string"
-               ? JSON.parse(initialResumeContent)
-               : initialResumeContent
-         );
-      }
-   }, [initialResumeContent, refresh]);
+      const newResumeData = typeof initialResumeContent === "string"
+         ? JSON.parse(initialResumeContent)
+         : initialResumeContent;
+      
+      setResumeData(newResumeData);
+
+      const savedMap = {};
+      userDetails?.experience?.forEach((exp, expIndex) => {
+         exp.customResponsibilities?.forEach(resp => {
+            savedMap[`${expIndex}-${resp}`] = true;
+         });
+      });
+      setSavedResponsibilities(savedMap);
+   }, [initialResumeContent, refresh, userDetails]);
 
    const handleEdit = (field, value) => {
       const updatedData = {
@@ -48,7 +53,12 @@ const ResumePreview = ({
          [field]: value,
       };
       setResumeData(updatedData);
-      onUpdate(updatedData);
+      try {
+         const jsonString = JSON.stringify(updatedData);
+         onUpdate(jsonString);
+      } catch (error) {
+         console.error("Error processing resume data:", error);
+      }
    };
 
    const handleExperienceEdit = (expIndex, field, value) => {
@@ -86,18 +96,25 @@ const ResumePreview = ({
       handleEdit("professionalExperience", updatedExperience);
    };
 
-   const handleSaveToCustom = (expIndex, responsibility) => {
-      onSaveCustomResponsibility(expIndex, responsibility);
-      setAddedToCustom({ expIndex, resp: responsibility });
-      setTimeout(() => setAddedToCustom(null), 2000);
-   };
+   const handleSaveToCustom = async (expIndex, responsibility) => {
+      if (savedResponsibilities[`${expIndex}-${responsibility}`]) {
+         alert("This responsibility is already saved!");
+         return;
+      }
 
-   // Function to check if responsibility is already in custom list
-   const isResponsibilityInCustom = (expIndex, responsibility) => {
-      const experience = userDetails.experience[expIndex];
-      return (
-         experience.customResponsibilities?.includes(responsibility) || false
-      );
+      try {
+      await onSaveCustomResponsibility(expIndex, responsibility);
+      
+      setSavedResponsibilities(prev => ({
+         ...prev,
+         [`${expIndex}-${responsibility}`]: true
+      }));
+      // Show success message
+      alert("Responsibility saved successfully!");
+   } catch (error) {
+      console.error("Error saving responsibility:", error);
+      alert("Failed to save responsibility. Please try again.");
+   }
    };
 
    if (loading) {
@@ -114,356 +131,353 @@ const ResumePreview = ({
       );
    }
 
+   if (!resumeData) return null;
+
    return (
       <div className="space-y-4">
-         {resumeData && (
-            <div className="space-y-4">
-               <div className="flex gap-4">
-                  <Button
-                     onClick={() => setIsEditing(!isEditing)}
-                     className="flex-1 flex items-center justify-center gap-2"
-                     variant={isEditing ? "default" : "outline"}
-                  >
-                     {isEditing ? "Save Changes" : "Edit Resume"}
-                     <Edit className="w-4 h-4" />
-                  </Button>
+         <div className="space-y-4">
+            <div className="flex gap-4">
+               <Button
+                  onClick={() => setIsEditing(!isEditing)}
+                  className="flex-1 flex items-center justify-center gap-2"
+                  variant={isEditing ? "default" : "outline"}
+               >
+                  {isEditing ? "Save Changes" : "Edit Resume"}
+                  <Edit className="w-4 h-4" />
+               </Button>
 
-                  <Button
-                     onClick={downloadAsWord}
-                     className="flex-1 flex items-center justify-center gap-2"
-                     variant="outline"
-                  >
-                     <Download className="w-4 h-4" />
-                     Download as Word
-                  </Button>
-               </div>
+               <Button
+                  onClick={downloadAsWord}
+                  className="flex-1 flex items-center justify-center gap-2"
+                  variant="outline"
+               >
+                  <Download className="w-4 h-4" />
+                  Download as Word
+               </Button>
+            </div>
 
-               {/* PREVIEW */}
-               <div className="bg-white text-black p-8 rounded-lg max-h-[600px] overflow-y-auto">
-                  <div className="space-y-6">
-                     {/* Header Section */}
-                     <div className="text-center space-y-2">
-                        <h1 className="text-2xl font-bold">
-                           {isEditing ? (
-                              <input
-                                 type="text"
-                                 value={resumeData.fullName}
-                                 onChange={(e) =>
-                                    handleEdit("fullName", e.target.value)
-                                 }
-                                 className="w-full text-center border rounded p-1"
-                              />
-                           ) : (
-                              resumeData.fullName
-                           )}
-                        </h1>
-                        <p className="text-gray-600">
-                           {isEditing ? (
-                              <input
-                                 type="text"
-                                 value={resumeData.contactInformation}
-                                 onChange={(e) =>
-                                    handleEdit(
-                                       "contactInformation",
-                                       e.target.value
-                                    )
-                                 }
-                                 className="w-full text-center border rounded p-1"
-                              />
-                           ) : (
-                              resumeData.contactInformation
-                           )}
-                        </p>
-                     </div>
-
-                     {/* Professional Summary */}
-                     <div>
-                        <h2 className="text-xl font-bold border-b-2 mb-2">
-                           Professional Summary
-                        </h2>
+            {/* PREVIEW */}
+            <div className="bg-white text-black p-8 rounded-lg max-h-[600px] overflow-y-auto">
+               <div className="space-y-6">
+                  {/* Header Section */}
+                  <div className="text-center space-y-2">
+                     <h1 className="text-2xl font-bold">
                         {isEditing ? (
-                           <textarea
-                              value={resumeData.professionalSummary}
+                           <input
+                              type="text"
+                              value={resumeData.fullName}
+                              onChange={(e) =>
+                                 handleEdit("fullName", e.target.value)
+                              }
+                              className="w-full text-center border rounded p-1"
+                           />
+                        ) : (
+                           resumeData.fullName
+                        )}
+                     </h1>
+                     <p className="text-gray-600">
+                        {isEditing ? (
+                           <input
+                              type="text"
+                              value={resumeData.contactInformation}
                               onChange={(e) =>
                                  handleEdit(
-                                    "professionalSummary",
+                                    "contactInformation",
                                     e.target.value
                                  )
                               }
-                              className="w-full border rounded p-2"
-                              rows={4}
+                              className="w-full text-center border rounded p-1"
                            />
                         ) : (
-                           <p className="text-sm">
-                              {resumeData.professionalSummary}
-                           </p>
+                           resumeData.contactInformation
                         )}
-                     </div>
+                     </p>
+                  </div>
 
-                     {/* Technical Skills */}
-                     <div>
-                        <h2 className="text-xl font-bold border-b-2 mb-2">
-                           Technical Skills
-                        </h2>
-                        {isEditing ? (
-                           <textarea
-                              value={resumeData.technicalSkills}
-                              onChange={(e) =>
-                                 handleEdit("technicalSkills", e.target.value)
-                              }
-                              className="w-full border rounded p-2"
-                              rows={2}
-                           />
-                        ) : (
-                           <p className="text-sm">
-                              {resumeData.technicalSkills}
-                           </p>
-                        )}
-                     </div>
+                  {/* Professional Summary */}
+                  <div>
+                     <h2 className="text-xl font-bold border-b-2 mb-2">
+                        Professional Summary
+                     </h2>
+                     {isEditing ? (
+                        <textarea
+                           value={resumeData.professionalSummary}
+                           onChange={(e) =>
+                              handleEdit(
+                                 "professionalSummary",
+                                 e.target.value
+                              )
+                           }
+                           className="w-full border rounded p-2"
+                           rows={4}
+                        />
+                     ) : (
+                        <p className="text-sm">
+                           {resumeData.professionalSummary}
+                        </p>
+                     )}
+                  </div>
 
-                     {/* Professional Experience */}
-                     <div>
-                        <h2 className="text-xl font-bold border-b-2 mb-2">
-                           Professional Experience
-                        </h2>
-                        {resumeData.professionalExperience.map(
-                           (exp, expIndex) => (
-                              <div key={expIndex} className="mb-4">
-                                 <div className="flex justify-between items-start">
-                                    <div>
-                                       {isEditing ? (
-                                          <div className="space-y-2">
-                                             <input
-                                                type="text"
-                                                value={exp.title}
-                                                onChange={(e) =>
-                                                   handleExperienceEdit(
-                                                      expIndex,
-                                                      "title",
-                                                      e.target.value
-                                                   )
-                                                }
-                                                className="w-full border rounded p-1 font-bold"
-                                             />
-                                             <input
-                                                type="text"
-                                                value={exp.employer}
-                                                onChange={(e) =>
-                                                   handleExperienceEdit(
-                                                      expIndex,
-                                                      "employer",
-                                                      e.target.value
-                                                   )
-                                                }
-                                                className="w-full border rounded p-1"
-                                             />
-                                             <input
-                                                type="text"
-                                                value={exp.location || ""}
-                                                onChange={(e) =>
-                                                   handleExperienceEdit(
-                                                      expIndex,
-                                                      "location",
-                                                      e.target.value
-                                                   )
-                                                }
-                                                className="w-full border rounded p-1"
-                                                placeholder="Location (optional)"
-                                             />
-                                          </div>
-                                       ) : (
-                                          <>
-                                             <h3 className="font-bold">
-                                                {exp.title}
-                                             </h3>
-                                             <p className="text-sm">
-                                                {exp.employer}
-                                                {/* Display Location if available */}
-                                                {exp.location &&
-                                                   `, ${exp.location}`}
-                                             </p>
-                                          </>
-                                       )}
-                                    </div>
+                  {/* Technical Skills */}
+                  <div>
+                     <h2 className="text-xl font-bold border-b-2 mb-2">
+                        Technical Skills
+                     </h2>
+                     {isEditing ? (
+                        <textarea
+                           value={resumeData.technicalSkills}
+                           onChange={(e) =>
+                              handleEdit("technicalSkills", e.target.value)
+                           }
+                           className="w-full border rounded p-2"
+                           rows={2}
+                        />
+                     ) : (
+                        <p className="text-sm">
+                           {resumeData.technicalSkills}
+                        </p>
+                     )}
+                  </div>
+
+                  {/* Professional Experience */}
+                  <div>
+                     <h2 className="text-xl font-bold border-b-2 mb-2">
+                        Professional Experience
+                     </h2>
+                     {resumeData.professionalExperience.map(
+                        (exp, expIndex) => (
+                           <div key={expIndex} className="mb-4">
+                              <div className="flex justify-between items-start">
+                                 <div>
                                     {isEditing ? (
-                                       <div className="space-x-2">
+                                       <div className="space-y-2">
                                           <input
                                              type="text"
-                                             value={exp.startDate}
+                                             value={exp.title}
                                              onChange={(e) =>
                                                 handleExperienceEdit(
                                                    expIndex,
-                                                   "startDate",
+                                                   "title",
                                                    e.target.value
                                                 )
                                              }
-                                             className="w-24 border rounded p-1 text-sm"
+                                             className="w-full border rounded p-1 font-bold"
                                           />
-                                          <span>-</span>
                                           <input
                                              type="text"
-                                             value={exp.endDate}
+                                             value={exp.employer}
                                              onChange={(e) =>
                                                 handleExperienceEdit(
                                                    expIndex,
-                                                   "endDate",
+                                                   "employer",
                                                    e.target.value
                                                 )
                                              }
-                                             className="w-24 border rounded p-1 text-sm"
+                                             className="w-full border rounded p-1"
+                                          />
+                                          <input
+                                             type="text"
+                                             value={exp.location || ""}
+                                             onChange={(e) =>
+                                                handleExperienceEdit(
+                                                   expIndex,
+                                                   "location",
+                                                   e.target.value
+                                                )
+                                             }
+                                             className="w-full border rounded p-1"
+                                             placeholder="Location (optional)"
                                           />
                                        </div>
                                     ) : (
-                                       <p className="text-sm text-gray-600">
-                                          {exp.startDate} - {exp.endDate}
-                                       </p>
+                                       <>
+                                          <h3 className="font-bold">
+                                             {exp.title}
+                                          </h3>
+                                          <p className="text-sm">
+                                             {exp.employer}
+                                             {/* Display Location if available */}
+                                             {exp.location &&
+                                                `, ${exp.location}`}
+                                          </p>
+                                       </>
                                     )}
                                  </div>
-                                 <div>
-                                    <ul className="list-disc ml-6 mt-2">
-                                       {exp.responsibilities
-                                          .filter(
-                                             (resp) =>
-                                                isEditing || resp.trim() !== ""
-                                          )
-                                          .map((resp, respIndex) => (
-                                             <li
-                                                key={respIndex}
-                                                className={`text-sm mb-1 group flex items-start gap-2 ${
-                                                   isEditing
-                                                      ? "list-none"
-                                                      : "list-disc"
-                                                } ${
-                                                   addedToCustom &&
-                                                   addedToCustom.resp === resp
-                                                      ? "bg-green-100"
-                                                      : ""
-                                                } hover:bg-gray-200`}
-                                             >
-                                                {isEditing ? (
+                                 {isEditing ? (
+                                    <div className="space-x-2">
+                                       <input
+                                          type="text"
+                                          value={exp.startDate}
+                                          onChange={(e) =>
+                                             handleExperienceEdit(
+                                                expIndex,
+                                                "startDate",
+                                                e.target.value
+                                             )
+                                          }
+                                          className="w-24 border rounded p-1 text-sm"
+                                       />
+                                       <span>-</span>
+                                       <input
+                                          type="text"
+                                          value={exp.endDate}
+                                          onChange={(e) =>
+                                             handleExperienceEdit(
+                                                expIndex,
+                                                "endDate",
+                                                e.target.value
+                                             )
+                                          }
+                                          className="w-24 border rounded p-1 text-sm"
+                                       />
+                                    </div>
+                                 ) : (
+                                    <p className="text-sm text-gray-600">
+                                       {exp.startDate} - {exp.endDate}
+                                    </p>
+                                 )}
+                              </div>
+                              <div>
+                                 <ul className="list-disc ml-6 mt-2">
+                                    {exp.responsibilities
+                                       .filter(
+                                          (resp) =>
+                                             isEditing || resp.trim() !== ""
+                                       )
+                                       .map((resp, respIndex) => (
+                                          <li
+                                             key={respIndex}
+                                             className={`text-sm mb-1 group flex items-start gap-2 ${
+                                                isEditing
+                                                   ? "list-none"
+                                                   : "list-disc"
+                                             } ${
+                                                savedResponsibilities[`${expIndex}-${resp}`]
+                                                   ? "bg-green-100"
+                                                   : ""
+                                             } hover:bg-gray-200`}
+                                          >
+                                             {isEditing ? (
+                                                <div className="flex-1 flex items-start gap-2">
                                                    <div className="flex-1 flex items-start gap-2">
-                                                      <div className="flex-1 flex items-start gap-2">
-                                                         <span className="mt-2">
-                                                            •
-                                                         </span>
-                                                         <textarea
-                                                            value={resp}
-                                                            onChange={(e) =>
-                                                               handleResponsibilityEdit(
-                                                                  expIndex,
-                                                                  respIndex,
-                                                                  e.target.value
-                                                               )
-                                                            }
-                                                            className="w-full border rounded p-2 min-h-[60px]"
-                                                         />
-                                                      </div>
-                                                      <button
-                                                         onClick={() => {
-                                                            const updatedExperience =
-                                                               [
-                                                                  ...resumeData.professionalExperience,
-                                                               ];
+                                                      <span className="mt-2">
+                                                         •
+                                                      </span>
+                                                      <textarea
+                                                         value={resp}
+                                                         onChange={(e) =>
+                                                            handleResponsibilityEdit(
+                                                               expIndex,
+                                                               respIndex,
+                                                               e.target.value
+                                                            )
+                                                         }
+                                                         className="w-full border rounded p-2 min-h-[60px]"
+                                                      />
+                                                   </div>
+                                                   <button
+                                                      onClick={() => {
+                                                         const updatedExperience =
+                                                            [
+                                                               ...resumeData.professionalExperience,
+                                                            ];
+                                                         updatedExperience[
+                                                            expIndex
+                                                         ].responsibilities =
                                                             updatedExperience[
                                                                expIndex
-                                                            ].responsibilities =
-                                                               updatedExperience[
-                                                                  expIndex
-                                                               ].responsibilities.filter(
-                                                                  (_, idx) =>
-                                                                     idx !==
-                                                                     respIndex
+                                                            ].responsibilities.filter(
+                                                               (_, idx) =>
+                                                                  idx !==
+                                                                  respIndex
                                                                );
-                                                            handleEdit(
-                                                               "professionalExperience",
-                                                               updatedExperience
-                                                            );
-                                                         }}
-                                                         className="text-red-500 hover:text-red-700 p-1"
+                                                         handleEdit(
+                                                            "professionalExperience",
+                                                            updatedExperience
+                                                         );
+                                                      }}
+                                                      className="text-red-500 hover:text-red-700 p-1"
+                                                   >
+                                                      <span className="sr-only">
+                                                         Delete
+                                                      </span>
+                                                      ×
+                                                   </button>
+                                                </div>
+                                             ) : (
+                                                <div className="flex items-start justify-between w-full gap-2">
+                                                   <div className="flex items-start gap-2">
+                                                      <span>•</span>
+                                                      <span>{resp}</span>
+                                                   </div>
+                                                   {savedResponsibilities[`${expIndex}-${resp}`] ? (
+                                                      <span className="opacity-0 group-hover:opacity-100 text-xs bg-gray-600 text-white px-2 py-1 rounded transition-all">
+                                                         Saved in Custom
+                                                      </span>
+                                                   ) : (
+                                                      <button
+                                                         onClick={() =>
+                                                            handleSaveToCustom(
+                                                               expIndex,
+                                                               resp
+                                                            )
+                                                         }
+                                                         className="opacity-0 group-hover:opacity-100 text-xs bg-green-600 text-white px-2 py-1 rounded hover:bg-green-700 transition-all"
                                                       >
-                                                         <span className="sr-only">
-                                                            Delete
-                                                         </span>
-                                                         ×
+                                                         Save to Custom
                                                       </button>
-                                                   </div>
-                                                ) : (
-                                                   <div className="flex items-start justify-between w-full gap-2">
-                                                      <div className="flex items-start gap-2">
-                                                         <span>•</span>
-                                                         <span>{resp}</span>
-                                                      </div>
-                                                      {isResponsibilityInCustom(
-                                                         expIndex,
-                                                         resp
-                                                      ) ? (
-                                                         <span className="opacity-0 group-hover:opacity-100 text-xs bg-gray-600 text-white px-2 py-1 rounded transition-all">
-                                                            Saved in Custom
-                                                         </span>
-                                                      ) : (
-                                                         <button
-                                                            onClick={() =>
-                                                               handleSaveToCustom(
-                                                                  expIndex,
-                                                                  resp
-                                                               )
-                                                            }
-                                                            className="opacity-0 group-hover:opacity-100 text-xs bg-green-600 text-white px-2 py-1 rounded hover:bg-green-700 transition-all"
-                                                         >
-                                                            Save to Custom
-                                                         </button>
-                                                      )}
-                                                   </div>
-                                                )}
-                                             </li>
-                                          ))}
-                                    </ul>
+                                                   )}
+                                                </div>
+                                             )}
+                                          </li>
+                                       ))}
+                                 </ul>
 
-                                    {/* Add new responsibility button */}
-                                    {isEditing && (
-                                       <button
-                                          onClick={() =>
-                                             handleAddResponsibility(expIndex)
-                                          }
-                                          className="mt-2 ml-6 text-sm text-blue-600 hover:text-blue-800 flex items-center gap-1"
-                                       >
-                                          <span>+</span> Add New Responsibility
-                                       </button>
-                                    )}
-                                 </div>
+                                 {/* Add new responsibility button */}
+                                 {isEditing && (
+                                    <button
+                                       onClick={() =>
+                                          handleAddResponsibility(expIndex)
+                                       }
+                                       className="mt-2 ml-6 text-sm text-blue-600 hover:text-blue-800 flex items-center gap-1"
+                                    >
+                                       <span>+</span> Add New Responsibility
+                                    </button>
+                                 )}
                               </div>
-                           )
-                        )}
-                     </div>
-
-                     {/* Education */}
-                     {resumeData.education &&
-                        resumeData.education.length > 0 && (
-                           <div className="mt-6">
-                              <h2 className="text-xl font-bold mb-4 border-b-2">
-                                 Education
-                              </h2>
-                              <ul className="list-disc ml-6">
-                                 {resumeData.education.map((edu, index) => (
-                                    <li key={index} className="mb-2">
-                                       <span className="font-semibold">
-                                          {edu.degree}
-                                       </span>{" "}
-                                       - {edu.institution}, {edu.year}
-                                    </li>
-                                 ))}
-                              </ul>
                            </div>
-                        )}
+                        )
+                     )}
+                  </div>
 
-                     {/* Certifications Section */}
-                     {resumeData.certifications &&
-                        resumeData.certifications.length > 0 && (
-                           <div className="mt-6">
-                              <h2 className="text-xl font-bold mb-4 border-b-2">
-                                 Certifications
-                              </h2>
-                              <ul className="list-disc ml-6">
+                  {/* Education */}
+                  {resumeData.education &&
+                     resumeData.education.length > 0 && (
+                        <div className="mt-6">
+                           <h2 className="text-xl font-bold mb-4 border-b-2">
+                              Education
+                           </h2>
+                           <ul className="list-disc ml-6">
+                              {resumeData.education.map((edu, index) => (
+                                 <li key={index} className="mb-2">
+                                    <span className="font-semibold">
+                                       {edu.degree}
+                                    </span>{" "}
+                                    - {edu.institution}, {edu.year}
+                                 </li>
+                              ))}
+                           </ul>
+                        </div>
+                     )}
+
+                  {/* Certifications Section */}
+                  {resumeData.certifications &&
+                     resumeData.certifications.length > 0 && (
+                        <div className="mt-6">
+                           <h2 className="text-xl font-bold mb-4 border-b-2">
+                              Certifications
+                           </h2>
+                           <ul className="list-disc ml-6">
                               {resumeData.certifications.map((cert, index) => (
                                  <li key={index} className="mb-2">
                                     <span className="font-semibold">
@@ -473,17 +487,17 @@ const ResumePreview = ({
                                     </span>
                                  </li>
                               ))}
-                              </ul>
-                           </div>
-                        )}
+                           </ul>
+                        </div>
+                     )}
 
-                     {/* Projects Section */}
-                     {resumeData.projects && resumeData.projects.length > 0 && (
-                        <div className="mt-6">
-                           <h2 className="text-xl font-bold mb-4 border-b-2">
-                              Projects
-                           </h2>
-                           <ul className="list-disc ml-6">
+                  {/* Projects Section */}
+                  {resumeData.projects && resumeData.projects.length > 0 && (
+                     <div className="mt-6">
+                        <h2 className="text-xl font-bold mb-4 border-b-2">
+                           Projects
+                        </h2>
+                        <ul className="list-disc ml-6">
                            {resumeData.projects.map((project, index) => (
                               <li key={index} className="mb-4">
                                  <div className="flex flex-col">
@@ -496,13 +510,12 @@ const ResumePreview = ({
                                  </div>
                               </li>
                            ))}
-                           </ul>
-                        </div>
-                     )}
-                  </div>
+                        </ul>
+                     </div>
+                  )}
                </div>
             </div>
-         )}
+         </div>
       </div>
    );
 };
