@@ -1,7 +1,7 @@
 import { Inter, Roboto_Mono, Roboto_Slab } from "next/font/google";
 import "./globals.css";
-import Header from "../components/header";
-import Footer from "../components/footer";
+import Header from "../components/Header";
+import Footer from "../components/Footer";
 import { Providers } from "../components/Providers";
 import FirestoreSubscription from "../components/FirestoreSubscription";
 
