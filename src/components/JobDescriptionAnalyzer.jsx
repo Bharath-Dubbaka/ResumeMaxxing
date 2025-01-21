@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Button } from "../components/ui/button";
 import {
    Card,
@@ -13,6 +13,7 @@ import { useSelector, useDispatch } from "react-redux";
 import { QuotaService } from "../services/QuotaService";
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { setSkills } from "../store/slices/skillsSlice";
+import { setSkillsMapped } from "../store/slices/skillsSlice";
 import { MapIcon, Trash2, PlusCircle } from "lucide-react";
 
 const genAI = new GoogleGenerativeAI(
@@ -26,18 +27,103 @@ export default function JobDescriptionAnalyzer() {
    const [isAnalyzing, setIsAnalyzing] = useState(false);
    const [analysis, setAnalysis] = useState(null);
    const dispatch = useDispatch();
-   // const [openDropdown, setOpenDropdown] = useState(null);
+   const [openDropdown, setOpenDropdown] = useState(null);
+   const [skillMappings, setSkillMappings] = useState([]);
+   const dropdownRef = useRef(null); // Add ref for dropdown
 
-   // const handleDropdownToggle = (index) => {
-   //    setOpenDropdown(openDropdown === index ? null : index);
-   // };
+   // Add click outside handler
+   useEffect(() => {
+      function handleClickOutside(event) {
+         if (
+            dropdownRef.current &&
+            !dropdownRef.current.contains(event.target)
+         ) {
+            setOpenDropdown(null);
+         }
+      }
 
+      document.addEventListener("mousedown", handleClickOutside);
+      return () =>
+         document.removeEventListener("mousedown", handleClickOutside);
+   }, []);
+
+   useEffect(() => {
+      if (analysis?.technicalSkills && userDetails) {
+         setSkillMappings((prev) => {
+            const allExperienceTitles = userDetails.experience.map(
+               (exp) => exp.title
+            );
+
+            // Create mappings for any new skills while preserving existing mappings
+            return analysis.technicalSkills.map((skill) => {
+               const existingMapping = prev.find((m) => m.skill === skill);
+               return (
+                  existingMapping || {
+                     skill,
+                     experienceMappings: allExperienceTitles,
+                  }
+               );
+            });
+         });
+         dispatch(setSkillsMapped(skillMappings));
+      }
+   }, [analysis?.technicalSkills, userDetails]);
+
+   const handleSkillMappingChange = (skill, expTitle, checked) => {
+      console.log("Skill Mapping Change:", { skill, expTitle, checked });
+      let updatedMappings;
+      setSkillMappings((prev) => {
+         updatedMappings = prev.map((mapping) =>
+            mapping.skill === skill
+               ? {
+                    ...mapping,
+                    experienceMappings: checked
+                       ? [...mapping.experienceMappings, expTitle]
+                       : mapping.experienceMappings.filter(
+                            (title) => title !== expTitle
+                         ),
+                 }
+               : mapping
+         );
+         dispatch(setSkillsMapped(updatedMappings));
+
+         console.log("Updated Skill Mappings:", updatedMappings);
+         return updatedMappings;
+      });
+
+      dispatch(setSkillsMapped(skillMappings));
+   };
+
+   const handleDropdownToggle = (index) => {
+      setOpenDropdown(openDropdown === index ? null : index);
+   };
+
+   //Skill ADD EDIT AND DELETE BELOW
    const handleAddSkill = () => {
+      console.log("Adding new skill...");
+
       setAnalysis((prev) => {
-         console.log(prev.technicalSkills, "prevTechni");
          if (!prev) return null;
+
          const updatedSkills = [...prev.technicalSkills, ""];
-         console.log(updatedSkills, "updatedskills");
+         console.log("Updated Skills Array:", updatedSkills);
+
+         // Update skill mappings
+         const allExperienceTitles =
+            userDetails?.experience?.map((exp) => exp.title) || [];
+
+         setSkillMappings((prevMappings) => {
+            const updatedMappings = [
+               ...prevMappings,
+               {
+                  skill: "",
+                  experienceMappings: allExperienceTitles,
+               },
+            ];
+            console.log("Updated Skill Mappings:", updatedMappings);
+            return updatedMappings;
+         });
+
          return {
             ...prev,
             technicalSkills: updatedSkills,
@@ -46,14 +132,24 @@ export default function JobDescriptionAnalyzer() {
    };
 
    const handleSkillChange = (newSkill, index) => {
+      console.log("Changing skill:", { newSkill, index });
+
       setAnalysis((prev) => {
          if (!prev) return null;
 
-         // Create a new array with the updated skill
          const updatedSkills = [...prev.technicalSkills];
          updatedSkills[index] = newSkill;
 
-         // Return the updated state
+         // Update skill mappings with new skill name
+         setSkillMappings((prevMappings) => {
+            const updatedMappings = prevMappings.map((mapping, i) =>
+               i === index ? { ...mapping, skill: newSkill } : mapping
+            );
+            console.log("Updated Skill Mappings:", updatedMappings);
+            return updatedMappings;
+         });
+
+         console.log("Updated Skills Array:", updatedSkills);
          return {
             ...prev,
             technicalSkills: updatedSkills,
@@ -62,21 +158,31 @@ export default function JobDescriptionAnalyzer() {
    };
 
    const handleRemoveSkill = (index) => {
+      console.log("Removing skill at index:", index);
+
       setAnalysis((prev) => {
          if (!prev) return null;
 
-         // Filter out the skill at the provided index
          const updatedSkills = prev.technicalSkills.filter(
             (_, i) => i !== index
          );
+         console.log("Updated Skills Array:", updatedSkills);
 
-         // Return the updated state
+         // Remove corresponding skill mapping
+         setSkillMappings((prevMappings) => {
+            const updatedMappings = prevMappings.filter((_, i) => i !== index);
+            console.log("Updated Skill Mappings:", updatedMappings);
+            return updatedMappings;
+         });
+
          return {
             ...prev,
             technicalSkills: updatedSkills,
          };
       });
    };
+
+   //ANALYZE
    const analyzeJobDescription = async () => {
       setIsAnalyzing(true);
       try {
@@ -154,7 +260,7 @@ export default function JobDescriptionAnalyzer() {
          setIsAnalyzing(false);
       }
    };
-   console.log(analysis.technicalSkills, "MAINI");
+
    return (
       <Card className="bg-white/60 shadow-lg border-0 backdrop-blur-2xl rounded-xl">
          <CardHeader className="border-b bg-white/40 backdrop-blur-xl px-6 py-4">
@@ -224,6 +330,50 @@ export default function JobDescriptionAnalyzer() {
                                     >
                                        <MapIcon size={16} />
                                     </button>
+                                    {openDropdown === index && (
+                                       <div
+                                          ref={dropdownRef}
+                                          className="absolute top-12 left-0 z-10 w-max bg-slate-800 text-white rounded-lg shadow-lg p-4 border border-slate-700 space-y-2"
+                                       >
+                                          <h4 className="font-bold text-sm mb-2">
+                                             Map Skill to:
+                                          </h4>
+                                          <div className="space-y-2 max-h-[200px] overflow-y-auto">
+                                             {userDetails.experience.map(
+                                                (exp, i) => (
+                                                   <div
+                                                      key={i}
+                                                      className="flex items-center gap-2"
+                                                   >
+                                                      <input
+                                                         type="checkbox"
+                                                         id={`mapping-${index}-${i}`}
+                                                         checked={skillMappings[
+                                                            index
+                                                         ]?.experienceMappings.includes(
+                                                            exp.title
+                                                         )}
+                                                         onChange={(e) =>
+                                                            handleSkillMappingChange(
+                                                               skill,
+                                                               exp.title,
+                                                               e.target.checked
+                                                            )
+                                                         }
+                                                      />
+                                                      <label
+                                                         htmlFor={`mapping-${index}-${i}`}
+                                                         className="text-sm"
+                                                      >
+                                                         {exp.title}
+                                                      </label>
+                                                   </div>
+                                                )
+                                             )}
+                                          </div>
+                                       </div>
+                                    )}
+                                    {/* DELETEBTN */}
                                     <button
                                        onClick={() => handleRemoveSkill(index)}
                                        title="Remove Skill"

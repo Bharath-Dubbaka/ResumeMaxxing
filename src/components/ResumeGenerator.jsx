@@ -48,7 +48,6 @@ const calculateTotalExperience = (experiences) => {
    return (totalMonths / 12).toFixed(1);
 };
 
-
 // Clean the JSON response to remove any extra text or formatting
 function cleanJsonResponse(response) {
    try {
@@ -63,7 +62,7 @@ function cleanJsonResponse(response) {
       console.error("Error cleaning JSON response:", error);
       throw new Error("Failed to parse JSON from response.");
    }
-      }
+}
 
 const ResumeGenerator = () => {
    const dispatch = useDispatch();
@@ -74,24 +73,23 @@ const ResumeGenerator = () => {
    const [loading, setLoading] = useState(false);
    const [refreshPreview, setRefreshPreview] = useState(false);
 
-   const totalExperience = userDetails?.experience 
-   ? calculateTotalExperience(userDetails.experience) 
-   : 0;
+   const totalExperience = userDetails?.experience
+      ? calculateTotalExperience(userDetails.experience)
+      : 0;
 
    const generateResponsibilities = async (experience, technicalSkills) => {
-
       console.log(technicalSkills, "technicalSkillsINRES");
       console.log(experience, "experienceINRES");
 
       const prompt =
          experience.responsibilityType === "skillBased"
-         ? `Generate EXACTLY 8 detailed technical responsibilities that:
+            ? `Generate EXACTLY 8 detailed technical responsibilities that:
          1. Use ONLY these technical skills: ${technicalSkills.join(", ")}
          2. MUST NOT mention or reference the job title
          3. Focus purely on technical implementation and achievements
          4. Each responsibility should demonstrate hands-on technical work
          Return ONLY an array of 8 responsibilities in JSON format.`
-         : `Generate EXACTLY 8 detailed responsibilities that:
+            : `Generate EXACTLY 8 detailed responsibilities that:
          1. Are specific to the role of ${experience.title}
          2. MUST NOT mention any technical skills
          3. Focus on business impact and role-specific achievements
@@ -202,8 +200,8 @@ const ResumeGenerator = () => {
                   ...exp,
                   responsibilities: [
                      ...generatedExperiences[index], // Use generatedExperiences here
-                     ...(exp.customResponsibilities || [])
-                  ]
+                     ...(exp.customResponsibilities || []),
+                  ],
                })
             ),
             education: userDetails.education || [],
@@ -232,7 +230,7 @@ const ResumeGenerator = () => {
 
          // Get current experience
          const experience = userDetails.experience[expIndex];
-         
+
          // Check if responsibility already exists
          if (experience?.customResponsibilities?.includes(responsibility)) {
             alert("This responsibility is already saved!");
@@ -242,31 +240,30 @@ const ResumeGenerator = () => {
          // Create new array with existing and new responsibilities
          const updatedCustomResponsibilities = [
             ...(experience.customResponsibilities || []),
-            responsibility
+            responsibility,
          ];
 
          // Update the experience array
          const updatedExperiences = [...userDetails.experience];
          updatedExperiences[expIndex] = {
             ...experience,
-            customResponsibilities: updatedCustomResponsibilities
+            customResponsibilities: updatedCustomResponsibilities,
          };
 
          // Create updated user details
          const updatedUserDetails = {
             ...userDetails,
-            experience: updatedExperiences
+            experience: updatedExperiences,
          };
 
          // Save to Firestore
          await UserDetailsService.saveUserDetails(user.uid, updatedUserDetails);
-         
+
          // Update Redux store with the correct action
          dispatch(setUserDetails(updatedUserDetails));
 
          // Show success message
          alert("Responsibility saved successfully!");
-
       } catch (error) {
          console.error("Error saving custom responsibility:", error);
          alert("Failed to save responsibility. Please try again.");
@@ -283,9 +280,10 @@ const ResumeGenerator = () => {
 
       try {
          // If resumeContent is a string, parse it; if it's an object, use it directly
-         const resumeData = typeof resumeContent === 'string' 
-            ? JSON.parse(cleanJsonResponse(resumeContent))
-            : resumeContent;
+         const resumeData =
+            typeof resumeContent === "string"
+               ? JSON.parse(cleanJsonResponse(resumeContent))
+               : resumeContent;
 
          if (!resumeData || !resumeData.professionalExperience) {
             throw new Error("Invalid resume data");
