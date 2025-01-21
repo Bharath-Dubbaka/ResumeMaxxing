@@ -12,13 +12,12 @@ import { Textarea } from "../components/ui/textarea";
 import { useSelector, useDispatch } from "react-redux";
 import { QuotaService } from "../services/QuotaService";
 import { GoogleGenerativeAI } from "@google/generative-ai";
-import { JsonParser } from "jsonparse";
 import { setSkills } from "../store/slices/skillsSlice";
-
+import { MapIcon, Trash2, PlusCircle } from "lucide-react";
 
 const genAI = new GoogleGenerativeAI(
    process.env.NEXT_PUBLIC_GOOGLE_GEMINI_API_KEY
-); 
+);
 
 export default function JobDescriptionAnalyzer() {
    const { user } = useSelector((state) => state.auth);
@@ -27,7 +26,57 @@ export default function JobDescriptionAnalyzer() {
    const [isAnalyzing, setIsAnalyzing] = useState(false);
    const [analysis, setAnalysis] = useState(null);
    const dispatch = useDispatch();
+   // const [openDropdown, setOpenDropdown] = useState(null);
 
+   // const handleDropdownToggle = (index) => {
+   //    setOpenDropdown(openDropdown === index ? null : index);
+   // };
+
+   const handleAddSkill = () => {
+      setAnalysis((prev) => {
+         console.log(prev.technicalSkills, "prevTechni");
+         if (!prev) return null;
+         const updatedSkills = [...prev.technicalSkills, ""];
+         console.log(updatedSkills, "updatedskills");
+         return {
+            ...prev,
+            technicalSkills: updatedSkills,
+         };
+      });
+   };
+
+   const handleSkillChange = (newSkill, index) => {
+      setAnalysis((prev) => {
+         if (!prev) return null;
+
+         // Create a new array with the updated skill
+         const updatedSkills = [...prev.technicalSkills];
+         updatedSkills[index] = newSkill;
+
+         // Return the updated state
+         return {
+            ...prev,
+            technicalSkills: updatedSkills,
+         };
+      });
+   };
+
+   const handleRemoveSkill = (index) => {
+      setAnalysis((prev) => {
+         if (!prev) return null;
+
+         // Filter out the skill at the provided index
+         const updatedSkills = prev.technicalSkills.filter(
+            (_, i) => i !== index
+         );
+
+         // Return the updated state
+         return {
+            ...prev,
+            technicalSkills: updatedSkills,
+         };
+      });
+   };
    const analyzeJobDescription = async () => {
       setIsAnalyzing(true);
       try {
@@ -105,7 +154,7 @@ export default function JobDescriptionAnalyzer() {
          setIsAnalyzing(false);
       }
    };
-
+   console.log(analysis.technicalSkills, "MAINI");
    return (
       <Card className="bg-white/60 shadow-lg border-0 backdrop-blur-2xl rounded-xl">
          <CardHeader className="border-b bg-white/40 backdrop-blur-xl px-6 py-4">
@@ -143,13 +192,100 @@ export default function JobDescriptionAnalyzer() {
                            Technical Skills
                         </h3>
                         <div className="flex flex-wrap gap-2">
-                           {analysis.technicalSkills.map((skill, index) => (
-                              <span
+                           {analysis.technicalSkills?.map((skill, index) => (
+                              <div
                                  key={index}
-                                 className="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm"
+                                 className="w-[23%] group relative"
                               >
-                                 {skill}
-                              </span>
+                                 <div className="relative flex items-center gap-1">
+                                    <input
+                                       type="text"
+                                       value={skill}
+                                       onChange={(e) =>
+                                          handleSkillChange(
+                                             e.target.value,
+                                             index
+                                          )
+                                       }
+                                       className="w-full px-3 py-2 text-sm bg-slate-600 text-white rounded-lg border border-slate-600 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none transition-all duration-200"
+                                       placeholder="Enter skill"
+                                       title="Edit Skill"
+                                    />
+                                    <button
+                                       onClick={() => {
+                                          handleDropdownToggle(index);
+                                       }}
+                                       title="Map Skill to Experience"
+                                       // className={`p-2 bg-slate-800 text-blue-400 rounded-lg border border-slate-600 hover:bg-slate-700 transition-all duration-200 ${
+                                       //    openDropdown === index
+                                       //       ? "bg-blue-600 text-orange-400"
+                                       //       : ""
+                                       // }`}
+                                    >
+                                       <MapIcon size={16} />
+                                    </button>
+                                    <button
+                                       onClick={() => handleRemoveSkill(index)}
+                                       title="Remove Skill"
+                                       className="p-2 bg-slate-800 text-rose-400 rounded-lg border border-slate-600 hover:bg-slate-700 transition-all duration-200"
+                                    >
+                                       <Trash2 size={16} />
+                                    </button>
+                                 </div>
+
+                                 {/* {openDropdown === index && (
+                              <div
+                                 className="absolute left-0 top-[calc(100%+4px)] w-full bg-slate-800 rounded-xl p-3 shadow-xl border border-slate-600 z-20"
+                                 ref={dropdownRef}
+                              >
+                                 {userDetails.experience.map(
+                                    (exp, expIndex) => {
+                                       const isSelected = skillMappings
+                                          .find((m) => m.skill === skill)
+                                          ?.experienceMappings.includes(
+                                             exp.title
+                                          );
+                                       const isTitleBased =
+                                          exp.responsibilityType ===
+                                          "titleBased";
+
+                                       return (
+                                          <label
+                                             key={expIndex}
+                                             className={`flex items-center gap-2 p-2 rounded-lg cursor-pointer ${
+                                                isTitleBased
+                                                   ? "opacity-50 cursor-not-allowed bg-slate-700"
+                                                   : "hover:bg-slate-700"
+                                             } transition-all duration-200`}
+                                          >
+                                             <input
+                                                type="checkbox"
+                                                checked={isSelected}
+                                                disabled={isTitleBased}
+                                                onChange={(e) =>
+                                                   handleSkillMappingChange(
+                                                      skill,
+                                                      exp.title,
+                                                      e.target.checked
+                                                   )
+                                                }
+                                                className="rounded border-slate-500 text-blue-500 focus:ring-blue-500"
+                                             />
+                                             <span className="text-xs text-slate-200">
+                                                {exp.title}
+                                                {isTitleBased && (
+                                                   <span className="ml-1 text-slate-400">
+                                                      (Title-based)
+                                                   </span>
+                                                )}
+                                             </span>
+                                          </label>
+                                       );
+                                    }
+                                 )}
+                              </div>
+                           )} */}
+                              </div>
                            ))}
                         </div>
                      </div>
@@ -169,7 +305,16 @@ export default function JobDescriptionAnalyzer() {
                            ))}
                         </div>
                      </div> */}
-
+                     <div>
+                        {" "}
+                        <button
+                           onClick={handleAddSkill}
+                           className="flex items-center gap-2 mt-6 px-4 py-2 text-sm font-semibold bg-gradient-to-r from-blue-500 to-indigo-500 hover:from-blue-600 hover:to-indigo-600 text-white rounded-lg mb-4"
+                        >
+                           <PlusCircle size={16} />
+                           Add New Skill
+                        </button>
+                     </div>
                      <div>
                         <h3 className="text-lg font-semibold mb-3">
                            Experience Required
