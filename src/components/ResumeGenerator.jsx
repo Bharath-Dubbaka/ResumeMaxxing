@@ -29,6 +29,8 @@ const openai = new OpenAI({
    dangerouslyAllowBrowser: true,
 });
 
+
+
 const calculateTotalExperience = (experiences) => {
    let totalMonths = 0;
 
@@ -68,7 +70,7 @@ const ResumeGenerator = () => {
    const dispatch = useDispatch();
    const { user } = useSelector((state) => state.auth);
    const { userDetails } = useSelector((state) => state.firebase);
-   const { skills: technicalSkills } = useSelector((state) => state.skills);
+   const { skills: technicalSkills, skillsMapped } = useSelector((state) => state.skills);
    const [resumeContent, setResumeContent] = useState(null);
    const [loading, setLoading] = useState(false);
    const [refreshPreview, setRefreshPreview] = useState(false);
@@ -77,14 +79,38 @@ const ResumeGenerator = () => {
       ? calculateTotalExperience(userDetails.experience)
       : 0;
 
+      // Function to get all unique skills
+const getAllSkills = () => {
+   if (skillsMapped && skillsMapped.length > 0) {
+      // Extract unique skills from skillsMapped
+      return [...new Set(skillsMapped.map(mapping => mapping.skill))];
+   }
+   // Fall back to technicalSkills if no mappings exist
+   return technicalSkills;
+};
+
    const generateResponsibilities = async (experience, technicalSkills) => {
-      console.log(technicalSkills, "technicalSkillsINRES");
-      console.log(experience, "experienceINRES");
+      console.log("Skills Mapped:", skillsMapped);
+      console.log("Experience:", experience);
+
+      // Determine which skills to use for this experience
+      let skillsForExperience;
+      if (skillsMapped && skillsMapped.length > 0) {
+         // Use mapped skills if available
+         skillsForExperience = skillsMapped
+            .filter(mapping => mapping.experienceMappings.includes(experience.title))
+            .map(mapping => mapping.skill);
+      } else {
+         // If no mappings, use all technical skills for all experiences
+         skillsForExperience = technicalSkills;
+      }
+
+      console.log("Skills for this experience:", skillsForExperience);
 
       const prompt =
          experience.responsibilityType === "skillBased"
             ? `Generate EXACTLY 8 detailed technical responsibilities that:
-         1. Use ONLY these technical skills: ${technicalSkills.join(", ")}
+         1. Use ONLY these technical skills: ${skillsForExperience.join(", ")}
          2. MUST NOT mention or reference the job title
          3. Focus purely on technical implementation and achievements
          4. Each responsibility should demonstrate hands-on technical work
@@ -125,12 +151,14 @@ const ResumeGenerator = () => {
       technicalSkills,
       latestRole
    ) => {
+      const allSkills = getAllSkills();
+
       console.log(technicalSkills, "technicalSkillsINSUMM");
       console.log(latestRole, "latestRoleINSUMM");
       console.log(totalExperience, "totalExperienceINSUMM");
       const prompt = `Generate a detailed professional summary that:
       1. Highlights ${totalExperience} years of total experience
-      2. Incorporates key technical skills: ${technicalSkills.join(", ")}
+      2. Incorporates key technical skills: ${allSkills.join(", ")}
       3. Mentions current/latest role as ${latestRole}
       4. Focuses on career progression and expertise
       5. Is approximately 6-8 sentences long
@@ -171,6 +199,7 @@ const ResumeGenerator = () => {
          alert("Generate quota exceeded. Please upgrade your plan.");
          return;
       }
+      const allSkills = getAllSkills();
 
       setLoading(true);
       try {
@@ -188,13 +217,12 @@ const ResumeGenerator = () => {
             technicalSkills,
             latestRole
          );
-
          // Create the complete resume content
          const newResumeContent = {
             fullName: userDetails.fullName,
             contactInformation: `${userDetails.email} | ${userDetails.phone}`,
             professionalSummary: generatedSummary,
-            technicalSkills: technicalSkills.join(", "),
+            technicalSkills: allSkills.join(", "),
             professionalExperience: userDetails.experience.map(
                (exp, index) => ({
                   ...exp,

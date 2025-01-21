@@ -474,7 +474,7 @@ export default function JobDescriptionAnalyzer() {
                         </p>
                      </div>
 
-                     {analysis.roleDescriptions?.length > 0 && (
+                     {/* {analysis.roleDescriptions?.length > 0 && (
                         <div>
                            <h3 className="text-lg font-semibold mb-3">
                               Tailored Role Descriptions
@@ -495,7 +495,7 @@ export default function JobDescriptionAnalyzer() {
                               ))}
                            </div>
                         </div>
-                     )}
+                     )} */}
                   </div>
                )}
             </div>
