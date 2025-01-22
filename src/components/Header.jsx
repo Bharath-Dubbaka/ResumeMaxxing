@@ -7,6 +7,7 @@ import { LogOut } from "lucide-react";
 import Link from "next/link";
 import { Button } from "../components/ui/button";
 import { useRouter } from "next/navigation";
+import Image from "next/image";
 
 const Header = () => {
    const { user } = useSelector((state) => state.auth);
@@ -33,7 +34,7 @@ const Header = () => {
                {/* Logo */}
                <Link href="/" className="flex items-center space-x-2">
                   <span className="text-3xl font-bold bg-gradient-to-r from-blue-900 to-pink-900 bg-clip-text text-transparent">
-                     ResumeMaXXing
+                     ResumeOnFly
                   </span>
                </Link>
 
@@ -100,7 +101,7 @@ const Header = () => {
                      )}
                      <Button
                         onClick={() => router.push("/userForm?edit=true")}
-                        className="bg-blue-600 hover:bg-blue-700 text-white"
+                        className="bg-gradient-to-r from-blue-500 to-indigo-500 hover:from-blue-600 hover:to-indigo-600 text-white rounded-lg"
                      >
                         Edit Details
                      </Button>

@@ -28,7 +28,7 @@ export default function DashboardPage() {
    
    return (
       <div className="min-h-screen bg-gradient-to-br from-purple-200/60 via-pink-50 to-blue-200/60 animate-gradient-xy">
-         <div className="container py-8 mt-16 rounded-xl">
+         <div className=" px-24 py-8 mt-16 rounded-xl">
             <h1 className="text-3xl font-bold mb-8 ">- Dashboard</h1>
             <JobDescriptionAnalyzer />
             <ResumeGenerator />

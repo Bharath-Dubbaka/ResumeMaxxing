@@ -69,6 +69,27 @@ export default function JobDescriptionAnalyzer() {
       }
    }, [analysis?.technicalSkills, userDetails]);
 
+   const calculateTotalExperience = (experiences) => {
+      let totalMonths = 0;
+
+      experiences.forEach((exp) => {
+         if (exp.startDate && exp.endDate) {
+            const [startYear, startMonth] = exp.startDate
+               .split("-")
+               .map(Number);
+            const [endYear, endMonth] = exp.endDate.split("-").map(Number);
+
+            // Calculate the total months between start and end dates
+            const months = (endYear - startYear) * 12 + (endMonth - startMonth);
+            const validMonths = Math.max(0, months); // Ensure no negative months
+            totalMonths += validMonths;
+         }
+      });
+
+      // Convert total months to years and round to 1 decimal place
+      return (totalMonths / 12).toFixed(1);
+   };
+
    const handleSkillMappingChange = (skill, expTitle, checked) => {
       console.log("Skill Mapping Change:", { skill, expTitle, checked });
       let updatedMappings;
@@ -262,7 +283,7 @@ export default function JobDescriptionAnalyzer() {
    };
 
    return (
-      <Card className="bg-white/60 shadow-lg border-0 backdrop-blur-2xl rounded-xl">
+      <Card className="bg-white/60 shadow-lg border-slate-100 backdrop-blur-2xl rounded-xl">
          <CardHeader className="border-b bg-white/40 backdrop-blur-xl px-6 py-4">
             <CardTitle className="text-xl font-semibold text-gray-800">
                Job Description Analyzer
@@ -272,13 +293,13 @@ export default function JobDescriptionAnalyzer() {
             <div className="space-y-4">
                <Textarea
                   placeholder="Paste your job description here..."
-                  className="min-h-[200px] resize-none"
+                  className="min-h-[200px] resize-none p-4 font-sans text-base"
                   value={jobDescription}
                   onChange={(e) => setJobDescription(e.target.value)}
                />
                <Button
                   onClick={analyzeJobDescription}
-                  className="w-full bg-indigo-600 hover:bg-indigo-700 text-white"
+                  className="w-full bg-gradient-to-r from-blue-500 to-indigo-500 hover:from-blue-600 hover:to-indigo-600 text-white rounded-lg"
                   disabled={isAnalyzing || !jobDescription.trim()}
                >
                   {isAnalyzing ? (
@@ -292,16 +313,40 @@ export default function JobDescriptionAnalyzer() {
                </Button>
 
                {analysis && (
-                  <div className="mt-6 space-y-6">
-                     <div>
-                        <h3 className="text-lg font-semibold mb-3">
-                           Technical Skills
+                  <div className="p-6 space-y-6 border border-slate-300 rounded-lg bg-white">
+                     <div className="flex justify-between w-full ">
+                        <div className="min-w-[49%] border border-slate-200 p-4 rounded-lg bg-purple-50">
+                           <h5 className="flex font-semibold">
+                              Experience Required:{" "}
+                              <p className="text-gray-700">
+                                 {analysis.yearsOfExperience} years
+                              </p>
+                           </h5>
+                        </div>
+                        <div className="min-w-[49%] border border-slate-200 p-4 rounded-lg bg-purple-50">
+                           <h5 className="flex font-semibold">
+                              Your Total Experience:{" "}
+                              <p className="text-gray-700">
+                                 {userDetails?.experience
+                                    ? calculateTotalExperience(
+                                         userDetails.experience
+                                      )
+                                    : 0}{" "}
+                                 years
+                              </p>
+                           </h5>
+                        </div>
+                     </div>
+
+                     <div className="border-t border-slate-300">
+                        <h3 className="text-xl font-semibold mb-4  mt-4">
+                           Technical Skills:
                         </h3>
-                        <div className="flex flex-wrap gap-2">
+                        <div className="flex flex-wrap gap-5 justify-start">
                            {analysis.technicalSkills?.map((skill, index) => (
                               <div
                                  key={index}
-                                 className="w-[23%] group relative"
+                                 className="w-[23%] group relative border border-slate-200 py-2 px-3 bg-purple-50 rounded-xl"
                               >
                                  <div className="relative flex items-center gap-1">
                                     <input
@@ -313,7 +358,7 @@ export default function JobDescriptionAnalyzer() {
                                              index
                                           )
                                        }
-                                       className="w-full px-3 py-2 text-sm bg-slate-600 text-white rounded-lg border border-slate-600 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none transition-all duration-200"
+                                       className="w-full px-3 py-2 text-sm bg-white text-black font-medium rounded-lg border border-slate-400 focus:border-blue-200 focus:ring-1 focus:ring-blue-300 outline-none transition-all duration-200 hover:bg-teal-50"
                                        placeholder="Enter skill"
                                        title="Edit Skill"
                                     />
@@ -322,18 +367,18 @@ export default function JobDescriptionAnalyzer() {
                                           handleDropdownToggle(index);
                                        }}
                                        title="Map Skill to Experience"
-                                       // className={`p-2 bg-slate-800 text-blue-400 rounded-lg border border-slate-600 hover:bg-slate-700 transition-all duration-200 ${
-                                       //    openDropdown === index
-                                       //       ? "bg-blue-600 text-orange-400"
-                                       //       : ""
-                                       // }`}
+                                       className={`p-2 bg-white text-blue-400 rounded-lg border border-blue-600 hover:bg-blue-100 transition-all duration-200 ${
+                                          openDropdown === index
+                                             ? "bg-blue-600 text-orange-400"
+                                             : ""
+                                       }`}
                                     >
                                        <MapIcon size={16} />
                                     </button>
                                     {openDropdown === index && (
                                        <div
                                           ref={dropdownRef}
-                                          className="absolute top-12 left-0 z-10 w-max bg-slate-800 text-white rounded-lg shadow-lg p-4 border border-slate-700 space-y-2"
+                                          className="w-full absolute top-12 left-0 z-10 bg-slate-800 text-white rounded-lg shadow-lg p-4 border border-slate-700 space-y-2"
                                        >
                                           <h4 className="font-bold text-sm mb-2">
                                              Map Skill to:
@@ -377,7 +422,7 @@ export default function JobDescriptionAnalyzer() {
                                     <button
                                        onClick={() => handleRemoveSkill(index)}
                                        title="Remove Skill"
-                                       className="p-2 bg-slate-800 text-rose-400 rounded-lg border border-slate-600 hover:bg-slate-700 transition-all duration-200"
+                                       className="p-2 bg-white text-rose-400 rounded-lg border border-red-600 hover:bg-red-200 transition-all duration-200"
                                     >
                                        <Trash2 size={16} />
                                     </button>
@@ -464,14 +509,6 @@ export default function JobDescriptionAnalyzer() {
                            <PlusCircle size={16} />
                            Add New Skill
                         </button>
-                     </div>
-                     <div>
-                        <h3 className="text-lg font-semibold mb-3">
-                           Experience Required
-                        </h3>
-                        <p className="text-gray-700">
-                           {analysis.yearsOfExperience} years
-                        </p>
                      </div>
 
                      {/* {analysis.roleDescriptions?.length > 0 && (

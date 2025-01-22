@@ -29,8 +29,6 @@ const openai = new OpenAI({
    dangerouslyAllowBrowser: true,
 });
 
-
-
 const calculateTotalExperience = (experiences) => {
    let totalMonths = 0;
 
@@ -70,7 +68,9 @@ const ResumeGenerator = () => {
    const dispatch = useDispatch();
    const { user } = useSelector((state) => state.auth);
    const { userDetails } = useSelector((state) => state.firebase);
-   const { skills: technicalSkills, skillsMapped } = useSelector((state) => state.skills);
+   const { skills: technicalSkills, skillsMapped } = useSelector(
+      (state) => state.skills
+   );
    const [resumeContent, setResumeContent] = useState(null);
    const [loading, setLoading] = useState(false);
    const [refreshPreview, setRefreshPreview] = useState(false);
@@ -79,15 +79,15 @@ const ResumeGenerator = () => {
       ? calculateTotalExperience(userDetails.experience)
       : 0;
 
-      // Function to get all unique skills
-const getAllSkills = () => {
-   if (skillsMapped && skillsMapped.length > 0) {
-      // Extract unique skills from skillsMapped
-      return [...new Set(skillsMapped.map(mapping => mapping.skill))];
-   }
-   // Fall back to technicalSkills if no mappings exist
-   return technicalSkills;
-};
+   // Function to get all unique skills
+   const getAllSkills = () => {
+      if (skillsMapped && skillsMapped.length > 0) {
+         // Extract unique skills from skillsMapped
+         return [...new Set(skillsMapped.map((mapping) => mapping.skill))];
+      }
+      // Fall back to technicalSkills if no mappings exist
+      return technicalSkills;
+   };
 
    const generateResponsibilities = async (experience, technicalSkills) => {
       console.log("Skills Mapped:", skillsMapped);
@@ -98,8 +98,10 @@ const getAllSkills = () => {
       if (skillsMapped && skillsMapped.length > 0) {
          // Use mapped skills if available
          skillsForExperience = skillsMapped
-            .filter(mapping => mapping.experienceMappings.includes(experience.title))
-            .map(mapping => mapping.skill);
+            .filter((mapping) =>
+               mapping.experienceMappings.includes(experience.title)
+            )
+            .map((mapping) => mapping.skill);
       } else {
          // If no mappings, use all technical skills for all experiences
          skillsForExperience = technicalSkills;
@@ -705,16 +707,16 @@ const getAllSkills = () => {
       }
    };
 
-   return (
-      <Card className="bg-white/60 shadow-lg border-0 backdrop-blur-2xl rounded-xl">
-         <CardHeader className="border-b bg-white/40 backdrop-blur-xl px-6 py-4">
-            <CardTitle>Resume Generator</CardTitle>
-         </CardHeader>
+   return technicalSkills.length > 0 ? (
+      <Card className="bg-white/60 shadow-lg border-0 backdrop-blur-2xl rounded-xl mt-6">
+         {/* <CardHeader className="border-b bg-white/40 backdrop-blur-xl px-6 py-4">
+         <CardTitle>Resume Generator</CardTitle>
+      </CardHeader> */}
          <CardContent>
             <div className="space-y-4 p-4">
                <Button
                   onClick={generateResume}
-                  className="w-full bg-indigo-600 hover:bg-indigo-700 text-white"
+                  className="w-full mt-4 bg-gradient-to-r from-blue-500 to-indigo-500 hover:from-blue-600 hover:to-indigo-600 text-white rounded-lg"
                   disabled={loading}
                >
                   {loading ? (
@@ -741,7 +743,7 @@ const getAllSkills = () => {
             </div>
          </CardContent>
       </Card>
-   );
+   ) : null;
 };
 
 export default ResumeGenerator;

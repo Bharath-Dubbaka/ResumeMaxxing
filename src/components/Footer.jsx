@@ -9,7 +9,7 @@ const Footer = () => {
                {/* Brand Column */}
                <div className="space-y-4">
                   <h2 className="text-2xl font-bold bg-gradient-to-r from-blue-900 to-pink-900 bg-clip-text text-transparent">
-                     ResumeMaXXing
+                     ResumeOnFly
                   </h2>
                   <p className="text-slate-600">
                      Create professional resumes with AI-powered tools and land

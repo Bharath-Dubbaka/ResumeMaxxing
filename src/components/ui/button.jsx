@@ -33,8 +33,8 @@ const Button = React.forwardRef(
                      variant === "accent",
                },
                {
-                  "h-9 px-4 py-2": size === "default",
-                  "h-7 rounded-md px-3 text-xs": size === "sm",
+                  "h-10 px-4 py-4": size === "default",
+                  "h-8 rounded-md px-3 text-xs": size === "sm",
                   "h-10 rounded-md px-8": size === "lg",
                },
                className
