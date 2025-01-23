@@ -2,7 +2,7 @@ import React from "react";
 
 const VideoSection = () => {
    return (
-      <section className="flex flex-col md:flex-row items-center justify-between px-16 py-24 rounded-lg shadow-lg backdrop-blur-md bg-gradient-to-br from-yellow-50/95 via-teal-50/95 to-indigo-50/95 animate-gradient-xy">
+      <section className="flex flex-col md:flex-row items-center justify-between px-16 py-28 rounded-lg shadow-lg backdrop-blur-md bg-gradient-to-br from-yellow-50/95 via-teal-50/95 to-indigo-50/95 animate-gradient-xy">
          {/* Video Embed */}
          <div className="w-full md:w-3/5 aspect-video mb-6 md:mb-0 shadow-2xl">
             <iframe

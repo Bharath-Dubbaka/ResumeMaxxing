@@ -9,10 +9,10 @@ export default function HowItWorks() {
             "Paste your target job description and let our AI analyze it to extract required technical skills and experience. You can customize and map skills to specific work experiences.",
          bulletPoints: [
             "AI-powered job description analysis",
-            "Extracts technical skills automatically using AI/LLM's",
+            "Extracts technical skills automatically using AI/LLMs",
             "Skill mapping functionality to link skills with specific work experiences",
             "Detects experience requirements",
-            "Comparison with user's total experience",
+            "Comparison with users total experience",
             "Minimal user interaction and information required",
          ],
       },

@@ -40,18 +40,18 @@ const Header = () => {
 
                {/* Navigation */}
                <nav className="hidden md:flex items-center space-x-8">
-                  {/* <Link
-                     href="/templates"
+                  <Link
+                     href="/faq"
                      className="text-slate-600 hover:text-slate-900"
                   >
-                     Templates
+                     Faq
                   </Link>
                   <Link
                      href="/pricing"
                      className="text-slate-600 hover:text-slate-900"
                   >
                      Pricing
-                  </Link> */}
+                  </Link>
                   <Link
                      href="/about"
                      className="text-slate-600 hover:text-slate-900"
@@ -121,8 +121,8 @@ const Header = () => {
                      >
                         Sign In
                      </Button>
-                     <Button className="bg-purple-600 hover:bg-purple-700 text-white">
-                        Get Started
+                     <Button className="bg-gradient-to-br from-purple-600  to-indigo-500  hover:from-indigo-500 hover:to-purple-500 text-white">
+                        FREE Trail
                      </Button>
                   </div>
                )}

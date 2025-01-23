@@ -102,7 +102,7 @@ export default function Home() {
       <div className="">
          <div className="">
             {/* Hero Section */}
-            <div className="min-h-screen text-center space-y-8 pt-40 bg-gradient-to-br from-purple-200/60 via-pink-50 to-blue-200/60 animate-gradient-xy">
+            <div className="min-h-screen text-center space-y-8 pt-40 bg-gradient-to-br from-purple-200/60 via-teal-50/95 to-blue-200/60 animate-gradient-xy">
                <h1 className="text-5xl md:text-7xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-900 to-pink-900">
                   AI-Powered Resume Builder
                </h1>
@@ -114,7 +114,7 @@ export default function Home() {
                <div className="space-x-4">
                   <Button
                      size="lg"
-                     className="bg-purple-600 hover:bg-purple-700"
+                     className="bg-gradient-to-br from-purple-600  to-indigo-500  hover:from-indigo-500 hover:to-purple-500"
                      onClick={handleGetStarted}
                   >
                      Get Started
@@ -124,7 +124,7 @@ export default function Home() {
                   </Button>
                </div>
                {/* Features Section */}
-               <div className="grid md:grid-cols-3 gap-8 pt-10 pb-10 mb-10 px-20">
+               <div className="grid md:grid-cols-3 gap-8 pt-10 pb-20 mb-10 px-20">
                   <FeatureCard
                      title="AI-Powered Writing"
                      description="Our AI analyzes your experience and generates professional descriptions that highlight your achievements."

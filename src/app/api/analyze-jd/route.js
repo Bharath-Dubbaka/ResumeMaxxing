@@ -41,7 +41,7 @@ export async function POST(request) {
       Job Description: ${jobDescription}
       Work Experiences: ${JSON.stringify(workExperiences)}
    
-      For each role in work experiences, generate a "description" field explaining key responsibilities and achievements based on the job description's context and the skills listed.
+      For each role in work experiences, generate a "description" field explaining key responsibilities and achievements based on the job descriptions context and the skills listed.
    
       Return only the JSON object, no additional text or formatting.`;
 

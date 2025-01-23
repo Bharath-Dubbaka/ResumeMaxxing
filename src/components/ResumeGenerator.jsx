@@ -309,7 +309,7 @@ const ResumeGenerator = () => {
       }
 
       try {
-         // If resumeContent is a string, parse it; if it's an object, use it directly
+         // If resumeContent is a string, parse it; if it is an object, use it directly
          const resumeData =
             typeof resumeContent === "string"
                ? JSON.parse(cleanJsonResponse(resumeContent))

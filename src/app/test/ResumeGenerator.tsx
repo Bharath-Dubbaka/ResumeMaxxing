@@ -694,7 +694,7 @@ const ResumeGenerator: React.FC<ResumeGeneratorProps> = ({
          experience.customResponsibilities = [];
       }
 
-      // Add the responsibility if it's not already in the list
+      // Add the responsibility if it is not already in the list
       if (!experience.customResponsibilities.includes(responsibility)) {
          experience.customResponsibilities.push(responsibility);
 
