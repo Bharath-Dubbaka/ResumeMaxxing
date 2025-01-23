@@ -1,13 +1,13 @@
 "use client";
 import UserForm from "../../components/UserForm";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useState, Suspense } from "react";
 import { UserDetailsService } from "../../services/UserDetailsService";
 import { Spinner } from "../../components/ui/spinner";
 import { useSelector, useDispatch } from "react-redux";
 import { setUserDetails } from "../../store/slices/firebaseSlice";
 
-export default function UserFormPage() {
+function UserFormContent() {
    const { user, loading } = useSelector((state) => state.auth);
    const { userDetails } = useSelector((state) => state.firebase);
    const dispatch = useDispatch();
@@ -70,8 +70,17 @@ export default function UserFormPage() {
                initialData={userDetails}
                onSave={handleSaveDetails}
                onCancel={() => router.push("/dashboard")}
+               isEditing={isEditing} 
             />
          </div>
       </div>
+   );
+}
+
+export default function UserFormPage() {
+   return (
+      <Suspense fallback={<Spinner />}>
+         <UserFormContent />
+      </Suspense>
    );
 }

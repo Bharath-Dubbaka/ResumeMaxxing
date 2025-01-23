@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import { Button } from "../components/ui/button";
@@ -19,9 +19,9 @@ import {
    SelectTrigger,
    SelectValue,
 } from "../components/ui/select";
-import { Spinner } from "../components/ui/spinner";
+import { Spinner } from "../components/ui/spinner";   
 
-const UserForm = ({ onSave, onCancel, initialData }) => {
+const UserForm = ({ onSave, onCancel, initialData, isEditing }) => {
    const [isLoading, setIsLoading] = useState(false);
    const [userDetails, setUserDetails] = useState(() => {
       if (initialData) {
