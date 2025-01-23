@@ -114,7 +114,7 @@ const Footer = () => {
             {/* Bottom Bar */}
             <div className="border-t mt-12 pt-8">
                <p className="text-center text-slate-600">
-                  © {new Date().getFullYear()} ResumeMaxx. All rights reserved.
+                  © {new Date().getFullYear()} ResumeOnFly. All rights reserved.
                </p>
             </div>
          </div>

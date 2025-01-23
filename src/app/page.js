@@ -102,14 +102,15 @@ export default function Home() {
       <div className="">
          <div className="">
             {/* Hero Section */}
-            <div className="min-h-screen text-center space-y-8 pt-40 bg-gradient-to-br from-purple-200/60 via-teal-50/95 to-blue-200/60 animate-gradient-xy">
+            <div className="min-h-screen text-center space-y-8 pt-40 bg-gradient-to-br from-purple-200/60 via-teal-50/95 to-blue-100/80 animate-gradient-xy">
                <h1 className="text-5xl md:text-7xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-900 to-pink-900">
                   AI-Powered Resume Builder
                </h1>
                <p className="text-slate-900 text-xl md:text-2xl max-w-2xl mx-auto">
-                  Make this in typing style Create professional resumes in
-                  minutes with our advanced AI technology. Stand out from the
-                  crowd and land your dream job.
+                  Make this in typing style Create/Customize your professional
+                  resumes with our cutting-edge AI technology in a matter of
+                  minutes for any Job Description. 10x faster and 10x chances to
+                  land your dream job.
                </p>
                <div className="space-x-4">
                   <Button

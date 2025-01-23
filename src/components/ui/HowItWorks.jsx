@@ -43,7 +43,7 @@ export default function HowItWorks() {
    ];
 
    return (
-      <div className="py-24 px-4 sm:px-6 lg:px-8 bg-gradient-to-br from-purple-200/60 via-pink-50 to-blue-200/60 animate-gradient-xy">
+      <div className="py-24 px-4 sm:px-6 lg:px-8 bg-gradient-to-br from-yellow-50/95 via-pink-50 to-blue-200/60 animate-gradient-xy">
          <div className="max-w-7xl mx-auto">
             <h2 className="text-4xl font-bold text-center mb-16">
                Here is what you need to know about how this works
