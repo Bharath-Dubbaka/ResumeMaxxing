@@ -100,7 +100,7 @@ const Header = () => {
                         </div>
                      )}
                      <Button
-                        onClick={() => router.push("/userForm?edit=true")}
+                        onClick={() => router.push("/userFormPage?edit=true")}
                         className="bg-gradient-to-r from-blue-500 to-indigo-500 hover:from-blue-600 hover:to-indigo-600 text-white rounded-lg"
                      >
                         Edit Details
