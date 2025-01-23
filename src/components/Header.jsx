@@ -39,8 +39,8 @@ const Header = () => {
                </Link>
 
                {/* Navigation */}
-               {/* <nav className="hidden md:flex items-center space-x-8">
-                  <Link
+               <nav className="hidden md:flex items-center space-x-8">
+                  {/* <Link
                      href="/templates"
                      className="text-slate-600 hover:text-slate-900"
                   >
@@ -51,14 +51,14 @@ const Header = () => {
                      className="text-slate-600 hover:text-slate-900"
                   >
                      Pricing
-                  </Link>
+                  </Link> */}
                   <Link
                      href="/about"
                      className="text-slate-600 hover:text-slate-900"
                   >
                      About
                   </Link>
-               </nav> */}
+               </nav>
 
                {/* Auth Buttons and Quota Display */}
                {user ? (

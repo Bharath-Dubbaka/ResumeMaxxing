@@ -14,6 +14,7 @@ import { setUserDetails, setUserQuota } from "../store/slices/firebaseSlice";
 import { useState } from "react";
 import { Spinner } from "../components/ui/spinner";
 import { useEffect } from "react";
+import HowItWorks from "../components/ui/HowItWorks";
 
 export default function Home() {
    const router = useRouter();
@@ -123,7 +124,7 @@ export default function Home() {
                   </Button>
                </div>
                {/* Features Section */}
-               <div className="grid md:grid-cols-3 gap-8 pt-10 mb-10 px-20">
+               <div className="grid md:grid-cols-3 gap-8 pt-10 pb-10 mb-10 px-20">
                   <FeatureCard
                      title="AI-Powered Writing"
                      description="Our AI analyzes your experience and generates professional descriptions that highlight your achievements."
@@ -139,6 +140,8 @@ export default function Home() {
                </div>
             </div>
             <VideoSection />
+
+            <HowItWorks />
          </div>
       </div>
    );
