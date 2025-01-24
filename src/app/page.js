@@ -143,6 +143,8 @@ export default function Home() {
             <VideoSection />
 
             <HowItWorks />
+
+            <div>WHAT WE SOLVE</div>
          </div>
       </div>
    );
