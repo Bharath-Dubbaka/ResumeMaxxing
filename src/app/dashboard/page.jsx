@@ -18,14 +18,13 @@ export default function DashboardPage() {
       }
 
       if (!loading && user && !userDetails) {
-         router.push("/userForm");
+         router.push("/userFormPage");
       }
    }, [loading, user, userDetails, router]);
 
    if (loading) return <Spinner className="w-12 h-12 border-4 text-pink-600" />;
    if (!user || !userDetails) return null;
 
-   
    return (
       <div className="min-h-screen bg-gradient-to-br from-purple-200/60 via-pink-50 to-blue-200/60 animate-gradient-xy">
          <div className=" px-24 py-8 mt-16 rounded-xl">

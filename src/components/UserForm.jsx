@@ -19,7 +19,7 @@ import {
    SelectTrigger,
    SelectValue,
 } from "../components/ui/select";
-import { Spinner } from "../components/ui/spinner";   
+import { Spinner } from "../components/ui/spinner";
 
 const UserForm = ({ onSave, onCancel, initialData, isEditing }) => {
    const [isLoading, setIsLoading] = useState(false);
@@ -94,9 +94,13 @@ const UserForm = ({ onSave, onCancel, initialData, isEditing }) => {
    };
 
    return (
-      <div className="min-h-screen max-w-5xl mx-auto rounded-xl py-10 bg-teal-100/40 backdrop-blur-sm shadow-xl border border-white/10">
+      <div className="min-h-screen max-w-5xl mx-auto rounded-xl py-10 bg-gradient-to-br from-blue-50/95 via-purple-50 to-teal-50/95 animate-gradient-xy backdrop-blur-sm shadow-xl border border-white/10">
          <div className="max-w-4xl mx-auto px-4">
             <form onSubmit={handleSave} className="space-y-6">
+               <div className="text-2xl font-semibold">
+                  {" "}
+                  Master Resume Template:
+               </div>
                {/* Personal Details Card */}
                <Card className="bg-white/90 shadow-lg border-0 backdrop-blur-xl rounded-xl">
                   <CardHeader className="border-b bg-white/50 px-6 py-4">
@@ -169,7 +173,7 @@ const UserForm = ({ onSave, onCancel, initialData, isEditing }) => {
                               customResponsibilities: [],
                            })
                         }
-                        className="bg-indigo-600 hover:bg-indigo-700 text-white"
+                        className="bg-gradient-to-r from-blue-500 to-indigo-500 hover:from-blue-600 hover:to-indigo-600 text-white"
                      >
                         <PlusCircle className="mr-2 h-4 w-4" />
                         Add Experience
@@ -326,7 +330,7 @@ const UserForm = ({ onSave, onCancel, initialData, isEditing }) => {
                                           ])
                                        }
                                     >
-                                       <SelectTrigger className="w-[180px] h-10">
+                                       <SelectTrigger className="w-[180px] h-10 text-orange-900 border border-orange-900">
                                           <SelectValue placeholder="Select type" />
                                        </SelectTrigger>
                                        <SelectContent>
@@ -342,7 +346,7 @@ const UserForm = ({ onSave, onCancel, initialData, isEditing }) => {
 
                                  <div className="space-y-2">
                                     <Label className="text-sm font-medium text-gray-700">
-                                       Custom Responsibilities
+                                       Custom Responsibilities:
                                     </Label>
                                     <div className="space-y-2">
                                        {exp.customResponsibilities?.map(
@@ -411,7 +415,7 @@ const UserForm = ({ onSave, onCancel, initialData, isEditing }) => {
                                                       );
                                                    }}
                                                 >
-                                                   <X className="h-4 w-4" />
+                                                   <X className="h-4 w-8" />
                                                 </Button>
                                              </div>
                                           )
@@ -437,6 +441,7 @@ const UserForm = ({ onSave, onCancel, initialData, isEditing }) => {
                                                 ),
                                              ]);
                                           }}
+                                          className="text-blue-900 border border-blue-950"
                                        >
                                           <PlusCircle className="mr-2 h-4 w-4" />
                                           Add Responsibility
@@ -480,7 +485,7 @@ const UserForm = ({ onSave, onCancel, initialData, isEditing }) => {
                               grade: "",
                            })
                         }
-                        className="bg-indigo-600 hover:bg-indigo-700 text-white"
+                        className="bg-gradient-to-r from-blue-500 to-indigo-500 hover:from-blue-600 hover:to-indigo-600 text-white"
                      >
                         <PlusCircle className="mr-2 h-4 w-4" />
                         Add Education
@@ -645,7 +650,7 @@ const UserForm = ({ onSave, onCancel, initialData, isEditing }) => {
                               credentialId: "",
                            })
                         }
-                        className="bg-indigo-600 hover:bg-indigo-700 text-white"
+                        className="bg-gradient-to-r from-blue-500 to-indigo-500 hover:from-blue-600 hover:to-indigo-600 text-white"
                      >
                         <PlusCircle className="mr-2 h-4 w-4" />
                         Add Certification
@@ -814,7 +819,7 @@ const UserForm = ({ onSave, onCancel, initialData, isEditing }) => {
                               link: "",
                            })
                         }
-                        className="bg-indigo-600 hover:bg-indigo-700 text-white"
+                        className="bg-gradient-to-r from-blue-500 to-indigo-500 hover:from-blue-600 hover:to-indigo-600 text-white"
                      >
                         <PlusCircle className="mr-2 h-4 w-4" />
                         Add Project
@@ -999,16 +1004,17 @@ const UserForm = ({ onSave, onCancel, initialData, isEditing }) => {
                   <div className="max-w-4xl mx-auto px-4 flex justify-end gap-4">
                      <Button
                         type="button"
-                        variant="outline"
+                        variant="destructive"
                         onClick={onCancel}
                         disabled={isLoading}
+                        className="p-6 text-white"
                      >
-                        <X className="mr-2 h-4 w-4" />
+                        <X className="mr-2 h-4 w-4 " />
                         Cancel
                      </Button>
                      <Button
                         type="submit"
-                        className="bg-indigo-600 hover:bg-indigo-700 text-white"
+                        className="p-6 bg-gradient-to-br from-purple-600  to-indigo-500  hover:from-indigo-500 hover:to-purple-500 text-white"
                         disabled={isLoading}
                      >
                         {isLoading ? (

@@ -64,13 +64,13 @@ function UserFormContent() {
    if (!user) return null;
 
    return (
-      <div className="min-h-screen bg-gradient-to-br from-purple-100 via-pink-50 to-blue-100">
+      <div className="min-h-screen bg-gradient-to-br from-purple-100/95 via-pink-50/95 to-blue-100/95">
          <div className="container mx-auto py-8 px-4 pt-28">
             <UserForm
                initialData={userDetails}
                onSave={handleSaveDetails}
                onCancel={() => router.push("/dashboard")}
-               isEditing={isEditing} 
+               isEditing={isEditing}
             />
          </div>
       </div>

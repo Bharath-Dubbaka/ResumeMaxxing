@@ -81,7 +81,7 @@ const Header = () => {
                         </div>
                      </div>
                      {userQuota && (
-                        <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-1">
                            <div className="text-xs text-slate-700 bg-white/80 px-3 py-1 rounded-full">
                               {userQuota.subscription.type} Plan
                            </div>
