@@ -115,7 +115,7 @@ const UserForm = ({ onSave, onCancel, initialData, isEditing }) => {
                               Full Name
                            </Label>
                            <Input
-                              className="h-10"
+                              className="h-10 font-sans text-base"
                               value={userDetails.fullName}
                               onChange={(e) =>
                                  handleChange("fullName", e.target.value)
@@ -128,7 +128,7 @@ const UserForm = ({ onSave, onCancel, initialData, isEditing }) => {
                               Email
                            </Label>
                            <Input
-                              className="h-10"
+                              className="h-10 font-sans text-base"
                               type="email"
                               value={userDetails.email}
                               onChange={(e) =>
@@ -142,7 +142,7 @@ const UserForm = ({ onSave, onCancel, initialData, isEditing }) => {
                               Phone
                            </Label>
                            <Input
-                              className="h-10"
+                              className="h-10 font-sans text-base"
                               value={userDetails.phone}
                               onChange={(e) =>
                                  handleChange("phone", e.target.value)
@@ -189,7 +189,7 @@ const UserForm = ({ onSave, onCancel, initialData, isEditing }) => {
                                        Job Title
                                     </Label>
                                     <Input
-                                       className="h-10"
+                                       className="h-10 font-sans text-base"
                                        value={exp.title}
                                        onChange={(e) =>
                                           handleChange("experience", [
@@ -211,7 +211,7 @@ const UserForm = ({ onSave, onCancel, initialData, isEditing }) => {
                                        Employer
                                     </Label>
                                     <Input
-                                       className="h-10"
+                                       className="h-10 font-sans text-base"
                                        value={exp.employer}
                                        onChange={(e) =>
                                           handleChange("experience", [
@@ -285,7 +285,7 @@ const UserForm = ({ onSave, onCancel, initialData, isEditing }) => {
                                        Location
                                     </Label>
                                     <Input
-                                       className="h-10"
+                                       className="h-10 font-sans text-base"
                                        value={exp.location}
                                        onChange={(e) =>
                                           handleChange("experience", [
@@ -501,7 +501,7 @@ const UserForm = ({ onSave, onCancel, initialData, isEditing }) => {
                                        Degree
                                     </Label>
                                     <Input
-                                       className="h-10"
+                                       className="h-10 font-sans text-base"
                                        value={edu.degree}
                                        onChange={(e) =>
                                           handleChange("education", [
@@ -523,7 +523,7 @@ const UserForm = ({ onSave, onCancel, initialData, isEditing }) => {
                                        Institution
                                     </Label>
                                     <Input
-                                       className="h-10"
+                                       className="h-10 font-sans text-base"
                                        value={edu.institution}
                                        onChange={(e) =>
                                           handleChange("education", [
@@ -661,12 +661,12 @@ const UserForm = ({ onSave, onCancel, initialData, isEditing }) => {
                         <Card key={index} className="border shadow-sm">
                            <CardContent className="p-6">
                               <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-                                 <div className="space-y-2">
+                                 <div className="space-y-2 w-[100%]">
                                     <Label className="text-sm font-medium text-gray-700">
                                        Certification Name
                                     </Label>
                                     <Input
-                                       className="h-10"
+                                       className="h-10 font-sans text-base"
                                        value={cert.name}
                                        onChange={(e) =>
                                           handleChange("certifications", [
@@ -688,7 +688,7 @@ const UserForm = ({ onSave, onCancel, initialData, isEditing }) => {
                                        Issuing Organization
                                     </Label>
                                     <Input
-                                       className="h-10"
+                                       className="h-10 font-sans text-base"
                                        value={cert.issuer}
                                        onChange={(e) =>
                                           handleChange("certifications", [
@@ -762,7 +762,7 @@ const UserForm = ({ onSave, onCancel, initialData, isEditing }) => {
                                        Credential ID
                                     </Label>
                                     <Input
-                                       className="h-10"
+                                       className="h-10 font-sans text-base"
                                        value={cert.credentialId}
                                        onChange={(e) =>
                                           handleChange("certifications", [

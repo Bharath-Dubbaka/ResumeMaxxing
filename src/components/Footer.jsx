@@ -37,14 +37,14 @@ const Footer = () => {
                            Pricing
                         </Link>
                      </li>
-                     <li>
+                     {/* <li>
                         <Link
                            href="/features"
                            className="text-slate-600 hover:text-slate-900"
                         >
                            Features
                         </Link>
-                     </li>
+                     </li> */}
                   </ul>
                </div>
 
@@ -68,14 +68,14 @@ const Footer = () => {
                            FAQs
                         </Link>
                      </li>
-                     <li>
+                     {/* <li>
                         <Link
                            href="/blog"
                            className="text-slate-600 hover:text-slate-900"
                         >
                            Blog
                         </Link>
-                     </li>
+                     </li> */}
                   </ul>
                </div>
 
@@ -99,14 +99,14 @@ const Footer = () => {
                            Terms of Service
                         </Link>
                      </li>
-                     <li>
+                     {/* <li>
                         <Link
                            href="/cookies"
                            className="text-slate-600 hover:text-slate-900"
                         >
                            Cookie Policy
                         </Link>
-                     </li>
+                     </li> */}
                   </ul>
                </div>
             </div>

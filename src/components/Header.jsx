@@ -61,7 +61,7 @@ const Header = () => {
                </nav>
 
                {/* Auth Buttons and Quota Display */}
-               {user ? (
+               {user && userQuota ? (
                   <div className="flex items-center gap-4">
                      <div className="flex items-center gap-3">
                         {user.picture && (
@@ -72,8 +72,11 @@ const Header = () => {
                            />
                         )}
                         <div className="text-sm">
-                           <p className="text-slate-900 font-medium">
+                           <p className="text-slate-900 font-medium flex align-baseline">
                               {user.name}
+                              <div className="text-xs text-slate-700 bg-white/80 px-1.5 py-1 rounded-full bg-teal-200 ml-2">
+                                 {userQuota.subscription.type} Plan
+                              </div>
                            </p>
                            <p className="text-slate-600 text-xs">
                               {user.email}
@@ -82,20 +85,19 @@ const Header = () => {
                      </div>
                      {userQuota && (
                         <div className="flex items-center gap-1">
-                           <div className="text-xs text-slate-700 bg-white/80 px-3 py-1 rounded-full">
-                              {userQuota.subscription.type} Plan
-                           </div>
-                           <div className="text-xs text-slate-700 bg-white/80 px-3 py-1 rounded-full">
+                           <div className="text-xs text-slate-700 bg-white/80 px-1.5 py-1 rounded-full">
                               Parsing: {userQuota.parsing.used}/
                               {userQuota.parsing.limit}
                            </div>
-                           <div className="text-xs text-slate-700 bg-white/80 px-3 py-1 rounded-full">
-                              Downloads: {userQuota.downloads.used}/
-                              {userQuota.downloads.limit}
-                           </div>
-                           <div className="text-xs text-slate-700 bg-white/80 px-3 py-1 rounded-full">
+
+                           <div className="text-xs text-slate-700 bg-white/80 px-1.5 py-1 rounded-full">
                               Generates: {userQuota.generates.used}/
                               {userQuota.generates.limit}
+                           </div>
+
+                           <div className="text-xs text-slate-700 bg-white/80 px-1.5 py-1 rounded-full">
+                              Downloads: {userQuota.downloads.used}/
+                              {userQuota.downloads.limit}
                            </div>
                         </div>
                      )}

@@ -15,6 +15,8 @@ import { useState } from "react";
 import { Spinner } from "../components/ui/spinner";
 import { useEffect } from "react";
 import HowItWorks from "../components/ui/HowItWorks";
+import ProblemsWeSolve from "../components/ui/ProblemsWeSolve";
+import HowWeSolve from "../components/ui/HowWeSolve";
 
 export default function Home() {
    const router = useRouter();
@@ -143,8 +145,8 @@ export default function Home() {
             <VideoSection />
 
             <HowItWorks />
-
-            <div>WHAT WE SOLVE</div>
+            <ProblemsWeSolve />
+            <HowWeSolve />
          </div>
       </div>
    );
