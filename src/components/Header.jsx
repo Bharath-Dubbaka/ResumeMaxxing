@@ -30,10 +30,10 @@ const Header = () => {
    return (
       <header className="border-b bg-white/70 backdrop-blur-md fixed top-0 w-full z-50">
          <div className="container mx-auto px-4">
-            <div className="flex items-center justify-between h-16">
+            <div className="flex items-center justify-between h-[4.3rem]">
                {/* Logo */}
                <Link href="/" className="flex items-center space-x-2">
-                  <span className="text-3xl font-bold bg-gradient-to-r from-blue-900 to-pink-900 bg-clip-text text-transparent">
+                  <span className="text-[2.5rem] font-bold bg-gradient-to-r from-blue-900 to-pink-900 bg-clip-text text-transparent">
                      ResumeOnFly
                   </span>
                </Link>

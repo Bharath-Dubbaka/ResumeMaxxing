@@ -109,10 +109,15 @@ export default function Home() {
                   AI-Powered Resume Builder
                </h1>
                <p className="text-slate-900 text-xl md:text-2xl max-w-2xl mx-auto">
-                  Make this in typing style Create/Customize your professional
-                  resumes with our cutting-edge AI technology in a matter of
-                  minutes for any Job Description. 10x faster and 10x chances to
-                  land your dream job.
+                  <span className="font-bold">Create/Customize</span> your
+                  professional resumes with our cutting-edge{" "}
+                  <span className="font-bold">
+                     AI technology in just minutes
+                  </span>{" "}
+                  for any Job Description, to{" "}
+                  <span className="font-bold"> 10x your speed</span> and{" "}
+                  <span className="font-bold">10x your chances</span> to land
+                  your dream job.
                </p>
                <div className="space-x-4">
                   <Button

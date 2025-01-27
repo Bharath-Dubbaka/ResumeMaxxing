@@ -66,7 +66,7 @@ const Contact = () => {
    };
 
    return (
-      <div className="py-20 bg-gradient-to-br from-purple-200/60 via-pink-50/95 to-blue-200/60 animate-gradient-xy">
+      <div className="py-20 bg-gradient-to-br from-yellow-50/90 via-rose-50/95 to-purple-200/60 animate-gradient-xy">
          <Toaster
             position="top-center"
             toastOptions={{
