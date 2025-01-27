@@ -13,7 +13,7 @@ const TypeWriting = () => {
       "Smart AI Resume Assistant",
    ];
 
-   const period = 500;
+   const period = 400;
 
    useEffect(() => {
       const ticker = setInterval(() => {
@@ -39,12 +39,12 @@ const TypeWriting = () => {
       if (!isDeleting && updatedText === fullText) {
          setTimeout(() => {
             setIsDeleting(true);
-            setTypingSpeed(50);
+            setTypingSpeed(30);
          }, period);
       } else if (isDeleting && updatedText === "") {
          setIsDeleting(false);
          setLoopNum(loopNum + 1);
-         setTypingSpeed(100);
+         setTypingSpeed(60);
       }
    };
 
