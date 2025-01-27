@@ -2,6 +2,24 @@
 @tailwind components;
 @tailwind utilities;
 
+@keyframes blink {
+   0% {
+      opacity: 1;
+   }
+   50% {
+      opacity: 0;
+   }
+   100% {
+      opacity: 1;
+   }
+}
+
+@layer utilities {
+   .animate-blink {
+      animation: blink 0.5s step-end infinite;
+   }
+}
+
 @layer base {
    :root {
       --background: 0 0% 100%;
