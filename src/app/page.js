@@ -104,7 +104,7 @@ export default function Home() {
       <div className="">
          <div className="">
             {/* Hero Section */}
-            <div className="min-h-screen text-center space-y-8 pt-40 bg-gradient-to-br from-purple-200/60 via-teal-50/95 to-blue-100/80 animate-gradient-xy">
+            <div className="min-h-screen text-center space-y-8 pt-40 bg-gradient-to-br from-yellow-50/90 via-rose-50/95 to-purple-200/60 animate-gradient-xy">
                <h1 className="text-5xl md:text-7xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-900 to-pink-900">
                   AI-Powered Resume Builder
                </h1>

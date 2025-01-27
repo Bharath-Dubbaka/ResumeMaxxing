@@ -289,7 +289,7 @@ export default function JobDescriptionAnalyzer() {
                Job Description Analyzer
             </CardTitle>
          </CardHeader>
-         <CardContent className="p-6">
+         <CardContent className="p-6 bg-transparent">
             <div className="space-y-4">
                <Textarea
                   placeholder="Paste your job description here..."

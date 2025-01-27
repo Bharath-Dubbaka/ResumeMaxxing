@@ -57,7 +57,7 @@ export default function FAQ() {
    ];
 
    return (
-      <div className="py-24 px-4 sm:px-6 lg:px-8 bg-gradient-to-br from-purple-200/60 via-teal-50/95 to-blue-200/60 animate-gradient-xy">
+      <div className="py-28 px-4 sm:px-6 lg:px-8 bg-gradient-to-br from-yellow-50/95 via-pink-50 to-blue-200/60 animate-gradient-xy">
          <div className="max-w-4xl mx-auto">
             <h2 className="text-4xl font-bold text-center mb-12">
                Frequently Asked Questions

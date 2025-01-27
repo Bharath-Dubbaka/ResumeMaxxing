@@ -23,10 +23,10 @@ const Footer = () => {
                   <ul className="space-y-3">
                      <li>
                         <Link
-                           href="/templates"
+                           href="/contact"
                            className="text-slate-600 hover:text-slate-900"
                         >
-                           Templates
+                           Contact
                         </Link>
                      </li>
                      <li>
