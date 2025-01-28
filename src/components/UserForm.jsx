@@ -97,7 +97,6 @@ const UserForm = ({ onSave, onCancel, initialData, isEditing }) => {
 
    return (
       <div className="min-h-screen max-w-6xl mx-auto rounded-xl py-10 bg-gradient-to-br from-slate-200/85 via-slate-200/95 to-slate-200/85 animate-gradient-xy backdrop-blur-sm shadow-xl border border-white/10">
-         <Toaster position="top-center" />
          <div className="max-w-5xl mx-auto px-10">
             <form onSubmit={handleSave} className="space-y-6">
                <div className="text-2xl font-semibold">

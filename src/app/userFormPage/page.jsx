@@ -40,13 +40,12 @@ function UserFormContent() {
             user.uid
          );
          dispatch(setUserDetails(updatedDetails));
+         toast.success("Saved your details to Master Template");
          router.push("/dashboard");
       } catch (error) {
          console.error("Error saving user details:", error);
-         console.log("Failed to save details. Please try again.");
-         toast.error("Failed to save details. Please try again.", {
-            duration: 1000,
-         });
+         console.log("Failed to save details. Please try again.", error);
+         toast.error("Failed to save details. Please try again.", error);
       } finally {
          setIsSaving(false);
       }
@@ -55,7 +54,6 @@ function UserFormContent() {
    if (loading || isSaving) {
       return (
          <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-purple-50 flex items-center justify-center">
-            <Toaster position="top-center" />
             <div className="text-center space-y-4">
                <Spinner className="w-12 h-12 border-4 text-indigo-600" />
                <p className="text-gray-600 font-medium">
@@ -70,6 +68,7 @@ function UserFormContent() {
 
    return (
       <div className="min-h-screen bg-gradient-to-br from-yellow-50/95 via-pink-50 to-blue-200/60 animate-gradient-xy">
+         <Toaster position="top-center" />
          <div className="container mx-auto py-8 px-4 pt-28">
             <UserForm
                initialData={userDetails}

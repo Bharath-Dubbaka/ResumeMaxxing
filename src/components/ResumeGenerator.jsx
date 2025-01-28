@@ -724,7 +724,6 @@ const ResumeGenerator = () => {
 
    return technicalSkills.length > 0 ? (
       <Card className="bg-white/60 shadow-lg border-0 backdrop-blur-2xl rounded-xl mt-6">
-         <Toaster position="top-center" />
          {/* <CardHeader className="border-b bg-white/40 backdrop-blur-xl px-6 py-4">
          <CardTitle>Resume Generator</CardTitle>
       </CardHeader> */}

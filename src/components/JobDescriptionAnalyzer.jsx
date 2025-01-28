@@ -286,7 +286,6 @@ export default function JobDescriptionAnalyzer() {
 
    return (
       <Card className="bg-white/60 shadow-lg border-slate-100 backdrop-blur-2xl rounded-xl">
-         <Toaster position="top-center" />
          <CardHeader className="border-b bg-white/40 backdrop-blur-xl px-6 py-4">
             <CardTitle className="text-xl font-semibold text-gray-800">
                Job Description Analyzer

@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 import JobDescriptionAnalyzer from "../../components/JobDescriptionAnalyzer";
 import ResumeGenerator from "../../components/ResumeGenerator";
+import { toast, Toaster } from "sonner";
 
 export default function DashboardPage() {
    const { user, loading } = useSelector((state) => state.auth);
@@ -27,6 +28,15 @@ export default function DashboardPage() {
 
    return (
       <div className="min-h-screen bg-gradient-to-br from-purple-200/60 via-pink-50/95 to-blue-200/60 animate-gradient-xy">
+         <Toaster
+            position="top-center"
+            toastOptions={{
+               style: {
+                  background: "lightblue",
+               },
+               className: "class",
+            }}
+         />
          <div className=" px-24 py-8 pt-32 rounded-xl">
             <h1 className="text-3xl font-bold mb-8 ">- Dashboard</h1>
             <JobDescriptionAnalyzer />

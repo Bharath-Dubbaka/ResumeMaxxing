@@ -125,7 +125,6 @@ const ResumePreview = ({
    if (loading) {
       return (
          <div className="flex flex-col items-center justify-center h-64 space-y-4">
-            <Toaster position="top-center" />
             <Spinner className="w-16 h-16" />
             <p className="text-lg font-semibold text-blue-600 text-center">
                Generating your resume, please hold on.
@@ -141,7 +140,6 @@ const ResumePreview = ({
 
    return (
       <div className="space-y-4">
-         <Toaster position="top-center" />
          <div className="space-y-4">
             <div className="flex gap-4">
                <Button
