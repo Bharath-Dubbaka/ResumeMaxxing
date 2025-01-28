@@ -15,6 +15,9 @@ import { QuotaService } from "../services/QuotaService";
 import { UserDetailsService } from "../services/UserDetailsService";
 import { setUser } from "../store/slices/authSlice";
 import { setUserDetails, setUserQuota } from "../store/slices/firebaseSlice";
+import { Inter } from "next/font/google"; // Import Inter here!
+
+const inter = Inter({ subsets: ["latin"] }); // Initialize Inter font
 
 const Header = () => {
    const { user } = useSelector((state) => state.auth);
@@ -89,14 +92,14 @@ const Header = () => {
                <Link href="/" className="flex items-center space-x-2">
                   <svg
                      xmlns="http://www.w3.org/2000/svg"
-                     viewBox="0 0 61 48"
-                     className="h-10"
+                     viewBox="0 0 50 48"
+                     className="h-10 ml-2"
                   >
                      {/* Paper/Wing Shape */}
-                     <path
+                     {/* <path
                         d="M20 36c0 0-8-16 0-24s24-4 32-12s8-8 8-8s4 12-4 20-20 8-28 16S20 36 20 36z"
                         fill="url(#gradient1)"
-                     />
+                     /> */}
 
                      {/* Document Base */}
                      <rect
@@ -142,12 +145,12 @@ const Header = () => {
                         <linearGradient
                            id="gradient1"
                            x1="0"
-                           y1="0"
+                           y1="20"
                            x2="100%"
                            y2="100%"
                         >
                            <stop offset="0%" stopColor="#818CF8" />
-                           <stop offset="100%" stopColor="#4F46E5" />
+                           <stop offset="100%" stopColor="#f0f569" />
                         </linearGradient>
                         <linearGradient
                            id="gradient2"
@@ -161,7 +164,9 @@ const Header = () => {
                         </linearGradient>
                      </defs>
                   </svg>
-                  <span className="text-[2.1rem] font-bold bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-500 bg-clip-text text-transparent hover:from-pink-500 hover:via-purple-600 hover:to-indigo-600 transition-all duration-300">
+                  <span
+                     className={`text-[2.1rem] font-extrabold bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-500 bg-clip-text text-transparent hover:from-pink-500 hover:via-purple-600 hover:to-indigo-600 transition-all duration-300 ${inter.className} font-inter`}
+                  >
                      ResumeOnFly
                   </span>
                </Link>

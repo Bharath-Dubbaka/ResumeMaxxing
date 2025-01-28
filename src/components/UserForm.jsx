@@ -94,8 +94,8 @@ const UserForm = ({ onSave, onCancel, initialData, isEditing }) => {
    };
 
    return (
-      <div className="min-h-screen max-w-5xl mx-auto rounded-xl py-10 bg-gradient-to-br from-blue-50/95 via-purple-50 to-teal-50/95 animate-gradient-xy backdrop-blur-sm shadow-xl border border-white/10">
-         <div className="max-w-4xl mx-auto px-4">
+      <div className="min-h-screen max-w-6xl mx-auto rounded-xl py-10 bg-gradient-to-br from-blue-50/95 via-purple-50 to-teal-50/95 animate-gradient-xy backdrop-blur-sm shadow-xl border border-white/10">
+         <div className="max-w-5xl mx-auto px-10">
             <form onSubmit={handleSave} className="space-y-6">
                <div className="text-2xl font-semibold">
                   {" "}
@@ -736,7 +736,7 @@ const UserForm = ({ onSave, onCancel, initialData, isEditing }) => {
                                  </div>
                                  <div className="space-y-2">
                                     <Label className="text-sm font-medium text-gray-700">
-                                       Expiry Date (Optional)
+                                       Expiry Date
                                     </Label>
                                     <DatePicker
                                        selected={

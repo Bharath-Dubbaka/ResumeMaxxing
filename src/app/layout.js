@@ -14,13 +14,13 @@ export const metadata = {
       "Create professional resumes with AI-powered tools and land your dream job.",
 };
 
-export default function RootLayout({ children }) {
+export default function RootLayout({ children, pageProps }) {
    return (
       <html lang="en">
          <body className={roboto.className}>
             <Providers>
                <FirestoreSubscription />
-               <Header />
+               <Header {...pageProps} />
                <main className="min-h-screen">{children}</main>
                <Footer />
             </Providers>
