@@ -15,9 +15,10 @@ import { QuotaService } from "../services/QuotaService";
 import { UserDetailsService } from "../services/UserDetailsService";
 import { setUser } from "../store/slices/authSlice";
 import { setUserDetails, setUserQuota } from "../store/slices/firebaseSlice";
-import { Inter } from "next/font/google"; // Import Inter here!
+import { Roboto_Slab, Inter } from "next/font/google"; // Import Inter here!
 
 const inter = Inter({ subsets: ["latin"] }); // Initialize Inter font
+const robotoSlab = Roboto_Slab({ subsets: ["latin"] });
 
 const Header = () => {
    const { user } = useSelector((state) => state.auth);
@@ -165,7 +166,7 @@ const Header = () => {
                      </defs>
                   </svg>
                   <span
-                     className={`text-[2.1rem] font-extrabold bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-500 bg-clip-text text-transparent hover:from-pink-500 hover:via-purple-600 hover:to-indigo-600 transition-all duration-300 ${inter.className} font-inter`}
+                     className={`text-[2.3rem] font-extrabold bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-500 bg-clip-text text-transparent hover:from-pink-500 hover:via-purple-600 hover:to-indigo-600 transition-all duration-300 ${inter.className} font-inter`}
                   >
                      ResumeOnFly
                   </span>
@@ -238,7 +239,56 @@ const Header = () => {
                                     {user.email}
                                  </p>
                               </div>
-
+                              {/* Upgrade to premium btn here and for user who are already on premium will be shown there premium endDate */}
+                              {/* Premium Section */}
+                              <div className="px-4 py-3 border-b border-indigo-100">
+                                 {userQuota.subscription.type === "free" ? (
+                                    <button
+                                       onClick={() => router.push("/pricing")}
+                                       className="w-full py-2 px-4 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white text-sm font-medium rounded-lg transition-all duration-200 shadow-sm hover:shadow-md flex items-center justify-center gap-2"
+                                    >
+                                       <svg
+                                          className="w-4 h-4"
+                                          fill="none"
+                                          stroke="currentColor"
+                                          viewBox="0 0 24 24"
+                                       >
+                                          <path
+                                             strokeLinecap="round"
+                                             strokeLinejoin="round"
+                                             strokeWidth={2}
+                                             d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"
+                                          />
+                                       </svg>
+                                       Upgrade to Premium
+                                    </button>
+                                 ) : (
+                                    <div className="text-sm">
+                                       <p className="text-slate-600 mb-1">
+                                          Premium Subscription
+                                       </p>
+                                       <p className="font-medium text-indigo-600 flex items-center gap-2">
+                                          <svg
+                                             className="w-4 h-4"
+                                             fill="none"
+                                             stroke="currentColor"
+                                             viewBox="0 0 24 24"
+                                          >
+                                             <path
+                                                strokeLinecap="round"
+                                                strokeLinejoin="round"
+                                                strokeWidth={2}
+                                                d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+                                             />
+                                          </svg>
+                                          Expires on{" "}
+                                          {new Date(
+                                             userQuota.subscription.endDate
+                                          ).toLocaleDateString()}
+                                       </p>
+                                    </div>
+                                 )}
+                              </div>
                               <div className="px-4 py-2 border-b border-indigo-100 bg-gradient-to-br from-white to-indigo-50">
                                  <p className="text-sm font-medium text-indigo-900 mb-2">
                                     Usage Quota

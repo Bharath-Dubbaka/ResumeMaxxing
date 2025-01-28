@@ -20,6 +20,7 @@ import {
    SelectValue,
 } from "../components/ui/select";
 import { Spinner } from "../components/ui/spinner";
+import { toast, Toaster } from "sonner";
 
 const UserForm = ({ onSave, onCancel, initialData, isEditing }) => {
    const [isLoading, setIsLoading] = useState(false);
@@ -87,14 +88,16 @@ const UserForm = ({ onSave, onCancel, initialData, isEditing }) => {
          await onSave(userDetails);
       } catch (error) {
          console.error("Error in handleSave:", error);
-         alert("Failed to save user details. Please try again.");
+         console.log("Failed to save user details. Please try again.", error);
+         toast.error("Failed to save user details. Please try again.", error);
       } finally {
          setIsLoading(false);
       }
    };
 
    return (
-      <div className="min-h-screen max-w-6xl mx-auto rounded-xl py-10 bg-gradient-to-br from-blue-50/95 via-purple-50 to-teal-50/95 animate-gradient-xy backdrop-blur-sm shadow-xl border border-white/10">
+      <div className="min-h-screen max-w-6xl mx-auto rounded-xl py-10 bg-gradient-to-br from-slate-200/85 via-slate-200/95 to-slate-200/85 animate-gradient-xy backdrop-blur-sm shadow-xl border border-white/10">
+         <Toaster position="top-center" />
          <div className="max-w-5xl mx-auto px-10">
             <form onSubmit={handleSave} className="space-y-6">
                <div className="text-2xl font-semibold">

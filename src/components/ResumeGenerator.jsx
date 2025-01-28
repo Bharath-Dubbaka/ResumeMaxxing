@@ -23,6 +23,7 @@ import {
    AlignmentType,
    BorderStyle,
 } from "docx";
+import { toast, Toaster } from "sonner";
 
 const openai = new OpenAI({
    apiKey: process.env.NEXT_PUBLIC_OPENAI_API_KEY,
@@ -192,13 +193,16 @@ const ResumeGenerator = () => {
 
    const generateResume = async () => {
       if (!user?.uid) {
-         alert("Please login to generate resume");
+         console.log("Please login to generate resume");
+         toast.error("Please login to generate resume");
          return;
       }
 
       const hasQuota = await QuotaService.checkQuota(user.uid, "generates");
       if (!hasQuota) {
-         alert("Generate quota exceeded. Please upgrade your plan.");
+         toast.error("Generate quota exceeded. Please upgrade your plan.");
+         console.log("Generate quota exceeded. Please upgrade your plan.");
+
          return;
       }
       const allSkills = getAllSkills();
@@ -245,7 +249,8 @@ const ResumeGenerator = () => {
          await QuotaService.incrementUsage(user.uid, "generates");
       } catch (error) {
          console.error("Error generating resume:", error);
-         alert("Failed to generate resume. Please try again.");
+         console.log("Failed to generate resume. Please try again.");
+         toast.error("Failed to generate resume. Please try again.", error);
       } finally {
          setLoading(false);
       }
@@ -254,7 +259,8 @@ const ResumeGenerator = () => {
    const handleSaveCustomResponsibility = async (expIndex, responsibility) => {
       try {
          if (!user?.uid) {
-            alert("Please login to save custom responsibilities");
+            console.log("Please login to save custom responsibilities");
+            toast.error("Please login to save custom responsibilities");
             return;
          }
 
@@ -263,7 +269,8 @@ const ResumeGenerator = () => {
 
          // Check if responsibility already exists
          if (experience?.customResponsibilities?.includes(responsibility)) {
-            alert("This responsibility is already saved!");
+            console.log("This responsibility is already saved!");
+            toast.error("This responsibility is already saved!");
             return;
          }
 
@@ -293,10 +300,12 @@ const ResumeGenerator = () => {
          dispatch(setUserDetails(updatedUserDetails));
 
          // Show success message
-         alert("Responsibility saved successfully!");
+         console.log("Responsibility saved successfully!");
+         toast.success("Responsibility saved successfully!");
       } catch (error) {
          console.error("Error saving custom responsibility:", error);
-         alert("Failed to save responsibility. Please try again.");
+         console.log("Failed to save responsibility. Please try again.");
+         toast.error("Failed to save responsibility. Please try again.");
       }
    };
 
@@ -304,7 +313,8 @@ const ResumeGenerator = () => {
       // Check quota before proceeding
       const hasQuota = await QuotaService.checkQuota(user?.uid, "downloads");
       if (!hasQuota) {
-         alert("Download quota exceeded. Please upgrade your plan.");
+         console.log("Download quota exceeded. Please upgrade your plan.");
+         toast.error("Download quota exceeded. Please upgrade your plan.");
          return;
       }
 
@@ -701,14 +711,20 @@ const ResumeGenerator = () => {
          //  await refreshUserQuota();
       } catch (error) {
          console.error("Error generating Word document:", error);
-         alert(
-            "Error generating document. Please check the console for details and try again."
+         console.log(
+            "Error generating document. Please check the console for details and try again",
+            error
+         );
+         toast.error(
+            "Error generating document. Please check the console for details and try again.",
+            error
          );
       }
    };
 
    return technicalSkills.length > 0 ? (
       <Card className="bg-white/60 shadow-lg border-0 backdrop-blur-2xl rounded-xl mt-6">
+         <Toaster position="top-center" />
          {/* <CardHeader className="border-b bg-white/40 backdrop-blur-xl px-6 py-4">
          <CardTitle>Resume Generator</CardTitle>
       </CardHeader> */}
