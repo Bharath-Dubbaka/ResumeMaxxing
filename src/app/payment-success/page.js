@@ -46,12 +46,17 @@ export default function PaymentSuccessPage() {
               // Update Firestore directly from client side
               const userRef = doc(db, 'quotas', user.uid);
               await updateDoc(userRef, {
+                'downloads.limit': 100,
+                'downloads.used': 0,
+                'generates.limit': 100, 
+                'generates.used': 0, 
+                'parsing.limit': 100,
+                'parsing.used': 0,
                 'subscription.type': 'premium',
                 'subscription.startDate': new Date().toISOString(),
                 'subscription.endDate': new Date(
-                  Date.now() + 365 * 24 * 60 * 60 * 1000
+                  Date.now() + 30 * 24 * 60 * 60 * 1000
                 ).toISOString(),
-                remainingQuota: 999999,
               });
 
               // Clear payment ID from storage

@@ -4,9 +4,9 @@ import { doc, getDoc, setDoc, updateDoc, onSnapshot } from "firebase/firestore";
 
 export class QuotaService {
    static DEFAULT_FREE_QUOTA = {
-      downloads: { used: 0, limit: 15 },
-      generates: { used: 0, limit: 15 },
-      parsing: { used: 0, limit: 15 },
+      downloads: { used: 0, limit: 10 },
+      generates: { used: 0, limit: 10 },
+      parsing: { used: 0, limit: 10 },
       subscription: {
          type: "free",
          startDate: new Date().toISOString(),
@@ -16,7 +16,7 @@ export class QuotaService {
 
    static DEFAULT_PREMIUM_QUOTA = {
       downloads: { used: 0, limit: 100 },
-      generates: { used: 0, limit: 150 },
+      generates: { used: 0, limit: 100 },
       parsing: { used: 0, limit: 100 },
       subscription: {
          type: "premium",
