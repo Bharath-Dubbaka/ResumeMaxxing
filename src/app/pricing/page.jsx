@@ -25,7 +25,7 @@ const Pricing = () => {
             if (userDetails) {
                router.push("/dashboard");
             } else {
-               router.push("/userForm");
+               router.push("/userFormPage");
             }
             return;
          }
@@ -53,7 +53,7 @@ const Pricing = () => {
          if (details) {
             router.push("/dashboard");
          } else {
-            router.push("/userForm");
+            router.push("/userFormPage");
          }
       } catch (error) {
          console.error("Login error:", error);
@@ -62,9 +62,64 @@ const Pricing = () => {
       }
    };
 
-   const handleUpgradeNow = () => {
-      // Logic for payment goes here
-      console.log("Upgrade Now clicked");
+   const handleUpgradeNow = async () => {
+      if (!user) {
+         await handleGetStarted();
+         return;
+      }
+
+      setIsLoading(true);
+      try {
+         const response = await fetch("/api/payment/create-payment-link", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+               userId: user.uid,
+               userEmail: user.email,
+               userName: user.name,
+            }),
+         });
+
+         const { paymentLink } = await response.json();
+         if (!paymentLink) throw new Error("Failed to create payment link");
+
+         // Open payment in new window
+         window.open(paymentLink, "_blank");
+
+         // Start polling for payment status
+         const checkPaymentStatus = setInterval(async () => {
+            try {
+               const verifyResponse = await fetch("/api/payment/verify-payment", {
+                  method: "POST",
+                  headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify({ 
+                     userId: user.uid,
+                     paymentId: window.localStorage.getItem('razorpay_payment_id')
+                  }),
+               });
+
+               const data = await verifyResponse.json();
+               if (data.success) {
+                  clearInterval(checkPaymentStatus);
+                  // Refresh quota data
+                  const quota = await QuotaService.getUserQuota(user.uid);
+                  dispatch(setUserQuota(quota));
+                  router.push("/dashboard");
+               }
+            } catch (error) {
+               console.error("Error verifying payment:", error);
+            }
+         }, 2000);
+
+         // Stop checking after 5 minutes
+         setTimeout(() => {
+            clearInterval(checkPaymentStatus);
+            setIsLoading(false);
+         }, 300000);
+      } catch (error) {
+         console.error("Error initiating payment:", error);
+         setIsLoading(false);
+      }
    };
 
    return (

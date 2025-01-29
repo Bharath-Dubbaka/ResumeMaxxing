@@ -1,6 +1,6 @@
 // src/services/UserDetailsServices.tsx
 
-import { db } from "./firebase";
+import { db } from "../services/firebase";
 import { doc, getDoc, setDoc } from "firebase/firestore";
 
 export class UserDetailsService {

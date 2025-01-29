@@ -1,5 +1,5 @@
 // src/services/QuotaServices.tsx
-import { db } from "./firebase";
+import { db } from "../services/firebase";
 import { doc, getDoc, setDoc, updateDoc, onSnapshot } from "firebase/firestore";
 
 export class QuotaService {

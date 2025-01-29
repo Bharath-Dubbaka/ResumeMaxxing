@@ -48,7 +48,7 @@ const Header = () => {
             if (userDetails) {
                router.push("/dashboard");
             } else {
-               router.push("/userForm");
+               router.push("/userFormPage");
             }
             return;
          }
@@ -76,12 +76,64 @@ const Header = () => {
          if (details) {
             router.push("/dashboard");
          } else {
-            router.push("/userForm");
+            router.push("/userFormPage");
          }
       } catch (error) {
          console.error("Login error:", error);
       } finally {
          setIsLoading(false);
+      }
+   };
+
+   const handleUpgradeClick = async () => {
+      try {
+         const response = await fetch('/api/payment/create-payment-link', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+               userId: user.uid,
+               userEmail: user.email,
+               userName: user.name
+            }),
+         });
+
+         const { paymentLink } = await response.json();
+         if (!paymentLink) throw new Error('Failed to create payment link');
+
+         // Open payment in new window
+         window.open(paymentLink, '_blank');
+
+         // Start polling for payment status
+         const checkPaymentStatus = setInterval(async () => {
+            try {
+               const verifyResponse = await fetch('/api/payment/verify-payment', {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({ 
+                     userId: user.uid,
+                     paymentId: window.localStorage.getItem('razorpay_payment_id')
+                  }),
+               });
+
+               const data = await verifyResponse.json();
+               if (data.success) {
+                  clearInterval(checkPaymentStatus);
+                  // Refresh quota data
+                  const quota = await QuotaService.getUserQuota(user.uid);
+                  dispatch(setUserQuota(quota));
+                  setIsDropdownOpen(false);
+               }
+            } catch (error) {
+               console.error('Error verifying payment:', error);
+            }
+         }, 2000);
+
+         // Stop checking after 5 minutes
+         setTimeout(() => {
+            clearInterval(checkPaymentStatus);
+         }, 300000);
+      } catch (error) {
+         console.error('Error initiating payment:', error);
       }
    };
 
@@ -244,7 +296,7 @@ const Header = () => {
                               <div className="px-4 py-3 border-b border-indigo-100">
                                  {userQuota.subscription.type === "free" ? (
                                     <button
-                                       onClick={() => router.push("/pricing")}
+                                       onClick={handleUpgradeClick}
                                        className="w-full py-2 px-4 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white text-sm font-medium rounded-lg transition-all duration-200 shadow-sm hover:shadow-md flex items-center justify-center gap-2"
                                     >
                                        <svg

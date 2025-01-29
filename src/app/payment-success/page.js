@@ -1,0 +1,106 @@
+'use client';
+
+import { useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import { useSelector, useDispatch } from 'react-redux';
+import { Loader2 } from 'lucide-react';
+import { doc, updateDoc } from 'firebase/firestore';
+import { db } from '../../services/firebase';
+import { QuotaService } from '../../services/QuotaService';
+import { setUserQuota } from '../../store/slices/firebaseSlice';
+
+export default function PaymentSuccessPage() {
+  const router = useRouter();
+  const dispatch = useDispatch();
+  const { user } = useSelector((state) => state.auth);
+
+  useEffect(() => {
+    if (!user) {
+      router.push('/');
+      return;
+    }
+
+    const searchParams = new URLSearchParams(window.location.search);
+    const paymentId = searchParams.get('razorpay_payment_id');
+    
+    if (paymentId) {
+      // Store payment ID for polling
+      window.localStorage.setItem('razorpay_payment_id', paymentId);
+      
+      const verifyAndUpdateUser = async () => {
+        try {
+          // First verify the payment
+          const verifyResponse = await fetch('/api/payment/verify-payment', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ 
+              paymentId,
+              userId: user.uid 
+            }),
+          });
+          
+          const data = await verifyResponse.json();
+          
+          if (data.success) {
+            try {
+              // Update Firestore directly from client side
+              const userRef = doc(db, 'quotas', user.uid);
+              await updateDoc(userRef, {
+                'subscription.type': 'premium',
+                'subscription.startDate': new Date().toISOString(),
+                'subscription.endDate': new Date(
+                  Date.now() + 365 * 24 * 60 * 60 * 1000
+                ).toISOString(),
+                remainingQuota: 999999,
+              });
+
+              // Clear payment ID from storage
+              window.localStorage.removeItem('razorpay_payment_id');
+              
+              // Update Redux state
+              const quota = await QuotaService.getUserQuota(user.uid);
+              dispatch(setUserQuota(quota));
+              
+              // Redirect to dashboard after 3 seconds
+              setTimeout(() => {
+                router.push('/dashboard');
+              }, 3000);
+            } catch (updateError) {
+              console.error('Error updating user data:', updateError);
+              setTimeout(() => {
+                router.push('/dashboard');
+              }, 3000);
+            }
+          } else {
+            console.error('Payment verification failed:', data.error);
+            setTimeout(() => {
+              router.push('/dashboard');
+            }, 3000);
+          }
+        } catch (error) {
+          console.error('Error verifying payment:', error);
+          setTimeout(() => {
+            router.push('/dashboard');
+          }, 3000);
+        }
+      };
+
+      verifyAndUpdateUser();
+    } else {
+      router.push('/dashboard');
+    }
+  }, [user, router, dispatch]);
+
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-purple-200/60 via-pink-50/95 to-blue-200/60">
+      <div className="text-center space-y-4">
+        <div className="flex justify-center mb-4">
+          <Loader2 className="w-12 h-12 animate-spin text-indigo-600" />
+        </div>
+        <h1 className="text-3xl font-bold text-green-600">Payment Successful!</h1>
+        <p className="text-gray-600">Thank you for upgrading to Premium.</p>
+        <p className="text-sm text-gray-500">Redirecting you to dashboard...</p>
+      </div>
+    </div>
+  );
+}

@@ -48,7 +48,7 @@ export default function Home() {
             if (userDetails) {
                router.push("/dashboard");
             } else {
-               router.push("/userForm");
+               router.push("/userFormPage");
             }
             return;
          }
@@ -79,7 +79,7 @@ export default function Home() {
          if (details) {
             router.push("/dashboard");
          } else {
-            router.push("/userForm");
+            router.push("/userFormPage");
          }
       } catch (error) {
          console.error("Login error:", error);
