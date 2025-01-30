@@ -66,8 +66,7 @@ const UserForm = ({ onSave, onCancel, initialData, isEditing }) => {
       }
    };
 
-   const handleAddField = (e, field, value) => {
-      e.preventDefault();
+   const handleAddField = (field, value) => {
       setUserDetails((prev) => ({
          ...prev,
          [field]: [...prev[field], value],
@@ -635,171 +634,124 @@ const UserForm = ({ onSave, onCancel, initialData, isEditing }) => {
                   </CardContent>
                </Card>
 
-               {/* Certifications Card */}
-               <Card className="bg-white/90 shadow-lg border-0 backdrop-blur-xl rounded-xl">
-                  <CardHeader className="border-b bg-white/50 px-6 py-4 flex flex-row items-center justify-between">
-                     <CardTitle className="text-xl font-semibold text-gray-800">
-                        Certifications
-                     </CardTitle>
-                     <Button
-                        type="button"
-                        onClick={(e) =>
-                           handleAddField(e, "certifications", {
-                              name: "",
-                              issuer: "",
-                              date: "",
-                              expiryDate: "",
-                              credentialId: "",
-                           })
-                        }
-                        className="bg-gradient-to-r from-blue-500 to-indigo-500 hover:from-blue-600 hover:to-indigo-600 text-white"
-                     >
-                        <PlusCircle className="mr-2 h-4 w-4" />
-                        Add Certification
-                     </Button>
+               {/* Certifications */}
+               <Card>
+                  <CardHeader>
+                     <CardTitle>Certifications</CardTitle>
                   </CardHeader>
-                  <CardContent className="p-6 space-y-6">
+                  <CardContent>
                      {userDetails.certifications.map((cert, index) => (
-                        <Card key={index} className="border shadow-sm">
-                           <CardContent className="p-6">
-                              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-                                 <div className="space-y-2 w-[100%]">
-                                    <Label className="text-sm font-medium text-gray-700">
-                                       Certification Name
-                                    </Label>
-                                    <Input
-                                       className="h-10 font-sans text-base"
-                                       value={cert.name}
-                                       onChange={(e) =>
-                                          handleChange("certifications", [
-                                             ...userDetails.certifications.slice(
-                                                0,
-                                                index
-                                             ),
-                                             { ...cert, name: e.target.value },
-                                             ...userDetails.certifications.slice(
-                                                index + 1
-                                             ),
-                                          ])
-                                       }
-                                       placeholder="Enter certification name"
-                                    />
-                                 </div>
-                                 <div className="space-y-2">
-                                    <Label className="text-sm font-medium text-gray-700">
-                                       Issuing Organization
-                                    </Label>
-                                    <Input
-                                       className="h-10 font-sans text-base"
-                                       value={cert.issuer}
-                                       onChange={(e) =>
-                                          handleChange("certifications", [
-                                             ...userDetails.certifications.slice(
-                                                0,
-                                                index
-                                             ),
-                                             {
-                                                ...cert,
-                                                issuer: e.target.value,
-                                             },
-                                             ...userDetails.certifications.slice(
-                                                index + 1
-                                             ),
-                                          ])
-                                       }
-                                       placeholder="Enter issuing organization"
-                                    />
-                                 </div>
-                              </div>
-
-                              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
-                                 <div className="space-y-2">
-                                    <Label className="text-sm font-medium text-gray-700">
-                                       Issue Date
-                                    </Label>
-                                    <DatePicker
-                                       selected={
-                                          isValidDate(cert.date)
-                                             ? new Date(cert.date)
-                                             : null
-                                       }
-                                       onChange={(date) =>
-                                          handleDateChange(
-                                             date,
-                                             "date",
-                                             index,
-                                             "certifications"
-                                          )
-                                       }
-                                       dateFormat="MM/yyyy"
-                                       showMonthYearPicker
-                                       className="w-full h-10 rounded-md border border-input"
-                                    />
-                                 </div>
-                                 <div className="space-y-2">
-                                    <Label className="text-sm font-medium text-gray-700">
-                                       Expiry Date
-                                    </Label>
-                                    <DatePicker
-                                       selected={
-                                          isValidDate(cert.expiryDate)
-                                             ? new Date(cert.expiryDate)
-                                             : null
-                                       }
-                                       onChange={(date) =>
-                                          handleDateChange(
-                                             date,
-                                             "expiryDate",
-                                             index,
-                                             "certifications"
-                                          )
-                                       }
-                                       dateFormat="MM/yyyy"
-                                       showMonthYearPicker
-                                       className="w-full h-10 rounded-md border border-input"
-                                    />
-                                 </div>
-                                 <div className="space-y-2">
-                                    <Label className="text-sm font-medium text-gray-700">
-                                       Credential ID
-                                    </Label>
-                                    <Input
-                                       className="h-10 font-sans text-base"
-                                       value={cert.credentialId}
-                                       onChange={(e) =>
-                                          handleChange("certifications", [
-                                             ...userDetails.certifications.slice(
-                                                0,
-                                                index
-                                             ),
-                                             {
-                                                ...cert,
-                                                credentialId: e.target.value,
-                                             },
-                                             ...userDetails.certifications.slice(
-                                                index + 1
-                                             ),
-                                          ])
-                                       }
-                                       placeholder="Enter credential ID"
-                                    />
-                                 </div>
-                              </div>
-
-                              <Button
-                                 type="button"
-                                 variant="destructive"
+                        <div key={index} className="space-y-4 mb-6">
+                           <div className="flex items-center justify-between">
+                              <h4 className="text-lg font-semibold">
+                                 Certification {index + 1}
+                              </h4>
+                              <button
                                  onClick={() =>
                                     handleRemoveField("certifications", index)
                                  }
-                                 className="mt-6"
+                                 className="text-red-500 hover:text-red-700"
                               >
-                                 <Trash2 className="mr-2 h-4 w-4" />
-                                 Remove Certification
-                              </Button>
-                           </CardContent>
-                        </Card>
+                                 <Trash2 className="w-4 h-4" />
+                              </button>
+                           </div>
+
+                           <div className="grid grid-cols-2 gap-4">
+                              <div>
+                                 <Label>Name</Label>
+                                 <Input
+                                    value={cert.name}
+                                    onChange={(e) =>
+                                       handleChange("certifications", [
+                                          ...userDetails.certifications.slice(0, index),
+                                          {
+                                             ...cert,
+                                             name: e.target.value,
+                                          },
+                                          ...userDetails.certifications.slice(index + 1),
+                                       ])
+                                    }
+                                    placeholder="e.g., AWS Solutions Architect"
+                                 />
+                              </div>
+                              <div>
+                                 <Label>Issuer</Label>
+                                 <Input
+                                    value={cert.issuer}
+                                    onChange={(e) =>
+                                       handleChange("certifications", [
+                                          ...userDetails.certifications.slice(0, index),
+                                          {
+                                             ...cert,
+                                             issuer: e.target.value,
+                                          },
+                                          ...userDetails.certifications.slice(index + 1),
+                                       ])
+                                    }
+                                    placeholder="e.g., Amazon Web Services"
+                                 />
+                              </div>
+                              <div>
+                                 <Label>Issue Date</Label>
+                                 <DatePicker
+                                    selected={
+                                       cert.issueDate
+                                          ? new Date(cert.issueDate + "-01")
+                                          : null
+                                    }
+                                    onChange={(date) =>
+                                       handleDateChange(
+                                          date,
+                                          "issueDate",
+                                          index,
+                                          "certifications"
+                                       )
+                                    }
+                                    dateFormat="MM/yyyy"
+                                    showMonthYearPicker
+                                    placeholderText="Select date"
+                                    className="w-full p-2 border rounded"
+                                 />
+                              </div>
+                              <div>
+                                 <Label>Expiry Date (Optional)</Label>
+                                 <DatePicker
+                                    selected={
+                                       cert.expiryDate
+                                          ? new Date(cert.expiryDate + "-01")
+                                          : null
+                                    }
+                                    onChange={(date) =>
+                                       handleDateChange(
+                                          date,
+                                          "expiryDate",
+                                          index,
+                                          "certifications"
+                                       )
+                                    }
+                                    dateFormat="MM/yyyy"
+                                    showMonthYearPicker
+                                    placeholderText="Select date"
+                                    className="w-full p-2 border rounded"
+                                 />
+                              </div>
+                           </div>
+                        </div>
                      ))}
+                     <Button
+                        onClick={(e) =>
+                           handleAddField("certifications", {
+                              name: "",
+                              issuer: "",
+                              issueDate: "",
+                              expiryDate: "",
+                           })
+                        }
+                        className="w-full mt-4"
+                     >
+                        <PlusCircle className="w-4 h-4 mr-2" />
+                        Add Certification
+                     </Button>
                   </CardContent>
                </Card>
 

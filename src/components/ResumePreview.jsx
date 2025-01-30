@@ -461,34 +461,46 @@ const ResumePreview = ({
                                  <span className="font-semibold">
                                     {edu.degree}
                                  </span>{" "}
-                                 - {edu.institution}, {edu.year}
+                                 - {edu.institution}
+                                 {edu.startDate && edu.endDate && (
+                                    <span className="text-gray-600">
+                                       , {edu.startDate.split('-')[0]} - {edu.endDate.split('-')[0]}
+                                    </span>
+                                 )}
                               </li>
                            ))}
                         </ul>
                      </div>
                   )}
 
-                  {/* Certifications Section */}
-                  {resumeData.certifications &&
-                     resumeData.certifications.length > 0 && (
-                        <div className="mt-6">
-                           <h2 className="text-xl font-bold mb-4 border-b-2">
-                              Certifications
-                           </h2>
-                           <ul className="list-disc ml-6">
-                              {resumeData.certifications.map((cert, index) => (
-                                 <li key={index} className="mb-2">
-                                    <span className="font-semibold">
-                                       {typeof cert === "string"
-                                          ? cert
-                                          : cert.name ||
-                                            "Unnamed Certification"}
+                  {/* Certifications */}
+                  {resumeData.certifications && resumeData.certifications.length > 0 && (
+                     <div className="mt-6">
+                        <h2 className="text-xl font-bold mb-4 border-b-2">
+                           Certifications
+                        </h2>
+                        <ul className="list-disc ml-6">
+                           {resumeData.certifications.map((cert, index) => (
+                              <li key={index} className="mb-2">
+                                 <span className="font-semibold">
+                                    {cert.name}
+                                 </span>
+                                 {cert.issuer && <span> - {cert.issuer}</span>}
+                                 {cert.issueDate && (
+                                    <span className="text-gray-600">
+                                       , {cert.issueDate.split('-')[0]}
                                     </span>
-                                 </li>
-                              ))}
-                           </ul>
-                        </div>
-                     )}
+                                 )}
+                                 {cert.expiryDate && (
+                                    <span className="text-gray-600">
+                                       {" "}({cert.expiryDate.split('-')[0]})
+                                    </span>
+                                 )}
+                              </li>
+                           ))}
+                        </ul>
+                     </div>
+                  )}
 
                   {/* Projects Section */}
                   {resumeData.projects && resumeData.projects.length > 0 && (

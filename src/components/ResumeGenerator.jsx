@@ -533,11 +533,20 @@ const ResumeGenerator = () => {
                            new Paragraph({
                               children: [
                                  new TextRun({
-                                    text: `${edu.degree} - ${edu.institution}, ${edu.year}`,
+                                    text: `${edu.degree} - ${edu.institution}`,
                                     bold: true,
                                     size: 24,
                                     font: "Roboto",
                                  }),
+                                 ...(edu.startDate && edu.endDate
+                                    ? [
+                                         new TextRun({
+                                            text: `, ${edu.startDate.split('-')[0]} - ${edu.endDate.split('-')[0]}`,
+                                            size: 24,
+                                            font: "Roboto",
+                                         }),
+                                      ]
+                                    : []),
                               ],
                               bullet: {
                                  level: 0,
@@ -547,40 +556,7 @@ const ResumeGenerator = () => {
                         ])
                         .flat(),
 
-                     // Soft Skills (only if data exists)
-                     // ...(resumeData.softSkills &&
-                     // resumeData.softSkills.length > 0
-                     //    ? [
-                     //         new Paragraph({
-                     //            children: [
-                     //               new TextRun({
-                     //                  text: "Soft Skills",
-                     //                  bold: true,
-                     //                  size: 28,
-                     //               }),
-                     //            ],
-                     //            spacing: { before: 400, after: 200 },
-                     //            border: {
-                     //               bottom: {
-                     //                  color: "999999",
-                     //                  size: 1,
-                     //                  style: BorderStyle.SINGLE,
-                     //               },
-                     //            },
-                     //         }),
-                     //         new Paragraph({
-                     //            children: [
-                     //               new TextRun({
-                     //                  text: resumeData.softSkills.join(", "), // Join skills by commas
-                     //                  size: 24,
-                     //               }),
-                     //            ],
-                     //            spacing: { after: 400 },
-                     //         }),
-                     //      ]
-                     //    : []),
-
-                     // Certifications (only if data exists)
+                     // Certifications
                      ...(resumeData.certifications &&
                      resumeData.certifications.length > 0
                         ? [
@@ -602,27 +578,53 @@ const ResumeGenerator = () => {
                                    },
                                 },
                              }),
-                             ...resumeData.certifications
-                                .map((cert) => [
-                                   new Paragraph({
-                                      children: [
-                                         new TextRun({
-                                            text: cert,
-                                            size: 24,
-                                            font: "Roboto",
-                                         }),
-                                      ],
-                                      bullet: {
-                                         level: 0,
-                                      },
-                                      spacing: { before: 100, after: 100 },
-                                   }),
-                                ])
-                                .flat(),
+                             ...resumeData.certifications.map((cert) => 
+                                new Paragraph({
+                                   children: [
+                                      new TextRun({
+                                         text: cert.name,
+                                         bold: true,
+                                         size: 24,
+                                         font: "Roboto",
+                                      }),
+                                      ...(cert.issuer
+                                         ? [
+                                              new TextRun({
+                                                 text: ` - ${cert.issuer}`,
+                                                 size: 24,
+                                                 font: "Roboto",
+                                              }),
+                                           ]
+                                         : []),
+                                      ...(cert.issueDate
+                                         ? [
+                                              new TextRun({
+                                                 text: `, ${cert.issueDate.split('-')[0]}`,
+                                                 size: 24,
+                                                 font: "Roboto",
+                                              }),
+                                           ]
+                                         : []),
+                                      ...(cert.expiryDate
+                                         ? [
+                                              new TextRun({
+                                                 text: ` (Valid until ${cert.expiryDate.split('-')[0]})`,
+                                                 size: 24,
+                                                 font: "Roboto",
+                                              }),
+                                           ]
+                                         : []),
+                                   ],
+                                   bullet: {
+                                      level: 0,
+                                   },
+                                   spacing: { before: 100 },
+                                })
+                             ),
                           ]
                         : []),
 
-                     // Projects (only if data exists)
+                     // Projects
                      ...(resumeData.projects && resumeData.projects.length > 0
                         ? [
                              new Paragraph({
