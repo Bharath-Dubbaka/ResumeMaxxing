@@ -1,12 +1,20 @@
 import Razorpay from "razorpay";
 
+if (!process.env.RAZORPAY_KEY_ID || !process.env.RAZORPAY_KEY_SECRET) {
+  console.error("Missing Razorpay credentials. Please check your environment variables.");
+}
+
 const razorpay = new Razorpay({
-  key_id: process.env.RAZORPAY_KEY_ID,
-  key_secret: process.env.RAZORPAY_KEY_SECRET,
+  key_id: process.env.RAZORPAY_KEY_ID || '',
+  key_secret: process.env.RAZORPAY_KEY_SECRET || '',
 });
 
 export const createPaymentLink = async (userId, userEmail, userName) => {
   try {
+    if (!process.env.RAZORPAY_KEY_ID || !process.env.RAZORPAY_KEY_SECRET) {
+      throw new Error("Razorpay credentials are not configured");
+    }
+
     const paymentLinkRequest = {
       amount: 10000, // ₹100 in paise
       currency: "INR",
@@ -38,6 +46,10 @@ export const createPaymentLink = async (userId, userEmail, userName) => {
 
 export const verifyPayment = async (paymentId) => {
   try {
+    if (!process.env.RAZORPAY_KEY_ID || !process.env.RAZORPAY_KEY_SECRET) {
+      throw new Error("Razorpay credentials are not configured");
+    }
+
     const payment = await razorpay.payments.fetch(paymentId);
     return payment.status === "captured";
   } catch (error) {
