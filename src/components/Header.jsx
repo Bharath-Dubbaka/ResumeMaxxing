@@ -16,6 +16,7 @@ import { UserDetailsService } from "../services/UserDetailsService";
 import { setUser } from "../store/slices/authSlice";
 import { setUserDetails, setUserQuota } from "../store/slices/firebaseSlice";
 import { Roboto_Slab, Inter } from "next/font/google"; // Import Inter here!
+import AuthService from "../services/AuthService"; // Import AuthService
 
 const inter = Inter({ subsets: ["latin"] }); // Initialize Inter font
 const robotoSlab = Roboto_Slab({ subsets: ["latin"] });
@@ -30,11 +31,7 @@ const Header = () => {
 
    const handleLogout = async () => {
       try {
-         console.log("Logging out...");
-         await auth.signOut();
-         dispatch(logout());
-         dispatch(clearFirebaseData());
-         console.log("Logout successful");
+         await AuthService.signOut(dispatch, logout, clearFirebaseData);
       } catch (error) {
          console.error("Logout error:", error);
       }
@@ -43,41 +40,11 @@ const Header = () => {
    const handleGetStarted = async () => {
       try {
          setIsLoading(true);
-
-         if (user) {
-            if (userDetails) {
-               router.push("/dashboard");
-            } else {
-               router.push("/userFormPage");
-            }
-            return;
-         }
-
-         const provider = new GoogleAuthProvider();
-         const result = await signInWithPopup(auth, provider);
-
-         dispatch(
-            setUser({
-               email: result.user.email,
-               name: result.user.displayName,
-               picture: result.user.photoURL,
-               uid: result.user.uid,
-            })
-         );
-
-         const quota = await QuotaService.getUserQuota(result.user.uid);
-         dispatch(setUserQuota(quota));
-
-         const details = await UserDetailsService.getUserDetails(
-            result.user.uid
-         );
-         dispatch(setUserDetails(details));
-
-         if (details) {
-            router.push("/dashboard");
-         } else {
-            router.push("/userFormPage");
-         }
+         await AuthService.handleAuthFlow(dispatch, router, user, userDetails, {
+            setUser,
+            setUserQuota,
+            setUserDetails
+         });
       } catch (error) {
          console.error("Login error:", error);
       } finally {

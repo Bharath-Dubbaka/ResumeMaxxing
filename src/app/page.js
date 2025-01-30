@@ -18,6 +18,7 @@ import HowItWorks from "../components/ui/HowItWorks";
 import ProblemsWeSolve from "../components/ui/ProblemsWeSolve";
 import HowWeSolve from "../components/ui/HowWeSolve";
 import TypeWriting from "../components/ui/TypeWriting";
+import AuthService from "../services/AuthService";
 
 export default function Home() {
    const router = useRouter();
@@ -43,44 +44,11 @@ export default function Home() {
    const handleGetStarted = async () => {
       try {
          setIsLoading(true);
-
-         if (user) {
-            if (userDetails) {
-               router.push("/dashboard");
-            } else {
-               router.push("/userFormPage");
-            }
-            return;
-         }
-
-         const provider = new GoogleAuthProvider();
-         const result = await signInWithPopup(auth, provider);
-
-         // Update Redux store with user data
-         dispatch(
-            setUser({
-               email: result.user.email,
-               name: result.user.displayName,
-               picture: result.user.photoURL,
-               uid: result.user.uid,
-            })
-         );
-
-         // Initialize quota and update Redux store
-         const quota = await QuotaService.getUserQuota(result.user.uid);
-         dispatch(setUserQuota(quota));
-
-         // Get user details and update Redux store
-         const details = await UserDetailsService.getUserDetails(
-            result.user.uid
-         );
-         dispatch(setUserDetails(details));
-
-         if (details) {
-            router.push("/dashboard");
-         } else {
-            router.push("/userFormPage");
-         }
+         await AuthService.handleAuthFlow(dispatch, router, user, userDetails, {
+            setUser,
+            setUserQuota,
+            setUserDetails
+         });
       } catch (error) {
          console.error("Login error:", error);
       } finally {
