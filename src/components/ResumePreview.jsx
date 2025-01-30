@@ -139,7 +139,7 @@ const ResumePreview = ({
    if (!resumeData) return null;
 
    return (
-      <div className="space-y-4">
+      <div className="space-y-4 font-sans">
          <div className="space-y-4">
             <div className="flex gap-4">
                <Button
