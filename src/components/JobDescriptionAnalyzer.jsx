@@ -387,35 +387,51 @@ export default function JobDescriptionAnalyzer() {
                                           </h4>
                                           <div className="space-y-2 max-h-[200px] overflow-y-auto">
                                              {userDetails.experience.map(
-                                                (exp, i) => (
-                                                   <div
-                                                      key={i}
-                                                      className="flex items-center gap-2"
-                                                   >
-                                                      <input
-                                                         type="checkbox"
-                                                         id={`mapping-${index}-${i}`}
-                                                         checked={skillMappings[
-                                                            index
-                                                         ]?.experienceMappings.includes(
-                                                            exp.title
-                                                         )}
-                                                         onChange={(e) =>
-                                                            handleSkillMappingChange(
-                                                               skill,
-                                                               exp.title,
-                                                               e.target.checked
-                                                            )
-                                                         }
-                                                      />
-                                                      <label
-                                                         htmlFor={`mapping-${index}-${i}`}
-                                                         className="text-sm"
+                                                (exp, i) => {
+                                                   const isTitleBased = exp.responsibilityType === "titleBased";
+                                                   return (
+                                                      <div
+                                                         key={i}
+                                                         className={`flex items-center gap-2 ${
+                                                            isTitleBased ? 'opacity-50' : ''
+                                                         }`}
                                                       >
-                                                         {exp.title}
-                                                      </label>
-                                                   </div>
-                                                )
+                                                         <input
+                                                            type="checkbox"
+                                                            id={`mapping-${index}-${i}`}
+                                                            checked={skillMappings[
+                                                               index
+                                                            ]?.experienceMappings.includes(
+                                                               exp.title
+                                                            )}
+                                                            disabled={isTitleBased}
+                                                            onChange={(e) =>
+                                                               handleSkillMappingChange(
+                                                                  skill,
+                                                                  exp.title,
+                                                                  e.target.checked
+                                                               )
+                                                            }
+                                                            className={`rounded border-slate-500 text-blue-500 focus:ring-blue-500 ${
+                                                               isTitleBased ? 'cursor-not-allowed' : ''
+                                                            }`}
+                                                         />
+                                                         <label
+                                                            htmlFor={`mapping-${index}-${i}`}
+                                                            className={`text-sm ${
+                                                               isTitleBased ? 'cursor-not-allowed' : 'cursor-pointer'
+                                                            }`}
+                                                         >
+                                                            {exp.title}
+                                                            {isTitleBased && (
+                                                               <span className="ml-1 text-slate-400">
+                                                                  (Title-based)
+                                                               </span>
+                                                            )}
+                                                         </label>
+                                                      </div>
+                                                   );
+                                                }
                                              )}
                                           </div>
                                        </div>
@@ -430,58 +446,6 @@ export default function JobDescriptionAnalyzer() {
                                     </button>
                                  </div>
 
-                                 {/* {openDropdown === index && (
-                              <div
-                                 className="absolute left-0 top-[calc(100%+4px)] w-full bg-slate-800 rounded-xl p-3 shadow-xl border border-slate-600 z-20"
-                                 ref={dropdownRef}
-                              >
-                                 {userDetails.experience.map(
-                                    (exp, expIndex) => {
-                                       const isSelected = skillMappings
-                                          .find((m) => m.skill === skill)
-                                          ?.experienceMappings.includes(
-                                             exp.title
-                                          );
-                                       const isTitleBased =
-                                          exp.responsibilityType ===
-                                          "titleBased";
-
-                                       return (
-                                          <label
-                                             key={expIndex}
-                                             className={`flex items-center gap-2 p-2 rounded-lg cursor-pointer ${
-                                                isTitleBased
-                                                   ? "opacity-50 cursor-not-allowed bg-slate-700"
-                                                   : "hover:bg-slate-700"
-                                             } transition-all duration-200`}
-                                          >
-                                             <input
-                                                type="checkbox"
-                                                checked={isSelected}
-                                                disabled={isTitleBased}
-                                                onChange={(e) =>
-                                                   handleSkillMappingChange(
-                                                      skill,
-                                                      exp.title,
-                                                      e.target.checked
-                                                   )
-                                                }
-                                                className="rounded border-slate-500 text-blue-500 focus:ring-blue-500"
-                                             />
-                                             <span className="text-xs text-slate-200">
-                                                {exp.title}
-                                                {isTitleBased && (
-                                                   <span className="ml-1 text-slate-400">
-                                                      (Title-based)
-                                                   </span>
-                                                )}
-                                             </span>
-                                          </label>
-                                       );
-                                    }
-                                 )}
-                              </div>
-                           )} */}
                               </div>
                            ))}
                         </div>
