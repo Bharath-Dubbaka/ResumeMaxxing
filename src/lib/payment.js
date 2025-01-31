@@ -32,7 +32,7 @@ export const createPaymentLink = async (userId, userEmail, userName) => {
       notes: {
         userId: userId,
       },
-      callback_url: `${process.env.NEXT_PUBLIC_APP_URL}/payment-success`,
+      callback_url: `${process.env.NEXT_PUBLIC_APP_PATH_URL}/payment-success`,
       callback_method: "get",
     };
 
