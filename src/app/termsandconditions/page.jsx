@@ -7,12 +7,16 @@ const TermsAndConditions = () => {
             <h1 className="text-2xl font-bold mb-4">Terms and Conditions</h1>
             <p>
                These Terms and Conditions ("Terms") govern your access to and
-               use of the ResumeOnFly website and services (the "Services")
-               provided by [Your Company Name] ("we," "us," or "our"). By
-               accessing or using the Services, you agree to be bound by these
-               Terms and our Privacy Policy. If you do not agree with these
-               Terms and our Privacy Policy, please do not access or use the
-               Services.
+               use of the{" "}
+               <strong>
+                  {" "}
+                  ResumeOnFly website and services (the "Services"), provided by
+                  CVtoSalary ("we," "us," or "our").
+               </strong>{" "}
+               By accessing or using the Services, you agree to be bound by
+               these Terms and our Privacy Policy. If you do not agree with
+               these Terms or our Privacy Policy, please do not access or use
+               the Services.
             </p>
             {/* Add sections */}
             <ol className="list-decimal pl-5 mt-4 space-y-4">
@@ -66,6 +70,26 @@ const TermsAndConditions = () => {
                   </ul>
                </li>
                <li>
+                  {" "}
+                  <strong>
+                     {" "}
+                     Terms of Agreement/Service and Cancellation:
+                  </strong>{" "}
+                  <p>
+                     This Agreement remains valid as long as you use our
+                     Services. ResumeOnFly/CVtoSalary offers an online platform
+                     for selecting and ordering services, governed by these
+                     Terms. Either you or ResumeOnFly/CVtoSalary may terminate
+                     the Services at any time without cause. We reserve the
+                     right to terminate your access to the Services at any time,
+                     without prior notice, if you violate these Terms.
+                     ResumeOnFly/CVtoSalary reserves the right to terminate your
+                     access to the website and related services at any time,
+                     without notice to any individual, corporation, agent, firm,
+                     or other legal entity.
+                  </p>
+               </li>
+               <li>
                   <strong>AI-Powered Content:</strong>
                   <p>
                      The Services utilize AI to generate resume content based on
@@ -116,9 +140,13 @@ const TermsAndConditions = () => {
                      <li>
                         The Services and all content included therein, including
                         but not limited to text, graphics, logos, and software,
-                        are the property of [Your Company Name] and are
-                        protected by copyright and other intellectual property
-                        laws.
+                        are the property of{" "}
+                        <strong>
+                           {" "}
+                           [ResumeOnFly.com], product of CVtoSalary.com{" "}
+                        </strong>
+                        and are protected by copyright and other intellectual
+                        property laws.
                      </li>
                      <li>
                         You may not use any content from the Services without
@@ -158,6 +186,41 @@ const TermsAndConditions = () => {
                      without notice. Your continued use of the Services after
                      any changes are made constitutes your acceptance of the
                      revised Terms.
+                  </p>
+               </li>
+               <li>
+                  <strong> Cancellation under this policy: </strong>
+                  <p>
+                     Cancellations will be considered only if the request is
+                     made within the same day of placing the order. However, the
+                     cancellation request may not be entertained if the orders
+                     have been communicated to the vendors/merchants and they
+                     have initiated the process of shipping them.
+                  </p>
+                  <p>
+                     CVtoSalary.com (parent of ResumeOnFly) does not accept
+                     cancellation requests for perishable items like flowers,
+                     eatables, etc. However, refund/replacement can be made if
+                     the customer establishes that the quality of the
+                     product/service delivered is not good (up to 50% of the
+                     whole amount paid).
+                  </p>
+                  <p>
+                     In case of such issues, please report the same to our
+                     Customer Service team. The request will, however, be
+                     entertained once the merchant has checked and determined
+                     the same at their own end. This should be reported within
+                     the same day of receipt of the product/service.
+                  </p>
+                  <p>
+                     In case you feel that the product/service received is not
+                     as per your expectations, you must bring it to the notice
+                     of our customer service within the same day of receiving
+                     the product. The Customer Service Team, after looking into
+                     your complaint, will take an appropriate decision. In case
+                     of any refunds approved by CVtoSalary.com (parent of
+                     ResumeOnFly), it will take 6-8 days for the refund to be
+                     processed to the end customer.
                   </p>
                </li>
                <li>

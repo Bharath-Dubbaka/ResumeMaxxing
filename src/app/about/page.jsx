@@ -5,8 +5,9 @@ const About = () => {
       <div className="py-28 px-4 sm:px-6 lg:px-8 bg-gradient-to-br from-yellow-50/95 via-pink-50 to-blue-200/60 animate-gradient-xy">
          <div className="max-w-4xl mx-auto">
             {" "}
-            <h2 className="text-4xl font-bold text-center mb-12">
-               About ResumeOnFly
+            <h2 className="flex flex-col text-4xl font-bold text-center mb-12">
+               About ResumeOnFly{" "}
+               <span className="text-sm">(prod by CVtoSalary)</span>
             </h2>
             <div className="border border-blue-500 p-8 rounded-lg">
                <section className="mb-8">
@@ -126,6 +127,16 @@ const About = () => {
                         100 credits.
                      </li>
                   </ul>
+               </section>
+               <section className="mt-10 text-xl">
+                  <div>
+                     <strong>
+                        Please note: Since ResumeOnFly is a product of
+                        CVtoSalary,
+                     </strong>{" "}
+                     you may see CVtoSalary's name during payment processing and
+                     other related transactions.
+                  </div>
                </section>
             </div>
          </div>

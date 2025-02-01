@@ -43,7 +43,7 @@ const Header = () => {
          await AuthService.handleAuthFlow(dispatch, router, user, userDetails, {
             setUser,
             setUserQuota,
-            setUserDetails
+            setUserDetails,
          });
       } catch (error) {
          console.error("Login error:", error);
@@ -54,33 +54,38 @@ const Header = () => {
 
    const handleUpgradeClick = async () => {
       try {
-         const response = await fetch('/api/payment/create-payment-link', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+         const response = await fetch("/api/payment/create-payment-link", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
                userId: user.uid,
                userEmail: user.email,
-               userName: user.name
+               userName: user.name,
             }),
          });
 
          const { paymentLink } = await response.json();
-         if (!paymentLink) throw new Error('Failed to create payment link');
+         if (!paymentLink) throw new Error("Failed to create payment link");
 
          // Open payment in new window
-         window.open(paymentLink, '_blank');
+         window.open(paymentLink, "_blank");
 
          // Start polling for payment status
          const checkPaymentStatus = setInterval(async () => {
             try {
-               const verifyResponse = await fetch('/api/payment/verify-payment', {
-                  method: 'POST',
-                  headers: { 'Content-Type': 'application/json' },
-                  body: JSON.stringify({ 
-                     userId: user.uid,
-                     paymentId: window.localStorage.getItem('razorpay_payment_id')
-                  }),
-               });
+               const verifyResponse = await fetch(
+                  "/api/payment/verify-payment",
+                  {
+                     method: "POST",
+                     headers: { "Content-Type": "application/json" },
+                     body: JSON.stringify({
+                        userId: user.uid,
+                        paymentId: window.localStorage.getItem(
+                           "razorpay_payment_id"
+                        ),
+                     }),
+                  }
+               );
 
                const data = await verifyResponse.json();
                if (data.success) {
@@ -91,7 +96,7 @@ const Header = () => {
                   setIsDropdownOpen(false);
                }
             } catch (error) {
-               console.error('Error verifying payment:', error);
+               console.error("Error verifying payment:", error);
             }
          }, 2000);
 
@@ -100,14 +105,14 @@ const Header = () => {
             clearInterval(checkPaymentStatus);
          }, 300000);
       } catch (error) {
-         console.error('Error initiating payment:', error);
+         console.error("Error initiating payment:", error);
       }
    };
 
    return (
       <header className="border-b bg-white/70 backdrop-blur-md fixed top-0 w-full z-50">
          <div className="container mx-auto px-4">
-            <div className="flex items-center justify-between h-[4.3rem]">
+            <div className="flex items-center space-x-2 justify-between h-[5.3rem]">
                {/* Logo */}
                <Link href="/" className="flex items-center space-x-2">
                   <svg
@@ -184,11 +189,16 @@ const Header = () => {
                         </linearGradient>
                      </defs>
                   </svg>
+                  {/* <div className="flex flex-col"> */}
                   <span
-                     className={`text-[2.3rem] font-extrabold bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-500 bg-clip-text text-transparent hover:from-pink-500 hover:via-purple-600 hover:to-indigo-600 transition-all duration-300 ${inter.className} font-inter`}
+                     className={`text-[2.3rem] pb-2 flex flex-col font-extrabold bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-500 bg-clip-text text-transparent hover:from-pink-500 hover:via-purple-600 hover:to-indigo-600 transition-all duration-300`}
                   >
                      ResumeOnFly
+                     <span className="text-xs text-black font-normal">
+                        prod by <span className="font-bold"> CVtoSalary</span>
+                     </span>
                   </span>
+                  {/* </div> */}
                </Link>
 
                {/* Navigation */}

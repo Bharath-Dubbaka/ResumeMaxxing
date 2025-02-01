@@ -8,8 +8,11 @@ const Footer = () => {
             <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
                {/* Brand Column */}
                <div className="space-y-4">
-                  <h2 className="text-2xl font-bold bg-gradient-to-r from-blue-900 to-pink-900 bg-clip-text text-transparent">
+                  <h2 className="flex flex-col text-2xl font-bold bg-gradient-to-r from-blue-900 to-pink-900 bg-clip-text text-transparent">
                      ResumeOnFly
+                     <span className="text-xs text-black font-normal">
+                        prod by <span className="font-bold"> CVtoSalary</span>
+                     </span>
                   </h2>
                   <p className="text-slate-600">
                      Create professional resumes with AI-powered tools and land
@@ -97,6 +100,14 @@ const Footer = () => {
                            className="text-slate-600 hover:text-slate-900"
                         >
                            Terms and Conditions
+                        </Link>
+                     </li>
+                     <li>
+                        <Link
+                           href="/refundandcancellation"
+                           className="text-slate-600 hover:text-slate-900"
+                        >
+                           Refund and Cancellation
                         </Link>
                      </li>
                      {/* <li>

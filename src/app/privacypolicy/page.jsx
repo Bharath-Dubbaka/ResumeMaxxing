@@ -5,11 +5,18 @@ const PrivacyPolicy = () => {
       <div className="bg-gradient-to-br from-yellow-50/95 via-pink-50 to-blue-200/60 animate-gradient-xy">
          <div className="py-28 max-w-4xl mx-auto ">
             <h1 className="text-2xl font-bold mb-4">Privacy Policy</h1>
+            <p className="mb-2">
+               Privacy Policy This Privacy Policy explains how ResumeOnFly, a
+               product by CVtoSalary ("we," "us," or "our"), collects, uses, and
+               shares your personal information when you use the ResumeOnFly
+               website and services (the "Services").
+            </p>
             <p>
-               This Privacy Policy explains how [Your Company Name] ("we," "us,"
-               or "our") collects, uses, and shares your personal information
-               when you use the ResumeOnFly website and services (the
-               "Services").
+               <strong>
+                  Please note: Since ResumeOnFly is a product of CVtoSalary,
+               </strong>{" "}
+               you may see CVtoSalary's name during payment processing and other
+               related transactions.
             </p>
             <ol className="list-decimal pl-5 mt-4 space-y-4">
                <li>
