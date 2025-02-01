@@ -16,10 +16,16 @@ import { setSkills } from "../store/slices/skillsSlice";
 import { setSkillsMapped } from "../store/slices/skillsSlice";
 import { MapIcon, Trash2, PlusCircle } from "lucide-react";
 import { toast, Toaster } from "sonner";
+import OpenAI from "openai";
 
 const genAI = new GoogleGenerativeAI(
    process.env.NEXT_PUBLIC_GOOGLE_GEMINI_API_KEY
 );
+
+const openai = new OpenAI({
+   apiKey: process.env.NEXT_PUBLIC_OPENAI_API_KEY,
+   dangerouslyAllowBrowser: true,
+});
 
 export default function JobDescriptionAnalyzer() {
    const { user } = useSelector((state) => state.auth);
@@ -223,53 +229,42 @@ export default function JobDescriptionAnalyzer() {
          const API_URL =
             "https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent";
 
-         const prompt = `Analyze this job description as a professional resume writer. Respond ONLY with a JSON object in this exact format, no other text:
-         {
-            "technicalSkills": [array of strings],
-            "yearsOfExperience": number,
-            "roleDescriptions": [
-               {
-                  "title": string,
-                  "organization": string,
-                  "description": string
-               }
-            ]
-         }
-
-         Job Description: ${jobDescription}`;
-
-         const response = await fetch(`${API_URL}?key=${API_KEY}`, {
-            method: "POST",
-            headers: {
-               "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-               contents: [
+         const prompt = `Analyze this job description as a professional resume writer. Return ONLY a JSON object in this exact format, no other text:
+            {
+               "technicalSkills": [array of strings],
+               "yearsOfExperience": number,
+               "roleDescriptions": [
                   {
-                     parts: [
-                        {
-                           text: prompt,
-                        },
-                     ],
-                  },
-               ],
-            }),
+                     "title": string,
+                     "organization": string,
+                     "description": string
+                  }
+               ]
+            }
+   
+            Job Description: ${jobDescription}`;
+
+         const completion = await openai.chat.completions.create({
+            model: "gpt-3.5-turbo",
+            messages: [
+               {
+                  role: "system",
+                  content:
+                     "You are a professional resume writer. Analyze job descriptions and return information in JSON format. Return ONLY the JSON object, no additional text.",
+               },
+               {
+                  role: "user",
+                  content: prompt,
+               },
+            ],
+            temperature: 0.7,
+            max_tokens: 1000,
+            response_format: { type: "json_object" },
          });
 
-         if (!response.ok) {
-            throw new Error("Failed to analyze job description");
-         }
-
-         const data = await response.json();
-         const content = data.candidates[0].content.parts[0].text;
-
-         // Extract JSON using regex
-         const jsonMatch = content.match(/\{[\s\S]*\}/);
-         if (!jsonMatch) {
-            throw new Error("No valid JSON found in response");
-         }
-
-         const analysisResult = JSON.parse(jsonMatch[0]);
+         const analysisResult = JSON.parse(
+            completion.choices[0].message.content || "{}"
+         );
          setAnalysis(analysisResult);
          dispatch(setSkills(analysisResult.technicalSkills)); // Instead of dispatch(analysisResult.skills)
          await QuotaService.incrementUsage(user.uid, "parsing");
@@ -388,12 +383,16 @@ export default function JobDescriptionAnalyzer() {
                                           <div className="space-y-2 max-h-[200px] overflow-y-auto">
                                              {userDetails.experience.map(
                                                 (exp, i) => {
-                                                   const isTitleBased = exp.responsibilityType === "titleBased";
+                                                   const isTitleBased =
+                                                      exp.responsibilityType ===
+                                                      "titleBased";
                                                    return (
                                                       <div
                                                          key={i}
                                                          className={`flex items-center gap-2 ${
-                                                            isTitleBased ? 'opacity-50' : ''
+                                                            isTitleBased
+                                                               ? "opacity-50"
+                                                               : ""
                                                          }`}
                                                       >
                                                          <input
@@ -404,22 +403,29 @@ export default function JobDescriptionAnalyzer() {
                                                             ]?.experienceMappings.includes(
                                                                exp.title
                                                             )}
-                                                            disabled={isTitleBased}
+                                                            disabled={
+                                                               isTitleBased
+                                                            }
                                                             onChange={(e) =>
                                                                handleSkillMappingChange(
                                                                   skill,
                                                                   exp.title,
-                                                                  e.target.checked
+                                                                  e.target
+                                                                     .checked
                                                                )
                                                             }
                                                             className={`rounded border-slate-500 text-blue-500 focus:ring-blue-500 ${
-                                                               isTitleBased ? 'cursor-not-allowed' : ''
+                                                               isTitleBased
+                                                                  ? "cursor-not-allowed"
+                                                                  : ""
                                                             }`}
                                                          />
                                                          <label
                                                             htmlFor={`mapping-${index}-${i}`}
                                                             className={`text-sm ${
-                                                               isTitleBased ? 'cursor-not-allowed' : 'cursor-pointer'
+                                                               isTitleBased
+                                                                  ? "cursor-not-allowed"
+                                                                  : "cursor-pointer"
                                                             }`}
                                                          >
                                                             {exp.title}
@@ -445,7 +451,6 @@ export default function JobDescriptionAnalyzer() {
                                        <Trash2 size={16} />
                                     </button>
                                  </div>
-
                               </div>
                            ))}
                         </div>

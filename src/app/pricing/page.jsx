@@ -9,10 +9,11 @@ import { useRouter } from "next/navigation";
 import { useSelector, useDispatch } from "react-redux";
 import { setUser } from "../../store/slices/authSlice";
 import { setUserDetails, setUserQuota } from "../../store/slices/firebaseSlice";
+import { toast, Toaster } from "sonner";
 
 const Pricing = () => {
    const router = useRouter();
-   const { userDetails } = useSelector((state) => state.firebase);
+   const { userDetails, userQuota } = useSelector((state) => state.firebase);
    const [isLoading, setIsLoading] = useState(false);
    const dispatch = useDispatch();
    const { user } = useSelector((state) => state.auth);
@@ -68,6 +69,12 @@ const Pricing = () => {
          return;
       }
 
+      if (userQuota?.subscription?.type === "premium") {
+         toast.error("Already in premium mode");
+         console.log("Already in premium mode");
+         return;
+      }
+
       setIsLoading(true);
       try {
          const response = await fetch("/api/payment/create-payment-link", {
@@ -89,14 +96,19 @@ const Pricing = () => {
          // Start polling for payment status
          const checkPaymentStatus = setInterval(async () => {
             try {
-               const verifyResponse = await fetch("/api/payment/verify-payment", {
-                  method: "POST",
-                  headers: { "Content-Type": "application/json" },
-                  body: JSON.stringify({ 
-                     userId: user.uid,
-                     paymentId: window.localStorage.getItem('razorpay_payment_id')
-                  }),
-               });
+               const verifyResponse = await fetch(
+                  "/api/payment/verify-payment",
+                  {
+                     method: "POST",
+                     headers: { "Content-Type": "application/json" },
+                     body: JSON.stringify({
+                        userId: user.uid,
+                        paymentId: window.localStorage.getItem(
+                           "razorpay_payment_id"
+                        ),
+                     }),
+                  }
+               );
 
                const data = await verifyResponse.json();
                if (data.success) {
@@ -124,6 +136,15 @@ const Pricing = () => {
 
    return (
       <div className="container mx-auto px-4 py-28 bg-gradient-to-br from-yellow-50/95 via-pink-50 to-blue-200/60 animate-gradient-xy">
+         <Toaster
+            position="top-center"
+            toastOptions={{
+               style: {
+                  background: "#FFB3B3",
+               },
+               className: "class",
+            }}
+         />
          <h2 className="text-4xl font-bold text-center mb-8 text-gray-900">
             Choose Your Plan
          </h2>
@@ -169,9 +190,19 @@ const Pricing = () => {
                <h3 className="text-2xl font-semibold text-gray-900 mb-4">
                   Premium
                </h3>
-               <p className="text-4xl font-bold text-indigo-600 mb-2">
-                  $15/month
+               <p className="text-5xl font-extrabold text-indigo-600 mb-2">
+                  ₹999
+                  <span className="text-4xl font-bold text-indigo-600 mb-2">
+                     /month
+                  </span>
                </p>
+               <div className="flex items-center space-x-2 mb-2">
+                  <p className="text-xl text-gray-400 line-through">₹1299</p>
+                  <span className="bg-red-500 text-white text-xs font-bold px-2 py-0.5 rounded">
+                     ₹300 OFF
+                  </span>
+               </div>
+
                <p className="text-sm text-gray-500 mb-6">100 Credits</p>
                <ul className="text-gray-700 mb-6 space-y-2">
                   <li className="flex items-center">
@@ -190,6 +221,7 @@ const Pricing = () => {
                <button
                   onClick={handleUpgradeNow}
                   className="px-6 py-3 rounded-lg text-white font-semibold bg-indigo-600 hover:bg-indigo-700 transition-all duration-200"
+                  disabled={setUserQuota?.subscription?.type === "premium"}
                >
                   Upgrade Now
                </button>
