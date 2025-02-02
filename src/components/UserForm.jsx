@@ -159,19 +159,19 @@ const UserForm = ({ onSave, onCancel, initialData, isEditing }) => {
                <Card className="bg-white/90 shadow-lg border-0 backdrop-blur-xl rounded-xl">
                   <CardHeader className="border-b bg-white/50 px-6 py-4 flex flex-row items-center justify-between">
                      <CardTitle className="text-xl font-semibold text-gray-800">
-                        Work Experience
+                        Experience
                      </CardTitle>
                      <Button
                         type="button"
-                        onClick={(e) =>
-                           handleAddField(e, "experience", {
+                        onClick={() =>
+                           handleAddField("experience", {
                               title: "",
                               employer: "",
                               startDate: "",
                               endDate: "",
                               location: "",
+                              responsibilities: [],
                               responsibilityType: "skillBased",
-                              customResponsibilities: [],
                            })
                         }
                         className="bg-gradient-to-r from-blue-500 to-indigo-500 hover:from-blue-600 hover:to-indigo-600 text-white"
@@ -476,14 +476,14 @@ const UserForm = ({ onSave, onCancel, initialData, isEditing }) => {
                      </CardTitle>
                      <Button
                         type="button"
-                        onClick={(e) =>
-                           handleAddField(e, "education", {
-                              degree: "",
+                        onClick={() =>
+                           handleAddField("education", {
                               institution: "",
+                              degree: "",
+                              field: "",
                               startDate: "",
                               endDate: "",
                               location: "",
-                              grade: "",
                            })
                         }
                         className="bg-gradient-to-r from-blue-500 to-indigo-500 hover:from-blue-600 hover:to-indigo-600 text-white"
@@ -634,12 +634,14 @@ const UserForm = ({ onSave, onCancel, initialData, isEditing }) => {
                   </CardContent>
                </Card>
 
-               {/* Certifications */}
-               <Card>
-                  <CardHeader>
-                     <CardTitle>Certifications</CardTitle>
+               {/* Certifications Card */}
+               <Card className="bg-white/90 shadow-lg border-0 backdrop-blur-xl rounded-xl">
+                  <CardHeader className="border-b bg-white/50 px-6 py-4">
+                     <CardTitle className="text-xl font-semibold text-gray-800">
+                        Certifications
+                     </CardTitle>
                   </CardHeader>
-                  <CardContent>
+                  <CardContent className="p-6">
                      {userDetails.certifications.map((cert, index) => (
                         <div key={index} className="space-y-4 mb-6">
                            <div className="flex items-center justify-between">
@@ -739,7 +741,8 @@ const UserForm = ({ onSave, onCancel, initialData, isEditing }) => {
                         </div>
                      ))}
                      <Button
-                        onClick={(e) =>
+                        type="button"
+                        onClick={() =>
                            handleAddField("certifications", {
                               name: "",
                               issuer: "",
@@ -763,8 +766,8 @@ const UserForm = ({ onSave, onCancel, initialData, isEditing }) => {
                      </CardTitle>
                      <Button
                         type="button"
-                        onClick={(e) =>
-                           handleAddField(e, "projects", {
+                        onClick={() =>
+                           handleAddField("projects", {
                               name: "",
                               description: "",
                               technologies: "",
