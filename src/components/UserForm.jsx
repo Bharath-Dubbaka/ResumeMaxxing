@@ -69,7 +69,7 @@ const UserForm = ({ onSave, onCancel, initialData, isEditing }) => {
    const handleAddField = (field, value) => {
       setUserDetails((prev) => ({
          ...prev,
-         [field]: [...prev[field], value],
+         [field]: [...(prev[field] || []), value],
       }));
    };
 
