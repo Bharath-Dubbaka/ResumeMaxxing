@@ -37,9 +37,9 @@ export default function DashboardPage() {
                className: "class",
             }}
          />
-         
+
          <div className=" px-24 py-8 pt-32 rounded-xl">
-            <h1 className="text-3xl font-bold mb-8 ">- Dashboard</h1>
+            <h1 className="text-3xl font-bold mb-8 "></h1>
             <JobDescriptionAnalyzer />
             <ResumeGenerator />
          </div>
