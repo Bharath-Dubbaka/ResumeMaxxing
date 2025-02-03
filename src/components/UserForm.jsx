@@ -170,7 +170,7 @@ const UserForm = ({ onSave, onCancel, initialData, isEditing }) => {
                               startDate: "",
                               endDate: "",
                               location: "",
-                              responsibilities: [],
+                              customResponsibilities: [],
                               responsibilityType: "skillBased",
                            })
                         }
@@ -362,7 +362,7 @@ const UserForm = ({ onSave, onCancel, initialData, isEditing }) => {
                                                    onChange={(e) => {
                                                       const newResponsibilities =
                                                          [
-                                                            ...exp.customResponsibilities,
+                                                            ...(exp.customResponsibilities || []),
                                                          ];
                                                       newResponsibilities[
                                                          respIndex
@@ -433,7 +433,7 @@ const UserForm = ({ onSave, onCancel, initialData, isEditing }) => {
                                                 {
                                                    ...exp,
                                                    customResponsibilities: [
-                                                      ...exp.customResponsibilities,
+                                                      ...(exp.customResponsibilities || []),
                                                       "",
                                                    ],
                                                 },
@@ -750,8 +750,7 @@ const UserForm = ({ onSave, onCancel, initialData, isEditing }) => {
                               expiryDate: "",
                            })
                         }
-                        className="w-full mt-4"
-                     >
+                        className="bg-gradient-to-r from-blue-500 to-indigo-500 hover:from-blue-600 hover:to-indigo-600 text-white"                     >
                         <PlusCircle className="w-4 h-4 mr-2" />
                         Add Certification
                      </Button>

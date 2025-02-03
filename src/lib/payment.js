@@ -18,7 +18,7 @@ export const createPaymentLink = async (userId, userEmail, userName) => {
       }
 
       const paymentLinkRequest = {
-         amount: 99900, // ₹999 in paise
+         amount: 49900, // ₹499 in paise
          currency: "INR",
          accept_partial: false,
          description:

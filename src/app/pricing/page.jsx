@@ -191,16 +191,16 @@ const Pricing = () => {
                   Premium
                </h3>
                <p className="text-5xl font-extrabold text-indigo-600 mb-2">
-                  ₹999
+                  ₹499
                   <span className="text-4xl font-bold text-indigo-600 mb-2">
                      /month
                   </span>
                </p>
                <div className="flex items-center space-x-2 mb-2">
-                  <p className="text-xl text-gray-400 line-through">₹1299</p>
-                  <span className="bg-red-500 text-white text-xs font-bold px-2 py-0.5 rounded">
+                  <p className="text-xl text-gray-400 line-through">₹999</p>
+                  {/* <span className="bg-red-500 text-white text-xs font-bold px-2 py-0.5 rounded">
                      ₹300 OFF
-                  </span>
+                  </span> */}
                </div>
 
                <p className="text-sm text-gray-500 mb-6">100 Credits</p>
