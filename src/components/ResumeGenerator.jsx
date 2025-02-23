@@ -82,12 +82,11 @@ const ResumeGenerator = () => {
 
    // Function to get all unique skills
    const getAllSkills = () => {
-      if (skillsMapped && skillsMapped.length > 0) {
-         // Extract unique skills from skillsMapped
-         return [...new Set(skillsMapped.map((mapping) => mapping.skill))];
-      }
-      // Fall back to technicalSkills if no mappings exist
-      return technicalSkills;
+      const mappedSkills = skillsMapped?.map(mapping => mapping.skill) || [];
+      const customSkills = userDetails?.customSkills?.map(cs => cs.skill) || [];
+      
+      // Combine and deduplicate all skills
+      return [...new Set([...mappedSkills, ...customSkills])];
    };
 
    const generateResponsibilities = async (experience, technicalSkills) => {

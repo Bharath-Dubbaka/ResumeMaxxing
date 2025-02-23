@@ -144,7 +144,7 @@ const ResumePreview = ({
             <div className="flex gap-4">
                <Button
                   onClick={() => setIsEditing(!isEditing)}
-                  className="flex-1 flex items-center justify-center gap-2"
+                  className="flex-1 flex items-center justify-center gap-2 bg-gradient-to-r from-pink-200 to-red-300 text-black hover:from-pink-400 hover:to-indigo-300 hover:text-white transition-all duration-300 shadow-md hover:shadow-lg"
                   variant={isEditing ? "default" : "outline"}
                >
                   {isEditing ? "Save Changes" : "Edit Resume"}
@@ -153,7 +153,7 @@ const ResumePreview = ({
 
                <Button
                   onClick={downloadAsWord}
-                  className="flex-1 flex items-center justify-center gap-2"
+                  className="flex-1 flex items-center justify-center gap-2 bg-gradient-to-r from-teal-100  to-green-200 hover:from-pink-300 hover:to-indigo-400 text-black hover:text-white transition-all duration-300 shadow-md hover:shadow-lg"
                   variant="outline"
                >
                   <Download className="w-4 h-4" />

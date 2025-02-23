@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import { Button } from "../components/ui/button";
@@ -11,7 +11,7 @@ import {
   CardHeader,
   CardTitle,
 } from "../components/ui/card";
-import { PlusCircle, Save, Trash2, X } from "lucide-react";
+import { PlusCircle, Save, Trash2, X, MapIcon } from "lucide-react";
 import {
   Select,
   SelectContent,
@@ -27,7 +27,10 @@ const UserForm = ({ onSave, onCancel, initialData, isEditing }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [userDetails, setUserDetails] = useState(() => {
     if (initialData) {
-      return initialData;
+      return {
+        ...initialData,
+        customSkills: initialData.customSkills || []
+      };
     }
     return {
       fullName: "",
@@ -37,8 +40,23 @@ const UserForm = ({ onSave, onCancel, initialData, isEditing }) => {
       education: [],
       certifications: [],
       projects: [],
+      customSkills: [],
     };
   });
+
+  const [openDropdown, setOpenDropdown] = useState(null);
+  const dropdownRef = useRef(null);
+
+  useEffect(() => {
+    function handleClickOutside(event) {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setOpenDropdown(null);
+      }
+    }
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
 
   const isValidDate = (dateString) => {
     if (!dateString) return false;
@@ -47,7 +65,34 @@ const UserForm = ({ onSave, onCancel, initialData, isEditing }) => {
   };
 
   const handleChange = (field, value) => {
-    setUserDetails({ ...userDetails, [field]: value });
+    if (field === 'experience') {
+      // Check for title changes
+      const titleChanges = value.map((exp, index) => ({
+        oldTitle: userDetails.experience[index]?.title,
+        newTitle: exp.title,
+        changed: exp.title !== userDetails.experience[index]?.title
+      })).filter(change => change.changed);
+
+      // Update skill mappings if titles changed
+      if (titleChanges.length > 0) {
+        const updatedCustomSkills = userDetails.customSkills?.map(skill => ({
+          ...skill,
+          experienceMappings: skill.experienceMappings.map(title => {
+            const change = titleChanges.find(c => c.oldTitle === title);
+            return change ? change.newTitle : title;
+          })
+        }));
+
+        setUserDetails(prev => ({
+          ...prev,
+          experience: value,
+          customSkills: updatedCustomSkills
+        }));
+        return;
+      }
+    }
+    
+    setUserDetails(prev => ({ ...prev, [field]: value }));
   };
 
   const handleDateChange = (date, field, index, section) => {
@@ -81,15 +126,54 @@ const UserForm = ({ onSave, onCancel, initialData, isEditing }) => {
     }));
   };
 
+  const handleAddCustomSkill = () => {
+    setUserDetails(prev => ({
+      ...prev,
+      customSkills: [...(prev.customSkills || []), {
+        skill: "",
+        experienceMappings: prev.experience?.map(exp => exp.title) || []
+      }]
+    }));
+  };
+
+  const handleRemoveCustomSkill = (index) => {
+    setUserDetails(prev => ({
+      ...prev,
+      customSkills: prev?.customSkills?.filter((_, i) => i !== index)
+    }));
+  };
+
+  const handleCustomSkillChange = (index, newSkill) => {
+    setUserDetails(prev => ({
+      ...prev,
+      customSkills: prev?.customSkills?.map((skill, i) => 
+        i === index ? { ...skill, skill: newSkill } : skill
+      )
+    }));
+  };
+
+  const handleSkillMappingChange = (skillIndex, expTitle, checked) => {
+    setUserDetails(prev => ({
+      ...prev,
+      customSkills: prev?.customSkills?.map((skillItem, i) => 
+        i === skillIndex ? {
+          ...skillItem,
+          experienceMappings: checked 
+            ? [...skillItem.experienceMappings, expTitle]
+            : skillItem.experienceMappings.filter(title => title !== expTitle)
+        } : skillItem
+      )
+    }));
+  };
+
   const handleSave = async (e) => {
     e.preventDefault();
     setIsLoading(true);
     try {
-      await onSave(userDetails);
+      await onSave({ ...userDetails });
     } catch (error) {
       console.error("Error in handleSave:", error);
-      console.log("Failed to save user details. Please try again.", error);
-      toast.error("Failed to save user details. Please try again.", error);
+      toast.error("Failed to save user details. Please try again.");
     } finally {
       setIsLoading(false);
     }
@@ -149,6 +233,114 @@ const UserForm = ({ onSave, onCancel, initialData, isEditing }) => {
               </div>
             </AccordionItem>
 
+            {/* Custom Skills Section */}
+            <AccordionItem
+              value="customSkills"
+              trigger="Custom Skills"
+              className="bg-white/90 shadow-lg border-0"
+            >
+              <div className="space-y-6">
+                <div className="flex flex-wrap gap-5 justify-start">
+                  {userDetails?.customSkills?.map((skillItem, index) => (
+                    <div
+                      key={index}
+                      className="w-[23%] group relative border border-slate-200 py-2 px-3 bg-purple-50 rounded-xl"
+                    >
+                      <div className="relative flex items-center gap-1">
+                        <input
+                          type="text"
+                          value={skillItem.skill}
+                          onChange={(e) => handleCustomSkillChange(index, e.target.value)}
+                          className="w-full px-3 py-2 text-sm bg-white text-black font-medium rounded-lg border border-slate-400 focus:border-blue-200 focus:ring-1 focus:ring-blue-300 outline-none transition-all duration-200 hover:bg-teal-50"
+                          placeholder="Enter skill"
+                          title="Edit Skill"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => setOpenDropdown(openDropdown === index ? null : index)}
+                          title="Map Skill to Experience"
+                          className={`p-2 bg-white text-blue-400 rounded-lg border border-blue-600 hover:bg-blue-100 transition-all duration-200 ${
+                            openDropdown === index ? "bg-blue-600 text-orange-400" : ""
+                          }`}
+                        > 
+                          <MapIcon size={16} />
+                        </button>
+                        {openDropdown === index && (
+                          <div
+                            ref={dropdownRef}
+                            className="w-full absolute top-12 left-0 z-50 bg-slate-800 text-white rounded-lg shadow-lg p-4 border border-slate-700 space-y-2"
+                          >
+                            <h4 className="font-bold text-sm mb-2">Map Skill to:</h4>
+                            <div className="space-y-2 max-h-[200px] overflow-y-auto">
+                              {userDetails.experience?.map((exp, i) => {
+                                const isTitleBased = exp.responsibilityType === "titleBased";
+                                return (
+                                  <div
+                                    key={i}
+                                    className={`flex items-center gap-2 ${
+                                      isTitleBased ? "opacity-50" : ""
+                                    }`}
+                                  >
+                                    <input
+                                      type="checkbox"
+                                      id={`mapping-${index}-${i}`}
+                                      checked={skillItem.experienceMappings.includes(exp.title)}
+                                      disabled={isTitleBased}
+                                      onChange={(e) =>
+                                        handleSkillMappingChange(
+                                          index,
+                                          exp.title,
+                                          e.target.checked
+                                        )
+                                      }
+                                      className={`rounded border-slate-500 text-blue-500 focus:ring-blue-500 ${
+                                        isTitleBased ? "cursor-not-allowed" : ""
+                                      }`}
+                                    />
+                                    <label
+                                      htmlFor={`mapping-${index}-${i}`}
+                                      className={`text-sm ${
+                                        isTitleBased ? "cursor-not-allowed" : "cursor-pointer"
+                                      }`}
+                                    >
+                                      {exp.title}
+                                      {isTitleBased && (
+                                        <span className="ml-1 text-slate-400">
+                                          (Title-based)
+                                        </span>
+                                      )}
+                                    </label>
+                                  </div>
+                                );
+                              })}
+                            </div>
+                          </div>
+                        )}
+                        <button
+                          type="button"
+                          onClick={() => handleRemoveCustomSkill(index)}
+                          title="Remove Skill"
+                          className="p-2 bg-white text-rose-400 rounded-lg border border-red-600 hover:bg-red-200 transition-all duration-200"
+                        >
+                          <Trash2 size={16} />
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+                <div>
+                  <Button
+                    type="button"
+                    onClick={handleAddCustomSkill}
+                    className="flex items-center gap-2 px-4 py-2 text-sm font-semibold bg-gradient-to-r from-blue-500 to-indigo-500 hover:from-blue-600 hover:to-indigo-600 text-white rounded-lg"
+                  >
+                    <PlusCircle size={16} />
+                    Add New Skill
+                  </Button>
+                </div>
+              </div>
+            </AccordionItem>
+
             {/* Experience Section */}
             <AccordionItem
               value="experience"
@@ -158,7 +350,7 @@ const UserForm = ({ onSave, onCancel, initialData, isEditing }) => {
               <div className="space-y-6">
                 
                 {userDetails.experience.map((exp, index) => (
-                  <>
+                  < div key={index}>
                   <div className="flex items-center justify-between mb-4">
                   <h4 className="text-lg font-semibold ">
                     Experience {index + 1}
@@ -415,7 +607,7 @@ const UserForm = ({ onSave, onCancel, initialData, isEditing }) => {
                       </div>
                     </CardContent>
                   </Card>
-                  </>
+                  </div>
                 ))}
                 <div className="flex justify-end">
                   <Button
@@ -449,7 +641,7 @@ const UserForm = ({ onSave, onCancel, initialData, isEditing }) => {
               <div className="space-y-6">
 
                 {userDetails.education.map((edu, index) => ( 
-                  <>
+                  < div key={index}>
                   <div className="flex items-center justify-between mb-4">
                   <h4 className="text-lg font-semibold ">
                     Education {index + 1}
@@ -580,7 +772,7 @@ const UserForm = ({ onSave, onCancel, initialData, isEditing }) => {
                       </Button> */}
                     </CardContent>
                   </Card>
-                  </>
+                  </div>
                 ))}
                 <div className="flex justify-end">
                   <Button
@@ -611,7 +803,7 @@ const UserForm = ({ onSave, onCancel, initialData, isEditing }) => {
               className="bg-white/90 shadow-lg border-0"
             >
               {userDetails.certifications.map((cert, index) => (
-                <>
+                <div key={index}  >
                   <div className="flex items-center justify-between mb-4">
                     <h4 className="text-lg font-semibold ">
                       Certification {index + 1}
@@ -707,7 +899,7 @@ const UserForm = ({ onSave, onCancel, initialData, isEditing }) => {
                       </div>
                     </CardContent>
                   </Card>
-                </>
+                </div>
               ))}
               <div className="flex justify-end">
                 <Button

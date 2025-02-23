@@ -17,6 +17,8 @@ import { setSkillsMapped } from "../store/slices/skillsSlice";
 import { MapIcon, Trash2, PlusCircle } from "lucide-react";
 import { toast, Toaster } from "sonner";
 import OpenAI from "openai";
+import { UserDetailsService } from "../services/UserDetailsService";
+import { setUserDetails } from "../store/slices/firebaseSlice";
 
 const genAI = new GoogleGenerativeAI(
    process.env.NEXT_PUBLIC_GOOGLE_GEMINI_API_KEY
@@ -56,20 +58,26 @@ export default function JobDescriptionAnalyzer() {
 
    useEffect(() => {
       if (analysis?.technicalSkills && userDetails) {
+         // Combine generated skills with custom skills
+         const allSkills = [
+            ...analysis.technicalSkills,
+            ...(userDetails.customSkills?.map(cs => cs.skill) || [])
+         ];
+
          setSkillMappings((prev) => {
             const allExperienceTitles = userDetails.experience.map(
                (exp) => exp.title
             );
 
-            // Create mappings for any new skills while preserving existing mappings
-            return analysis.technicalSkills.map((skill) => {
+            // Create mappings for all skills while preserving existing mappings
+            return allSkills.map((skill) => {
                const existingMapping = prev.find((m) => m.skill === skill);
-               return (
-                  existingMapping || {
-                     skill,
-                     experienceMappings: allExperienceTitles,
-                  }
-               );
+               // If it's a custom skill, use its existing mappings
+               const customSkill = userDetails.customSkills?.find(cs => cs.skill === skill);
+               return existingMapping || customSkill || {
+                  skill,
+                  experienceMappings: allExperienceTitles,
+               };
             });
          });
          dispatch(setSkillsMapped(skillMappings));
@@ -279,6 +287,46 @@ export default function JobDescriptionAnalyzer() {
       }
    };
 
+   // Add this new handler
+   const handleSaveToCustomSkills = async (skill) => {
+      try {
+         if (!user?.uid || !userDetails) {
+            console.log("Please login to save custom skills");
+            return;
+         }
+
+         // Check if skill already exists in custom skills
+         const skillExists = userDetails.customSkills?.some(cs => cs.skill === skill);
+         if (skillExists) {
+            toast.error("This skill is already in your custom skills!");
+            return;
+         }
+
+         // Create new custom skill
+         const newCustomSkill = {
+            skill: skill,
+            experienceMappings: userDetails.experience?.map(exp => exp.title) || []
+         };
+
+         // Create updated user details
+         const updatedUserDetails = {
+            ...userDetails,
+            customSkills: [...(userDetails.customSkills || []), newCustomSkill]
+         };
+
+         // Save to Firestore using UserDetailsService
+         await UserDetailsService.saveUserDetails(user.uid, updatedUserDetails);
+         
+         // Update Redux store
+         dispatch(setUserDetails(updatedUserDetails));
+
+         toast.success("Skill added to custom skills!");
+      } catch (error) {
+         console.error("Error saving custom skill:", error);
+         toast.error("Failed to save skill. Please try again.");
+      }
+   };
+
    return (
       <Card className="bg-white/60 shadow-lg border-slate-100 backdrop-blur-2xl rounded-xl">
          <CardHeader className="border-b bg-white/40 backdrop-blur-xl px-6 py-4">
@@ -340,7 +388,10 @@ export default function JobDescriptionAnalyzer() {
                            Technical Skills:
                         </h3>
                         <div className="flex flex-wrap gap-5 justify-start">
-                           {analysis.technicalSkills?.map((skill, index) => (
+                           {[
+                              ...(analysis.technicalSkills || []),
+                              ...(userDetails?.customSkills?.map(cs => cs.skill) || [])
+                           ].map((skill, index) => (
                               <div
                                  key={index}
                                  className="w-[23%] group relative border border-slate-200 py-2 px-3 bg-purple-50 rounded-xl"
@@ -359,6 +410,16 @@ export default function JobDescriptionAnalyzer() {
                                        placeholder="Enter skill"
                                        title="Edit Skill"
                                     />
+                                    {/* Add Save to Custom Skills button for generated skills */}
+                                    {analysis.technicalSkills.includes(skill) && (
+                                       <button
+                                          onClick={() => handleSaveToCustomSkills(skill)}
+                                          title="Save to Custom Skills"
+                                          className="p-2 bg-white text-green-400 rounded-lg border border-green-600 hover:bg-green-100 transition-all duration-200"
+                                       >
+                                          <PlusCircle size={16} />
+                                       </button>
+                                    )}
                                     <button
                                        onClick={() => {
                                           handleDropdownToggle(index);
@@ -375,7 +436,7 @@ export default function JobDescriptionAnalyzer() {
                                     {openDropdown === index && (
                                        <div
                                           ref={dropdownRef}
-                                          className="w-full absolute top-12 left-0 z-10 bg-slate-800 text-white rounded-lg shadow-lg p-4 border border-slate-700 space-y-2"
+                                          className="w-full z-50 absolute top-12 left-0 bg-slate-800 text-white rounded-lg shadow-lg p-4 border border-slate-700 space-y-2"
                                        >
                                           <h4 className="font-bold text-sm mb-2">
                                              Map Skill to:
