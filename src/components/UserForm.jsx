@@ -233,114 +233,6 @@ const UserForm = ({ onSave, onCancel, initialData, isEditing }) => {
               </div>
             </AccordionItem>
 
-            {/* Custom Skills Section */}
-            <AccordionItem
-              value="customSkills"
-              trigger="Custom Skills"
-              className="bg-white/90 shadow-lg border-0"
-            >
-              <div className="space-y-6">
-                <div className="flex flex-wrap gap-5 justify-start">
-                  {userDetails?.customSkills?.map((skillItem, index) => (
-                    <div
-                      key={index}
-                      className="w-[23%] group relative border border-slate-200 py-2 px-3 bg-purple-50 rounded-xl"
-                    >
-                      <div className="relative flex items-center gap-1">
-                        <input
-                          type="text"
-                          value={skillItem.skill}
-                          onChange={(e) => handleCustomSkillChange(index, e.target.value)}
-                          className="w-full px-3 py-2 text-sm bg-white text-black font-medium rounded-lg border border-slate-400 focus:border-blue-200 focus:ring-1 focus:ring-blue-300 outline-none transition-all duration-200 hover:bg-teal-50"
-                          placeholder="Enter skill"
-                          title="Edit Skill"
-                        />
-                        <button
-                          type="button"
-                          onClick={() => setOpenDropdown(openDropdown === index ? null : index)}
-                          title="Map Skill to Experience"
-                          className={`p-2 bg-white text-blue-400 rounded-lg border border-blue-600 hover:bg-blue-100 transition-all duration-200 ${
-                            openDropdown === index ? "bg-blue-600 text-orange-400" : ""
-                          }`}
-                        > 
-                          <MapIcon size={16} />
-                        </button>
-                        {openDropdown === index && (
-                          <div
-                            ref={dropdownRef}
-                            className="w-full absolute top-12 left-0 z-50 bg-slate-800 text-white rounded-lg shadow-lg p-4 border border-slate-700 space-y-2"
-                          >
-                            <h4 className="font-bold text-sm mb-2">Map Skill to:</h4>
-                            <div className="space-y-2 max-h-[200px] overflow-y-auto">
-                              {userDetails.experience?.map((exp, i) => {
-                                const isTitleBased = exp.responsibilityType === "titleBased";
-                                return (
-                                  <div
-                                    key={i}
-                                    className={`flex items-center gap-2 ${
-                                      isTitleBased ? "opacity-50" : ""
-                                    }`}
-                                  >
-                                    <input
-                                      type="checkbox"
-                                      id={`mapping-${index}-${i}`}
-                                      checked={skillItem.experienceMappings.includes(exp.title)}
-                                      disabled={isTitleBased}
-                                      onChange={(e) =>
-                                        handleSkillMappingChange(
-                                          index,
-                                          exp.title,
-                                          e.target.checked
-                                        )
-                                      }
-                                      className={`rounded border-slate-500 text-blue-500 focus:ring-blue-500 ${
-                                        isTitleBased ? "cursor-not-allowed" : ""
-                                      }`}
-                                    />
-                                    <label
-                                      htmlFor={`mapping-${index}-${i}`}
-                                      className={`text-sm ${
-                                        isTitleBased ? "cursor-not-allowed" : "cursor-pointer"
-                                      }`}
-                                    >
-                                      {exp.title}
-                                      {isTitleBased && (
-                                        <span className="ml-1 text-slate-400">
-                                          (Title-based)
-                                        </span>
-                                      )}
-                                    </label>
-                                  </div>
-                                );
-                              })}
-                            </div>
-                          </div>
-                        )}
-                        <button
-                          type="button"
-                          onClick={() => handleRemoveCustomSkill(index)}
-                          title="Remove Skill"
-                          className="p-2 bg-white text-rose-400 rounded-lg border border-red-600 hover:bg-red-200 transition-all duration-200"
-                        >
-                          <Trash2 size={16} />
-                        </button>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-                <div>
-                  <Button
-                    type="button"
-                    onClick={handleAddCustomSkill}
-                    className="flex items-center gap-2 px-4 py-2 text-sm font-semibold bg-gradient-to-r from-blue-500 to-indigo-500 hover:from-blue-600 hover:to-indigo-600 text-white rounded-lg"
-                  >
-                    <PlusCircle size={16} />
-                    Add New Skill
-                  </Button>
-                </div>
-              </div>
-            </AccordionItem>
-
             {/* Experience Section */}
             <AccordionItem
               value="experience"
@@ -627,6 +519,114 @@ const UserForm = ({ onSave, onCancel, initialData, isEditing }) => {
                   >
                     <PlusCircle className="mr-2 h-4 w-4" />
                     Add Experience
+                  </Button>
+                </div>
+              </div>
+            </AccordionItem>
+
+            {/* Custom Skills Section */}
+            <AccordionItem
+              value="customSkills"
+              trigger="Custom Skills:"
+              className="bg-white/90 shadow-lg border-0"
+            >
+              <div className="space-y-6">
+                <div className="flex flex-wrap gap-5 justify-start">
+                  {userDetails?.customSkills?.map((skillItem, index) => (
+                    <div
+                      key={index}
+                      className="w-[23%] group relative border border-slate-200 py-2 px-3 bg-purple-50 rounded-xl"
+                    >
+                      <div className="relative flex items-center gap-1">
+                        <input
+                          type="text"
+                          value={skillItem.skill}
+                          onChange={(e) => handleCustomSkillChange(index, e.target.value)}
+                          className="w-full px-3 py-2 text-sm bg-white text-black font-medium rounded-lg border border-slate-400 focus:border-blue-200 focus:ring-1 focus:ring-blue-300 outline-none transition-all duration-200 hover:bg-teal-50"
+                          placeholder="Enter skill"
+                          title="Edit Skill"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => setOpenDropdown(openDropdown === index ? null : index)}
+                          title="Map Skill to Experience"
+                          className={`p-2 bg-white text-blue-400 rounded-lg border border-blue-600 hover:bg-blue-100 transition-all duration-200 ${
+                            openDropdown === index ? "bg-blue-600 text-orange-400" : ""
+                          }`}
+                        > 
+                          <MapIcon size={16} />
+                        </button>
+                        {openDropdown === index && (
+                          <div
+                            ref={dropdownRef}
+                            className="w-full absolute top-12 left-0 z-50 bg-slate-800 text-white rounded-lg shadow-lg p-4 border border-slate-700 space-y-2"
+                          >
+                            <h4 className="font-bold text-sm mb-2">Map Skill to:</h4>
+                            <div className="space-y-2 max-h-[200px] overflow-y-auto">
+                              {userDetails.experience?.map((exp, i) => {
+                                const isTitleBased = exp.responsibilityType === "titleBased";
+                                return (
+                                  <div
+                                    key={i}
+                                    className={`flex items-center gap-2 ${
+                                      isTitleBased ? "opacity-50" : ""
+                                    }`}
+                                  >
+                                    <input
+                                      type="checkbox"
+                                      id={`mapping-${index}-${i}`}
+                                      checked={skillItem.experienceMappings.includes(exp.title)}
+                                      disabled={isTitleBased}
+                                      onChange={(e) =>
+                                        handleSkillMappingChange(
+                                          index,
+                                          exp.title,
+                                          e.target.checked
+                                        )
+                                      }
+                                      className={`rounded border-slate-500 text-blue-500 focus:ring-blue-500 ${
+                                        isTitleBased ? "cursor-not-allowed" : ""
+                                      }`}
+                                    />
+                                    <label
+                                      htmlFor={`mapping-${index}-${i}`}
+                                      className={`text-sm ${
+                                        isTitleBased ? "cursor-not-allowed" : "cursor-pointer"
+                                      }`}
+                                    >
+                                      {exp.title}
+                                      {isTitleBased && (
+                                        <span className="ml-1 text-slate-400">
+                                          (Title-based)
+                                        </span>
+                                      )}
+                                    </label>
+                                  </div>
+                                );
+                              })}
+                            </div>
+                          </div>
+                        )}
+                        <button
+                          type="button"
+                          onClick={() => handleRemoveCustomSkill(index)}
+                          title="Remove Skill"
+                          className="p-2 bg-white text-rose-400 rounded-lg border border-red-600 hover:bg-red-200 transition-all duration-200"
+                        >
+                          <Trash2 size={16} />
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+                <div>
+                  <Button
+                    type="button"
+                    onClick={handleAddCustomSkill}
+                    className="flex items-center gap-2 px-4 py-2 text-sm font-semibold bg-gradient-to-r from-blue-500 to-indigo-500 hover:from-blue-600 hover:to-indigo-600 text-white rounded-lg"
+                  >
+                    <PlusCircle size={16} />
+                    Add New Skill
                   </Button>
                 </div>
               </div>

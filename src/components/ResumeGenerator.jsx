@@ -90,38 +90,23 @@ const ResumeGenerator = () => {
    };
 
    const generateResponsibilities = async (experience, technicalSkills) => {
-      console.log("Skills Mapped:", skillsMapped);
-      console.log("Experience:", experience);
+      // Get all skills mapped to this experience
+      const relevantSkills = skillsMapped
+         .filter(mapping => mapping.experienceMappings.includes(experience.title))
+         .map(mapping => mapping.skill);
 
-      // Determine which skills to use for this experience
-      let skillsForExperience;
-      if (skillsMapped && skillsMapped.length > 0) {
-         // Use mapped skills if available
-         skillsForExperience = skillsMapped
-            .filter((mapping) =>
-               mapping.experienceMappings.includes(experience.title)
-            )
-            .map((mapping) => mapping.skill);
-      } else {
-         // If no mappings, use all technical skills for all experiences
-         skillsForExperience = technicalSkills;
-      }
-
-      console.log("Skills for this experience:", skillsForExperience);
-
-      const prompt =
-         experience.responsibilityType === "skillBased"
-            ? `Generate EXACTLY 8 detailed technical responsibilities that:
-         1. Use ONLY these technical skills: ${skillsForExperience.join(", ")}
-         2. MUST NOT mention or reference the job title
-         3. Focus purely on technical implementation and achievements
-         4. Each responsibility should demonstrate hands-on technical work
-         Return ONLY an array of 8 responsibilities in JSON format.`
-            : `Generate EXACTLY 8 detailed responsibilities that:
-         1. Are specific to the role of ${experience.title}
-         2. MUST NOT mention any technical skills
-         3. Focus on business impact and role-specific achievements
-         4. Describe typical duties and accomplishments
+      const prompt = experience.responsibilityType === "skillBased"
+         ? `Generate EXACTLY 8 detailed technical responsibilities that:
+            1. Use these technical skills: ${relevantSkills.join(", ")}
+            2. MUST NOT mention or reference the job title
+            3. Focus purely on technical implementation and achievements
+            4. Each responsibility should demonstrate hands-on technical work
+            Return ONLY an array of 8 responsibilities in JSON format.`
+         : `Generate EXACTLY 8 detailed responsibilities that:
+            1. Are specific to the role of ${experience.title}
+            2. MUST NOT mention any technical skills
+            3. Focus on business impact and role-specific achievements
+            4. Describe typical duties and accomplishments
          Return ONLY an array of 8 responsibilities in JSON format.`;
 
       const completion = await openai.chat.completions.create({

@@ -327,6 +327,32 @@ export default function JobDescriptionAnalyzer() {
       }
    };
 
+   // Add this function after the existing state declarations
+   const consolidateSkills = () => {
+      const generatedSkills = analysis?.technicalSkills || [];
+      const customSkills = userDetails?.customSkills || [];
+      
+      // Combine all skills with their mappings
+      const consolidatedMappings = [
+        ...generatedSkills.map(skill => ({
+          skill,
+          experienceMappings: skillMappings.find(m => m.skill === skill)?.experienceMappings || []
+        })),
+        ...customSkills
+      ];
+
+      // Update Redux store with consolidated skills
+      dispatch(setSkillsMapped(consolidatedMappings));
+      dispatch(setSkills(consolidatedMappings.map(s => s.skill)));
+   };
+
+   // Add useEffect to run consolidation when analysis or customSkills change
+   useEffect(() => {
+      if (analysis?.technicalSkills || userDetails?.customSkills) {
+         consolidateSkills();
+      }
+   }, [analysis?.technicalSkills, userDetails?.customSkills]);
+
    return (
       <Card className="bg-white/60 shadow-lg border-slate-100 backdrop-blur-2xl rounded-xl">
          <CardHeader className="border-b bg-white/40 backdrop-blur-xl px-6 py-4">

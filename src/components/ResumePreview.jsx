@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Download, Edit } from "lucide-react";
+import { Download, Edit, Trash2 } from "lucide-react";
 import { Button } from "./ui/button";
 import { Spinner } from "./ui/spinner";
 import { toast, Toaster } from "sonner";
@@ -394,12 +394,12 @@ const ResumePreview = ({
                                                          updatedExperience
                                                       );
                                                    }}
-                                                   className="text-red-500 hover:text-red-700 p-1"
+                                                   className="text-red-500 hover:text-red-700 p-1 bg-gray-100 rounded-lg flex justify-center items-center align-middle"
                                                 >
                                                    <span className="sr-only">
                                                       Delete
                                                    </span>
-                                                   ×
+                                                   <Trash2 className="w-8 h-full flex justify-center items-center" />
                                                 </button>
                                              </div>
                                           ) : (
