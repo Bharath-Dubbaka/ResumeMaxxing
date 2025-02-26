@@ -3,8 +3,8 @@ import { Download, Edit, Trash2 } from "lucide-react";
 import { Button } from "./ui/button";
 import { Spinner } from "./ui/spinner";
 import { toast, Toaster } from "sonner";
-import BNPPreview from "./previews/BNPpreview";
-import StateOfMSPreview from "./previews/StateOfMSpreview";
+import BNPPreview from "./previews/BNPPreview";
+import StateOfMSPreview from "./previews/StateOfMSPreview";
 import ModernCleanPreview from "./previews/ModernCleanPreview";
 
 import { TemplateSelector } from "./TemplateSelector";
