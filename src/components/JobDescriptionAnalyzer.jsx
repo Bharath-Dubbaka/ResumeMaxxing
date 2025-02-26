@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { Button } from "../components/ui/button";
 import {
    Card,
@@ -327,8 +327,8 @@ export default function JobDescriptionAnalyzer() {
       }
    };
 
-   // Add this function after the existing state declarations
-   const consolidateSkills = () => {
+   // Move consolidateSkills outside useEffect
+   const consolidateSkills = useCallback(() => {
       const generatedSkills = analysis?.technicalSkills || [];
       const customSkills = userDetails?.customSkills || [];
       
@@ -341,17 +341,16 @@ export default function JobDescriptionAnalyzer() {
         ...customSkills
       ];
 
-      // Update Redux store with consolidated skills
       dispatch(setSkillsMapped(consolidatedMappings));
       dispatch(setSkills(consolidatedMappings.map(s => s.skill)));
-   };
+   }, [analysis?.technicalSkills, userDetails?.customSkills, skillMappings, dispatch]);
 
    // Add useEffect to run consolidation when analysis or customSkills change
    useEffect(() => {
       if (analysis?.technicalSkills || userDetails?.customSkills) {
          consolidateSkills();
       }
-   }, [analysis?.technicalSkills, userDetails?.customSkills]);
+   }, [analysis?.technicalSkills, userDetails?.customSkills, consolidateSkills]);
 
    return (
       <Card className="bg-white/60 shadow-lg border-slate-100 backdrop-blur-2xl rounded-xl">

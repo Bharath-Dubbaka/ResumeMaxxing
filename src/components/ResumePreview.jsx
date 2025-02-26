@@ -3,533 +3,192 @@ import { Download, Edit, Trash2 } from "lucide-react";
 import { Button } from "./ui/button";
 import { Spinner } from "./ui/spinner";
 import { toast, Toaster } from "sonner";
+import { BNPPreview } from "../components/previews/BNPpreview";
+import { StateOfMSPreview } from "./previews/StateOfMSpreview";
+import { TemplateSelector } from "./TemplateSelector";
+import { ModernCleanPreview } from "./previews/ModernCleanPreview";
 
 const cleanJsonResponse = (response) => {
-   try {
-      const jsonMatch = response.match(/{[\s\S]*}/);
-      if (jsonMatch) {
-         const cleanedJson = jsonMatch[0];
-         return JSON.stringify(JSON.parse(cleanedJson));
-      } else {
-         throw new Error("No valid JSON found in the response.");
-      }
-   } catch (error) {
-      console.error("Error cleaning JSON response:", error);
-      throw new Error("Failed to parse JSON from response.");
-   }
+  try {
+    const jsonMatch = response.match(/{[\s\S]*}/);
+    if (jsonMatch) {
+      const cleanedJson = jsonMatch[0];
+      return JSON.stringify(JSON.parse(cleanedJson));
+    } else {
+      throw new Error("No valid JSON found in the response.");
+    }
+  } catch (error) {
+    console.error("Error cleaning JSON response:", error);
+    throw new Error("Failed to parse JSON from response.");
+  }
 };
 
 const ResumePreview = ({
-   initialResumeContent,
-   onUpdate,
-   downloadAsWord,
-   refresh,
-   loading,
-   onSaveCustomResponsibility,
-   userDetails,
+  initialResumeContent,
+  onUpdate,
+  downloadAsWord,
+  refresh,
+  loading,
+  onSaveCustomResponsibility,
+  userDetails,
+  isEditing: initialIsEditing = false,
 }) => {
-   const [isEditing, setIsEditing] = useState(false);
-   const [resumeData, setResumeData] = useState(null);
-   const [savedResponsibilities, setSavedResponsibilities] = useState({});
+  const [isEditing, setIsEditing] = useState(initialIsEditing);
+  const [resumeData, setResumeData] = useState(null);
+  const [savedResponsibilities, setSavedResponsibilities] = useState({});
+  const [selectedTemplate, setSelectedTemplate] = useState("BNP");
 
-   useEffect(() => {
-      const newResumeData =
-         typeof initialResumeContent === "string"
-            ? JSON.parse(initialResumeContent)
-            : initialResumeContent;
+  const getPreviewComponent = (template) => {
+    switch (template) {
+      case "BNP":
+        return BNPPreview;
+      case "StateOfMS":
+        return StateOfMSPreview;
+      case "ModernClean":
+        return ModernCleanPreview;
+      default:
+        return BNPPreview;
+    }
+  };
 
-      setResumeData(newResumeData);
+  const PreviewComponent = getPreviewComponent(selectedTemplate);
 
-      const savedMap = {};
-      userDetails?.experience?.forEach((exp, expIndex) => {
-         exp.customResponsibilities?.forEach((resp) => {
-            savedMap[`${expIndex}-${resp}`] = true;
-         });
+  useEffect(() => {
+    const newResumeData =
+      typeof initialResumeContent === "string"
+        ? JSON.parse(initialResumeContent)
+        : initialResumeContent;
+
+    setResumeData(newResumeData);
+
+    const savedMap = {};
+    userDetails?.experience?.forEach((exp, expIndex) => {
+      exp.customResponsibilities?.forEach((resp) => {
+        savedMap[`${expIndex}-${resp}`] = true;
       });
-      setSavedResponsibilities(savedMap);
-   }, [initialResumeContent, refresh, userDetails]);
+    });
+    setSavedResponsibilities(savedMap);
+  }, [initialResumeContent, refresh, userDetails]);
 
-   const handleEdit = (field, value) => {
-      const updatedData = {
-         ...resumeData,
-         [field]: value,
-      };
-      setResumeData(updatedData);
-      try {
-         const jsonString = JSON.stringify(updatedData);
-         onUpdate(jsonString);
-      } catch (error) {
-         console.error("Error processing resume data:", error);
-      }
-   };
+  const handleEdit = (field, value) => {
+    const updatedData = {
+      ...resumeData,
+      [field]: value,
+    };
+    setResumeData(updatedData);
+    try {
+      const jsonString = JSON.stringify(updatedData);
+      onUpdate(jsonString);
+    } catch (error) {
+      console.error("Error processing resume data:", error);
+    }
+  };
 
-   const handleExperienceEdit = (expIndex, field, value) => {
-      const updatedExperience = [...resumeData.professionalExperience];
-      updatedExperience[expIndex] = {
-         ...updatedExperience[expIndex],
-         [field]: value,
-      };
-      handleEdit("professionalExperience", updatedExperience);
-   };
+  const handleExperienceEdit = (expIndex, field, value) => {
+    const updatedExperience = [...resumeData.professionalExperience];
+    updatedExperience[expIndex] = {
+      ...updatedExperience[expIndex],
+      [field]: value,
+    };
+    handleEdit("professionalExperience", updatedExperience);
+  };
 
-   const handleResponsibilityEdit = (expIndex, respIndex, value) => {
-      const updatedExperience = [...resumeData.professionalExperience];
-      const updatedResponsibilities = [
-         ...updatedExperience[expIndex].responsibilities,
-      ];
-      updatedResponsibilities[respIndex] = value;
-      updatedExperience[expIndex] = {
-         ...updatedExperience[expIndex],
-         responsibilities: updatedResponsibilities,
-      };
-      handleEdit("professionalExperience", updatedExperience);
-   };
+  const handleResponsibilityEdit = (expIndex, respIndex, value) => {
+    const updatedExperience = [...resumeData.professionalExperience];
+    const updatedResponsibilities = [
+      ...updatedExperience[expIndex].responsibilities,
+    ];
+    updatedResponsibilities[respIndex] = value;
+    updatedExperience[expIndex] = {
+      ...updatedExperience[expIndex],
+      responsibilities: updatedResponsibilities,
+    };
+    handleEdit("professionalExperience", updatedExperience);
+  };
 
-   const handleAddResponsibility = (expIndex) => {
-      const updatedExperience = [...resumeData.professionalExperience];
-      const updatedResponsibilities = [
-         ...updatedExperience[expIndex].responsibilities,
-      ];
-      updatedResponsibilities.push("");
-      updatedExperience[expIndex] = {
-         ...updatedExperience[expIndex],
-         responsibilities: updatedResponsibilities,
-      };
-      handleEdit("professionalExperience", updatedExperience);
-   };
+  const handleAddResponsibility = (expIndex) => {
+    const updatedExperience = [...resumeData.professionalExperience];
+    const updatedResponsibilities = [
+      ...updatedExperience[expIndex].responsibilities,
+    ];
+    updatedResponsibilities.push("");
+    updatedExperience[expIndex] = {
+      ...updatedExperience[expIndex],
+      responsibilities: updatedResponsibilities,
+    };
+    handleEdit("professionalExperience", updatedExperience);
+  };
 
-   const handleSaveToCustom = async (expIndex, responsibility) => {
-      if (savedResponsibilities[`${expIndex}-${responsibility}`]) {
-         console.log("This responsibility is already saved!");
-         toast.error("This responsibility is already saved!");
-         return;
-      }
+  const handleSaveToCustom = async (expIndex, responsibility) => {
+    if (savedResponsibilities[`${expIndex}-${responsibility}`]) {
+      console.log("This responsibility is already saved!");
+      toast.error("This responsibility is already saved!");
+      return;
+    }
 
-      try {
-         await onSaveCustomResponsibility(expIndex, responsibility);
+    try {
+      await onSaveCustomResponsibility(expIndex, responsibility);
 
-         setSavedResponsibilities((prev) => ({
-            ...prev,
-            [`${expIndex}-${responsibility}`]: true,
-         }));
-         // Show success message
-         console.log("Responsibility saved successfully!");
-         toast.success("Responsibility saved successfully!");
-      } catch (error) {
-         console.error("Error saving responsibility:", error);
-         console.log("Failed to save responsibility. Please try again.", error);
-         toast.error("Failed to save responsibility. Please try again.", error);
-      }
-   };
+      setSavedResponsibilities((prev) => ({
+        ...prev,
+        [`${expIndex}-${responsibility}`]: true,
+      }));
+      // Show success message
+      console.log("Responsibility saved successfully!");
+      toast.success("Responsibility saved successfully!");
+    } catch (error) {
+      console.error("Error saving responsibility:", error);
+      console.log("Failed to save responsibility. Please try again.", error);
+      toast.error("Failed to save responsibility. Please try again.", error);
+    }
+  };
 
-   if (loading) {
-      return (
-         <div className="flex flex-col items-center justify-center h-64 space-y-4">
-            <Spinner className="w-16 h-16" />
-            <p className="text-lg font-semibold text-blue-600 text-center">
-               Generating your resume, please hold on.
-            </p>
-            <p className="text-sm text-gray-500 text-center">
-               This process may take a few moments. We appreciate your patience!
-            </p>
-         </div>
-      );
-   }
-
-   if (!resumeData) return null;
-
-   return (
-      <div className="space-y-4 font-sans">
-         <div className="space-y-4">
-            <div className="flex gap-4">
-               <Button
-                  onClick={() => setIsEditing(!isEditing)}
-                  className="flex-1 flex items-center justify-center gap-2 bg-gradient-to-r from-pink-200 to-red-300 text-black hover:from-pink-400 hover:to-indigo-300 hover:text-white transition-all duration-300 shadow-md hover:shadow-lg"
-                  variant={isEditing ? "default" : "outline"}
-               >
-                  {isEditing ? "Save Changes" : "Edit Resume"}
-                  <Edit className="w-4 h-4" />
-               </Button>
-
-               <Button
-                  onClick={downloadAsWord}
-                  className="flex-1 flex items-center justify-center gap-2 bg-gradient-to-r from-teal-100  to-green-200 hover:from-pink-300 hover:to-indigo-400 text-black hover:text-white transition-all duration-300 shadow-md hover:shadow-lg"
-                  variant="outline"
-               >
-                  <Download className="w-4 h-4" />
-                  Download as Word
-               </Button>
-            </div>
-
-            {/* PREVIEW */}
-            <div className="bg-white text-black p-8 rounded-lg max-h-[600px] overflow-y-auto">
-               <div className="space-y-6">
-                  {/* Header Section */}
-                  <div className="text-center space-y-2">
-                     <h1 className="text-2xl font-bold">
-                        {isEditing ? (
-                           <input
-                              type="text"
-                              value={resumeData.fullName}
-                              onChange={(e) =>
-                                 handleEdit("fullName", e.target.value)
-                              }
-                              className="w-full text-center border rounded p-1"
-                           />
-                        ) : (
-                           resumeData.fullName
-                        )}
-                     </h1>
-                     <p className="text-gray-600">
-                        {isEditing ? (
-                           <input
-                              type="text"
-                              value={resumeData.contactInformation}
-                              onChange={(e) =>
-                                 handleEdit(
-                                    "contactInformation",
-                                    e.target.value
-                                 )
-                              }
-                              className="w-full text-center border rounded p-1"
-                           />
-                        ) : (
-                           resumeData.contactInformation
-                        )}
-                     </p>
-                  </div>
-
-                  {/* Professional Summary */}
-                  <div>
-                     <h2 className="text-xl font-bold border-b-2 mb-2">
-                        Professional Summary
-                     </h2>
-                     {isEditing ? (
-                        <textarea
-                           value={resumeData.professionalSummary}
-                           onChange={(e) =>
-                              handleEdit("professionalSummary", e.target.value)
-                           }
-                           className="w-full border rounded p-2"
-                           rows={4}
-                        />
-                     ) : (
-                        <p className="text-sm">
-                           {resumeData.professionalSummary}
-                        </p>
-                     )}
-                  </div>
-
-                  {/* Technical Skills */}
-                  <div>
-                     <h2 className="text-xl font-bold border-b-2 mb-2">
-                        Technical Skills
-                     </h2>
-                     {isEditing ? (
-                        <textarea
-                           value={resumeData.technicalSkills}
-                           onChange={(e) =>
-                              handleEdit("technicalSkills", e.target.value)
-                           }
-                           className="w-full border rounded p-2"
-                           rows={2}
-                        />
-                     ) : (
-                        <p className="text-sm">{resumeData.technicalSkills}</p>
-                     )}
-                  </div>
-
-                  {/* Professional Experience */}
-                  <div>
-                     <h2 className="text-xl font-bold border-b-2 mb-2">
-                        Professional Experience
-                     </h2>
-                     {resumeData.professionalExperience.map((exp, expIndex) => (
-                        <div key={expIndex} className="mb-4">
-                           <div className="flex justify-between items-start">
-                              <div>
-                                 {isEditing ? (
-                                    <div className="space-y-2">
-                                       <input
-                                          type="text"
-                                          value={exp.title}
-                                          onChange={(e) =>
-                                             handleExperienceEdit(
-                                                expIndex,
-                                                "title",
-                                                e.target.value
-                                             )
-                                          }
-                                          className="w-full border rounded p-1 font-bold"
-                                       />
-                                       <input
-                                          type="text"
-                                          value={exp.employer}
-                                          onChange={(e) =>
-                                             handleExperienceEdit(
-                                                expIndex,
-                                                "employer",
-                                                e.target.value
-                                             )
-                                          }
-                                          className="w-full border rounded p-1"
-                                       />
-                                       <input
-                                          type="text"
-                                          value={exp.location || ""}
-                                          onChange={(e) =>
-                                             handleExperienceEdit(
-                                                expIndex,
-                                                "location",
-                                                e.target.value
-                                             )
-                                          }
-                                          className="w-full border rounded p-1"
-                                          placeholder="Location (optional)"
-                                       />
-                                    </div>
-                                 ) : (
-                                    <>
-                                       <h3 className="font-bold">
-                                          {exp.title}
-                                       </h3>
-                                       <p className="text-sm">
-                                          {exp.employer}
-                                          {/* Display Location if available */}
-                                          {exp.location && `, ${exp.location}`}
-                                       </p>
-                                    </>
-                                 )}
-                              </div>
-                              {isEditing ? (
-                                 <div className="space-x-2">
-                                    <input
-                                       type="text"
-                                       value={exp.startDate}
-                                       onChange={(e) =>
-                                          handleExperienceEdit(
-                                             expIndex,
-                                             "startDate",
-                                             e.target.value
-                                          )
-                                       }
-                                       className="w-24 border rounded p-1 text-sm"
-                                    />
-                                    <span>-</span>
-                                    <input
-                                       type="text"
-                                       value={exp.endDate}
-                                       onChange={(e) =>
-                                          handleExperienceEdit(
-                                             expIndex,
-                                             "endDate",
-                                             e.target.value
-                                          )
-                                       }
-                                       className="w-24 border rounded p-1 text-sm"
-                                    />
-                                 </div>
-                              ) : (
-                                 <p className="text-sm text-gray-600">
-                                    {exp.startDate} - {exp.endDate}
-                                 </p>
-                              )}
-                           </div>
-                           <div>
-                              <ul className="list-disc ml-6 mt-2">
-                                 {exp.responsibilities
-                                    .filter(
-                                       (resp) => isEditing || resp.trim() !== ""
-                                    )
-                                    .map((resp, respIndex) => (
-                                       <li
-                                          key={respIndex}
-                                          className={`text-sm mb-1 group flex items-start gap-2 ${
-                                             isEditing
-                                                ? "list-none"
-                                                : "list-disc"
-                                          } ${
-                                             savedResponsibilities[
-                                                `${expIndex}-${resp}`
-                                             ]
-                                                ? "bg-green-100"
-                                                : ""
-                                          } hover:bg-gray-200`}
-                                       >
-                                          {isEditing ? (
-                                             <div className="flex-1 flex items-start gap-2">
-                                                <div className="flex-1 flex items-start gap-2">
-                                                   <span className="mt-2">
-                                                      •
-                                                   </span>
-                                                   <textarea
-                                                      value={resp}
-                                                      onChange={(e) =>
-                                                         handleResponsibilityEdit(
-                                                            expIndex,
-                                                            respIndex,
-                                                            e.target.value
-                                                         )
-                                                      }
-                                                      className="w-full border rounded p-2 min-h-[60px]"
-                                                   />
-                                                </div>
-                                                <button
-                                                   onClick={() => {
-                                                      const updatedExperience =
-                                                         [
-                                                            ...resumeData.professionalExperience,
-                                                         ];
-                                                      updatedExperience[
-                                                         expIndex
-                                                      ].responsibilities =
-                                                         updatedExperience[
-                                                            expIndex
-                                                         ].responsibilities.filter(
-                                                            (_, idx) =>
-                                                               idx !== respIndex
-                                                         );
-                                                      handleEdit(
-                                                         "professionalExperience",
-                                                         updatedExperience
-                                                      );
-                                                   }}
-                                                   className="text-red-500 hover:text-red-700 p-1 bg-gray-100 rounded-lg flex justify-center items-center align-middle"
-                                                >
-                                                   <span className="sr-only">
-                                                      Delete
-                                                   </span>
-                                                   <Trash2 className="w-8 h-full flex justify-center items-center" />
-                                                </button>
-                                             </div>
-                                          ) : (
-                                             <div className="flex items-start justify-between w-full gap-2">
-                                                <div className="flex items-start gap-2">
-                                                   <span>•</span>
-                                                   <span>{resp}</span>
-                                                </div>
-                                                {savedResponsibilities[
-                                                   `${expIndex}-${resp}`
-                                                ] ? (
-                                                   <span className="opacity-0 group-hover:opacity-100 text-xs bg-gray-600 text-white px-2 py-1 rounded transition-all">
-                                                      Saved in Custom
-                                                   </span>
-                                                ) : (
-                                                   <button
-                                                      onClick={() =>
-                                                         handleSaveToCustom(
-                                                            expIndex,
-                                                            resp
-                                                         )
-                                                      }
-                                                      className="opacity-0 group-hover:opacity-100 text-xs bg-green-600 text-white px-2 py-1 rounded hover:bg-green-700 transition-all"
-                                                   >
-                                                      Save to Custom
-                                                   </button>
-                                                )}
-                                             </div>
-                                          )}
-                                       </li>
-                                    ))}
-                              </ul>
-
-                              {/* Add new responsibility button */}
-                              {isEditing && (
-                                 <button
-                                    onClick={() =>
-                                       handleAddResponsibility(expIndex)
-                                    }
-                                    className="mt-2 ml-6 text-sm text-blue-600 hover:text-blue-800 flex items-center gap-1"
-                                 >
-                                    <span>+</span> Add New Responsibility
-                                 </button>
-                              )}
-                           </div>
-                        </div>
-                     ))}
-                  </div>
-
-                  {/* Education */}
-                  {resumeData.education && resumeData.education.length > 0 && (
-                     <div className="mt-6">
-                        <h2 className="text-xl font-bold mb-4 border-b-2">
-                           Education
-                        </h2>
-                        <ul className="list-disc ml-6">
-                           {resumeData.education.map((edu, index) => (
-                              <li key={index} className="mb-2">
-                                 <span className="font-semibold">
-                                    {edu.degree}
-                                 </span>{" "}
-                                 - {edu.institution}
-                                 {edu.startDate && edu.endDate && (
-                                    <span className="text-gray-600">
-                                       , {edu.startDate.split('-')[0]} - {edu.endDate.split('-')[0]}
-                                    </span>
-                                 )}
-                              </li>
-                           ))}
-                        </ul>
-                     </div>
-                  )}
-
-                  {/* Certifications */}
-                  {resumeData.certifications && resumeData.certifications.length > 0 && (
-                     <div className="mt-6">
-                        <h2 className="text-xl font-bold mb-4 border-b-2">
-                           Certifications
-                        </h2>
-                        <ul className="list-disc ml-6">
-                           {resumeData.certifications.map((cert, index) => (
-                              <li key={index} className="mb-2">
-                                 <span className="font-semibold">
-                                    {cert.name}
-                                 </span>
-                                 {cert.issuer && <span> - {cert.issuer}</span>}
-                                 {cert.issueDate && (
-                                    <span className="text-gray-600">
-                                       , {cert.issueDate.split('-')[0]}
-                                    </span>
-                                 )}
-                                 {cert.expiryDate && (
-                                    <span className="text-gray-600">
-                                       {" "}({cert.expiryDate.split('-')[0]})
-                                    </span>
-                                 )}
-                              </li>
-                           ))}
-                        </ul>
-                     </div>
-                  )}
-
-                  {/* Projects Section */}
-                  {resumeData.projects && resumeData.projects.length > 0 && (
-                     <div className="mt-6">
-                        <h2 className="text-xl font-bold mb-4 border-b-2">
-                           Projects
-                        </h2>
-                        <ul className="list-disc ml-6">
-                           {resumeData.projects.map((project, index) => (
-                              <li key={index} className="mb-4">
-                                 <div className="flex flex-col">
-                                    <span className="font-semibold">
-                                       {project.name || "Unnamed Project"}
-                                    </span>
-                                    <span className="text-sm text-gray-600">
-                                       {project.description ||
-                                          "No description available"}
-                                    </span>
-                                 </div>
-                              </li>
-                           ))}
-                        </ul>
-                     </div>
-                  )}
-               </div>
-            </div>
-         </div>
+  if (loading) {
+    return (
+      <div className="flex flex-col items-center justify-center h-64 space-y-4">
+        <Spinner className="w-16 h-16" />
+        <p className="text-lg font-semibold text-blue-600">
+          Generating your resume...
+        </p>
       </div>
-   );
+    );
+  }
+
+  if (!resumeData) return null;
+
+  return (
+    <div className="mt-8">
+      <TemplateSelector
+        selectedTemplate={selectedTemplate}
+        onTemplateChange={setSelectedTemplate}
+      />
+
+      <div className="bg-white rounded-lg shadow-lg">
+        <PreviewComponent
+          resumeData={resumeData}
+          isEditing={isEditing}
+          handleEdit={handleEdit}
+          handleExperienceEdit={handleExperienceEdit}
+          handleResponsibilityEdit={handleResponsibilityEdit}
+          handleAddResponsibility={handleAddResponsibility}
+          savedResponsibilities={savedResponsibilities}
+          handleSaveToCustom={handleSaveToCustom}
+        />
+      </div>
+
+      <div className="mt-4 flex justify-end gap-4">
+        <Button onClick={() => setIsEditing(!isEditing)} className="mr-2">
+          {isEditing ? "Save Changes" : "Edit Resume"}
+        </Button>
+        <Button
+          onClick={() => downloadAsWord(selectedTemplate)}
+          disabled={loading}
+        >
+          Download as Word
+        </Button>
+      </div>
+    </div>
+  );
 };
 
 export default ResumePreview;
