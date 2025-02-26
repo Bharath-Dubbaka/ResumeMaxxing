@@ -3,10 +3,11 @@ import { Download, Edit, Trash2 } from "lucide-react";
 import { Button } from "./ui/button";
 import { Spinner } from "./ui/spinner";
 import { toast, Toaster } from "sonner";
-import { BNPPreview } from "../components/previews/BNPpreview";
-import { StateOfMSPreview } from "./previews/StateOfMSpreview";
+import BNPPreview from "./previews/BNPpreview";
+import StateOfMSPreview from "./previews/StateOfMSpreview";
+import ModernCleanPreview from "./previews/ModernCleanPreview";
+
 import { TemplateSelector } from "./TemplateSelector";
-import { ModernCleanPreview } from "./previews/ModernCleanPreview";
 
 const cleanJsonResponse = (response) => {
   try {

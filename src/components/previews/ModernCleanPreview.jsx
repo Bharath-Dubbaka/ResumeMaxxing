@@ -1,6 +1,6 @@
 import { Trash2 } from "lucide-react";
 
-export const ModernCleanPreview = ({
+export default function ModernCleanPreview({
   resumeData = {},
   isEditing = false,
   handleEdit = () => {},
@@ -8,8 +8,8 @@ export const ModernCleanPreview = ({
   handleResponsibilityEdit = () => {},
   handleAddResponsibility = () => {},
   savedResponsibilities = {},
-  handleSaveToCustom = () => {},
-}) => {
+  handleSaveToCustom = () => {}
+}) {
   if (!resumeData) return null;
 
   return (
@@ -168,4 +168,4 @@ export const ModernCleanPreview = ({
       </div>
     </div>
   );
-};
+}

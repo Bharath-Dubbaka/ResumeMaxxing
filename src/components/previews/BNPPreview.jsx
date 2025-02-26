@@ -4,7 +4,7 @@ import { Button } from "../ui/button";
 import { Spinner } from "../ui/spinner";
 import { toast, Toaster } from "sonner";
 
-export const BNPPreview = ({
+export default function BNPPreview({
   resumeData = {},
   isEditing = false,
   handleEdit = () => {},
@@ -13,7 +13,7 @@ export const BNPPreview = ({
   handleAddResponsibility = () => {},
   savedResponsibilities = {},
   handleSaveToCustom = () => {},
-}) => {
+}) {
   if (!resumeData) return null;
 
   return (
@@ -344,4 +344,4 @@ export const BNPPreview = ({
       </div>
     </div>
   );
-};
+}

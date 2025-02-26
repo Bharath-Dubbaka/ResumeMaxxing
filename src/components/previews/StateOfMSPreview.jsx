@@ -1,6 +1,6 @@
 import { Trash2 } from "lucide-react";
 
-export const StateOfMSPreview = ({
+export default function StateOfMSPreview({
   resumeData,
   isEditing,
   handleEdit,
@@ -9,7 +9,7 @@ export const StateOfMSPreview = ({
   handleAddResponsibility,
   savedResponsibilities,
   handleSaveToCustom,
-}) => {
+}) {
   if (!resumeData) return null;
 
   return (
@@ -338,4 +338,4 @@ export const StateOfMSPreview = ({
       </div>
     </div>
   );
-};
+}
