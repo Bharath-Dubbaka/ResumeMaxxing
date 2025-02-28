@@ -3,6 +3,7 @@ import { createSlice } from "@reduxjs/toolkit";
 const initialState = {
    skills: [],
    skillsMapped: [],
+   combinedSkills: [],
    loading: false,
    error: null,
 };
@@ -17,8 +18,11 @@ const skillsSlice = createSlice({
       setSkillsMapped: (state, action) => {
          state.skillsMapped = action.payload;
       },
+      setCombinedSkills: (state, action) => {
+         state.combinedSkills = action.payload;
+      },
    },
 });
 
-export const { setSkills, setSkillsMapped, clearSkills } = skillsSlice.actions;
+export const { setSkills, setSkillsMapped, setCombinedSkills } = skillsSlice.actions;
 export default skillsSlice.reducer;

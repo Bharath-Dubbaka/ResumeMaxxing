@@ -39,6 +39,7 @@ export default function JobDescriptionAnalyzer() {
    const [openDropdown, setOpenDropdown] = useState(null);
    const [skillMappings, setSkillMappings] = useState([]);
    const dropdownRef = useRef(null); // Add ref for dropdown
+   const [combinedSkills, setCombinedSkills] = useState([]);
 
    // Add click outside handler
    useEffect(() => {
@@ -83,6 +84,33 @@ export default function JobDescriptionAnalyzer() {
          dispatch(setSkillsMapped(skillMappings));
       }
    }, [analysis?.technicalSkills, userDetails]);
+
+   // Move the initialization logic outside useEffect
+   const initializeCombinedSkills = () => {
+      // Simply combine and deduplicate skills based on skill name
+      const skillsMap = new Map();
+      
+      [...skillMappings, ...(userDetails?.customSkills || [])].forEach(skill => {
+         if (!skillsMap.has(skill.skill)) {
+            skillsMap.set(skill.skill, {
+               skill: skill.skill,
+               experienceMappings: skill.experienceMappings || []
+            });
+         }
+      });
+
+      return Array.from(skillsMap.values());
+   };
+
+   useEffect(() => {
+      const initialSkills = initializeCombinedSkills();
+      setCombinedSkills(initialSkills);
+      // Dispatch a plain object action
+      dispatch({
+         type: 'skills/setCombinedSkills',
+         payload: initialSkills
+      });
+   }, [skillMappings, userDetails?.customSkills]);
 
    const calculateTotalExperience = (experiences) => {
       let totalMonths = 0;
@@ -351,6 +379,33 @@ export default function JobDescriptionAnalyzer() {
          consolidateSkills();
       }
    }, [analysis?.technicalSkills, userDetails?.customSkills, consolidateSkills]);
+
+   // When user modifies mappings
+   const handleUpdateMapping = (skillName, expTitle, isChecked) => {
+      setCombinedSkills(prev => {
+         const updated = prev.map(skill => {
+            if (skill.skill === skillName) {
+               const newMappings = isChecked 
+                  ? [...new Set([...(skill.experienceMappings || []), expTitle])]
+                  : (skill.experienceMappings || []).filter(exp => exp !== expTitle);
+               
+               return {
+                  ...skill,
+                  experienceMappings: newMappings
+               };
+            }
+            return skill;
+         });
+         
+         // Dispatch a plain object action
+         dispatch({
+            type: 'skills/setCombinedSkills',
+            payload: updated
+         });
+         
+         return updated;
+      });
+   };
 
    return (
       <Card className="bg-white/60 shadow-lg border-slate-100 backdrop-blur-2xl rounded-xl">

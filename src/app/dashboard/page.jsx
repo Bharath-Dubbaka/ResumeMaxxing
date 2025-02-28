@@ -6,7 +6,7 @@ import { useEffect } from "react";
 import JobDescriptionAnalyzer from "../../components/JobDescriptionAnalyzer";
 import ResumeGenerator from "../../components/ResumeGenerator";
 import { toast, Toaster } from "sonner";
-
+   
 export default function DashboardPage() {
    const { user, loading } = useSelector((state) => state.auth);
    const { userDetails } = useSelector((state) => state.firebase);
