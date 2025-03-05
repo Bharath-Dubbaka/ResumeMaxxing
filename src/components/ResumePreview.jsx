@@ -3,8 +3,8 @@ import { Download, Edit, Trash2 } from "lucide-react";
 import { Button } from "./ui/button";
 import { Spinner } from "./ui/spinner";
 import { toast, Toaster } from "sonner";
-import BNPPreview from "./previews/BNPPreview";
-import StateOfMSPreview from "./previews/StateOfMSPreview";
+import StandardPreview from "./previews/StandardPreview";
+import HybridPreview from "./previews/HybridPreview";
 import ModernCleanPreview from "./previews/ModernCleanPreview";
 
 import { TemplateSelector } from "./TemplateSelector";
@@ -37,18 +37,18 @@ const ResumePreview = ({
   const [isEditing, setIsEditing] = useState(initialIsEditing);
   const [resumeData, setResumeData] = useState(null);
   const [savedResponsibilities, setSavedResponsibilities] = useState({});
-  const [selectedTemplate, setSelectedTemplate] = useState("BNP");
+  const [selectedTemplate, setSelectedTemplate] = useState("Standard");
 
   const getPreviewComponent = (template) => {
     switch (template) {
-      case "BNP":
-        return BNPPreview;
-      case "StateOfMS":
-        return StateOfMSPreview;
+      case "Standard":
+        return StandardPreview;
+      case "Hybrid":
+        return HybridPreview;
       case "ModernClean":
         return ModernCleanPreview;
       default:
-        return BNPPreview;
+        return StandardPreview;
     }
   };
 

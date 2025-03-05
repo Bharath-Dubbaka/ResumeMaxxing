@@ -314,20 +314,20 @@ const ResumeGenerator = () => {
 
       let doc;
       switch (template) {
-        case "BNP":
-          const { BNPformat } = await import("./templates/BNPformat");
-          doc = BNPformat(resumeData);
+        case "Standard":
+          const { Standardformat } = await import("./templates/Standardformat");
+          doc = Standardformat(resumeData);
           break;
-        case "StateOfMS":
-          const { StateOfMSformat } = await import("./templates/StateOfMSformat");
-          doc = StateOfMSformat(resumeData);
+        case "Hybrid":
+          const { Hybridformat } = await import("./templates/Hybridformat");
+          doc = Hybridformat(resumeData);
           break;
         case "ModernClean":
           const { ModernCleanFormat } = await import("./templates/ModernCleanFormat");
           doc = ModernCleanFormat(resumeData);
           break;
         default:
-          const { BNPformat: defaultFormat } = await import("./templates/BNPformat");
+          const { Standardformat: defaultFormat } = await import("./templates/Standardformat");
           doc = defaultFormat(resumeData);
       }
 

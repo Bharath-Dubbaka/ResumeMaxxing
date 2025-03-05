@@ -6,30 +6,6 @@ export const TemplateSelector = ({ selectedTemplate, onTemplateChange }) => {
       <div className="flex items-center space-x-2">
         <input
           type="radio"
-          id="BNP"
-          name="template"
-          value="BNP"
-          checked={selectedTemplate === "BNP"}
-          onChange={(e) => onTemplateChange(e.target.value)}
-          className="w-4 h-4 text-blue-600"
-        />
-        <Label htmlFor="BNP">BNP Format</Label>
-      </div>
-      <div className="flex items-center space-x-2">
-        <input
-          type="radio"
-          id="StateOfMS"
-          name="template"
-          value="StateOfMS"
-          checked={selectedTemplate === "StateOfMS"}
-          onChange={(e) => onTemplateChange(e.target.value)}
-          className="w-4 h-4 text-blue-600"
-        />
-        <Label htmlFor="StateOfMS">State of MS Format</Label>
-      </div>
-      <div className="flex items-center space-x-2">
-        <input
-          type="radio"
           id="ModernClean"
           name="template"
           value="ModernClean"
@@ -39,6 +15,31 @@ export const TemplateSelector = ({ selectedTemplate, onTemplateChange }) => {
         />
         <Label htmlFor="ModernClean">Modern Clean</Label>
       </div>
+      <div className="flex items-center space-x-2">
+        <input
+          type="radio"
+          id="Standard"
+          name="template"
+          value="Standard"
+          checked={selectedTemplate === "Standard"}
+          onChange={(e) => onTemplateChange(e.target.value)}
+          className="w-4 h-4 text-blue-600"
+        />
+        <Label htmlFor="Standard">Standard Format</Label>
+      </div>
+      <div className="flex items-center space-x-2">
+        <input
+          type="radio"
+          id="Hybrid"
+          name="template"
+          value="Hybrid"
+          checked={selectedTemplate === "Hybrid"}
+          onChange={(e) => onTemplateChange(e.target.value)}
+          className="w-4 h-4 text-blue-600"
+        />
+        <Label htmlFor="Hybrid">Hybrid Format</Label>
+      </div>
+      
     </div>
   );
 };

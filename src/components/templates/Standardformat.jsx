@@ -14,7 +14,7 @@ import { Button } from "../ui/button";
 import { Spinner } from "../ui/spinner";
 import { toast, Toaster } from "sonner";
 
-export const BNPformat = (resumeData) =>
+export const Standardformat = (resumeData) =>
   new Document({
     sections: [
       {

@@ -4,7 +4,7 @@ import { Button } from "../ui/button";
 import { Spinner } from "../ui/spinner";
 import { toast, Toaster } from "sonner";
 
-export default function BNPPreview({
+export default function StandardPreview({
   resumeData = {},
   isEditing = false,
   handleEdit = () => {},

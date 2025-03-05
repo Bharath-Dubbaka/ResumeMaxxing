@@ -1,6 +1,6 @@
 import { Trash2 } from "lucide-react";
 
-export default function StateOfMSPreview({
+export default function HybridPreview({
   resumeData,
   isEditing,
   handleEdit,

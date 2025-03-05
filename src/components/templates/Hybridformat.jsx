@@ -9,7 +9,7 @@ import {
   BorderStyle,
 } from "docx";
 
-export const StateOfMSformat = (resumeData) =>
+export const Hybridformat = (resumeData) =>
   new Document({
     sections: [
       {
