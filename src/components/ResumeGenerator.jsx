@@ -69,9 +69,7 @@ const ResumeGenerator = () => {
   const dispatch = useDispatch();
   const { user } = useSelector((state) => state.auth);
   const { userDetails } = useSelector((state) => state.firebase);
-  const { skills: technicalSkills, skillsMapped } = useSelector(
-    (state) => state.skills
-  );
+  const { combinedSkills } = useSelector((state) => state.skills);
   const [resumeContent, setResumeContent] = useState(null);
   const [loading, setLoading] = useState(false);
   const [refreshPreview, setRefreshPreview] = useState(false);
@@ -82,35 +80,41 @@ const ResumeGenerator = () => {
 
   // Function to get all unique skills
   const getAllSkills = () => {
-    const mappedSkills = skillsMapped?.map((mapping) => mapping.skill) || [];
+    const mappedSkills = combinedSkills?.map((mapping) => mapping.skill) || [];
     const customSkills = userDetails?.customSkills?.map((cs) => cs.skill) || [];
 
     // Combine and deduplicate all skills
     return [...new Set([...mappedSkills, ...customSkills])];
   };
 
-  const generateResponsibilities = async (experience, technicalSkills) => {
-    // Get all skills mapped to this experience
-    const relevantSkills = skillsMapped
-      .filter((mapping) =>
-        mapping.experienceMappings.includes(experience.title)
-      )
-      .map((mapping) => mapping.skill);
+  const generateResponsibilities = async (experience) => {
+    console.log('Current experience:', experience.title);
+    console.log('Combined skills from Redux:', combinedSkills);
 
-    const prompt =
-      experience.responsibilityType === "skillBased"
-        ? `Generate EXACTLY 8 detailed technical responsibilities that:
-            1. Use these technical skills: ${relevantSkills.join(", ")}
-            2. MUST NOT mention or reference the job title
-            3. Focus purely on technical implementation and achievements
-            4. Each responsibility should demonstrate hands-on technical work
-            Return ONLY an array of 8 responsibilities in JSON format.`
-        : `Generate EXACTLY 8 detailed responsibilities that:
-            1. Are specific to the role of ${experience.title}
-            2. MUST NOT mention any technical skills
-            3. Focus on business impact and role-specific achievements
-            4. Describe typical duties and accomplishments
-         Return ONLY an array of 8 responsibilities in JSON format.`;
+    // Just deduplicate the skills array when mapping
+    const relevantSkills = [...new Set(
+      combinedSkills
+        .filter(skillObj => skillObj.experienceMappings?.includes(experience.title))
+        .map(skillObj => skillObj.skill)
+    )];
+
+    console.log('Relevant skills for', experience.title, ':', relevantSkills);
+
+    // Keep the original prompt logic
+    const prompt = experience.responsibilityType === "skillBased"
+      ? `Generate EXACTLY 8 detailed technical responsibilities that:
+          1. Use these technical skills: ${relevantSkills.join(", ")}
+          2. MUST NOT mention or reference the job title
+          3. Focus purely on technical implementation and achievements using these skills
+          4. Each responsibility should demonstrate hands-on work with these specific technologies
+          5. Do NOT add any skills or technologies that are not in the provided list
+          Return ONLY an array of 8 responsibilities in JSON format.`
+      : `Generate EXACTLY 8 detailed responsibilities that:
+          1. Are specific to the role of ${experience.title}
+          2. MUST NOT mention any technical skills
+          3. Focus on business impact and role-specific achievements
+          4. Describe typical duties and accomplishments
+       Return ONLY an array of 8 responsibilities in JSON format.`;
 
     const completion = await openai.chat.completions.create({
       model: "gpt-3.5-turbo",
@@ -192,10 +196,10 @@ const ResumeGenerator = () => {
 
     setLoading(true);
     try {
-      // Generate responsibilities for each experience separately
+      console.log("Using combined skills from Redux:", combinedSkills);
       const generatedExperiences = await Promise.all(
         userDetails.experience.map((exp) =>
-          generateResponsibilities(exp, technicalSkills)
+          generateResponsibilities(exp)
         )
       );
 
@@ -203,7 +207,7 @@ const ResumeGenerator = () => {
       const latestRole = userDetails.experience[0]?.title || "Professional";
       const generatedSummary = await generateProfessionalSummary(
         totalExperience,
-        technicalSkills,
+        combinedSkills,
         latestRole
       );
       // Create the complete resume content
@@ -215,7 +219,7 @@ const ResumeGenerator = () => {
         professionalExperience: userDetails.experience.map((exp, index) => ({
           ...exp,
           responsibilities: [
-            ...generatedExperiences[index], // Use generatedExperiences here
+            ...generatedExperiences[index],
             ...(exp.customResponsibilities || []),
           ],
         })),
@@ -231,7 +235,7 @@ const ResumeGenerator = () => {
     } catch (error) {
       console.error("Error generating resume:", error);
       console.log("Failed to generate resume. Please try again.");
-      toast.error("Failed to generate resume. Please try again.", error);
+      toast.error("Failed to generate resume. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -310,20 +314,20 @@ const ResumeGenerator = () => {
 
       let doc;
       switch (template) {
-        case "BNP":
-          const { BNPformat } = await import("./templates/BNPformat");
-          doc = BNPformat(resumeData);
+        case "Standard":
+          const { Standardformat } = await import("./templates/Standardformat");
+          doc = Standardformat(resumeData);
           break;
-        case "StateOfMS":
-          const { StateOfMSformat } = await import("./templates/StateOfMSformat");
-          doc = StateOfMSformat(resumeData);
+        case "Hybrid":
+          const { Hybridformat } = await import("./templates/Hybridformat");
+          doc = Hybridformat(resumeData);
           break;
         case "ModernClean":
           const { ModernCleanFormat } = await import("./templates/ModernCleanFormat");
           doc = ModernCleanFormat(resumeData);
           break;
         default:
-          const { BNPformat: defaultFormat } = await import("./templates/BNPformat");
+          const { Standardformat: defaultFormat } = await import("./templates/Standardformat");
           doc = defaultFormat(resumeData);
       }
 
@@ -354,7 +358,7 @@ const ResumeGenerator = () => {
     }
   };
 
-  return technicalSkills.length > 0 ? (
+  return combinedSkills.length > 0 ? (
     <Card className="bg-white/60 shadow-lg border-0 backdrop-blur-2xl rounded-xl mt-6">
       {/* <CardHeader className="border-b bg-white/40 backdrop-blur-xl px-6 py-4">
          <CardTitle>Resume Generator</CardTitle>

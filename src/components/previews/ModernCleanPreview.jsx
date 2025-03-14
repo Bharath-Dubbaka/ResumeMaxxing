@@ -13,45 +13,37 @@ export default function ModernCleanPreview({
   if (!resumeData) return null;
 
   return (
-    <div className="bg-white text-black p-8 rounded-lg max-h-[800px] overflow-y-auto">
+    <div className="bg-white font-['Arial'] text-black p-8 rounded-lg max-h-[800px] overflow-y-auto">
       <div className="space-y-6">
-        {/* Name Header */}
-        <div className="border-b border-gray-200 pb-4">
-          <h1 className="text-3xl font-bold text-[#1B365D]">
-            {isEditing ? (
+        {/* Name Header - Centered with contact info */}
+        <div className="text-center pb-4 pt-4">
+          {isEditing ? (
+            <div className="space-y-2">
               <input
                 type="text"
                 value={resumeData.fullName || ""}
                 onChange={(e) => handleEdit("fullName", e.target.value)}
-                className="w-full border rounded p-1"
+                className="w-full border rounded p-1 text-center"
               />
-            ) : (
-              resumeData.fullName
-            )}
-          </h1>
-        </div>
-
-        <div className="grid grid-cols-2 gap-8">
-          {/* Contact Section */}
-          <div>
-            <h2 className="text-lg font-bold text-gray-600 mb-2">CONTACT</h2>
-            {isEditing ? (
-              <textarea
+              <input
+                type="text"
                 value={resumeData.contactInformation || ""}
                 onChange={(e) => handleEdit("contactInformation", e.target.value)}
-                className="w-full border rounded p-2"
-                rows={3}
+                className="w-full border rounded p-1 text-center"
               />
-            ) : (
-              <p className="text-sm whitespace-pre-line">
-                {resumeData.contactInformation}
-              </p>
-            )}
-          </div>
+            </div>
+          ) : (
+            <h1 className="text-3xl font-bold text-[#007B8F]">
+              {resumeData.fullName} | {resumeData.contactInformation}
+            </h1>
+          )}
+        </div>
 
+        {/* Two Column Layout for Contact and Skills */}
+        <div className="grid grid-cols-2 gap-8 mt-6">
           {/* Skills Section */}
           <div>
-            <h2 className="text-lg font-bold text-gray-600 mb-2">SKILLS</h2>
+            <h2 className="text-xl font-bold text-gray-600 mb-3">SKILLS</h2>
             {isEditing ? (
               <textarea
                 value={resumeData.technicalSkills || ""}
@@ -60,7 +52,7 @@ export default function ModernCleanPreview({
                 rows={3}
               />
             ) : (
-              <p className="text-sm">{resumeData.technicalSkills}</p>
+              <p className="text-base">{resumeData.technicalSkills}</p>
             )}
           </div>
         </div>
@@ -89,29 +81,50 @@ export default function ModernCleanPreview({
             <div key={expIndex} className="mb-4">
               <div className="font-semibold">
                 {isEditing ? (
-                  <input
-                    type="text"
-                    value={exp.title || ""}
-                    onChange={(e) =>
-                      handleExperienceEdit(expIndex, "title", e.target.value)
-                    }
-                    className="w-full border rounded p-1"
-                  />
+                  <>
+                    <input
+                      type="text"
+                      value={exp.title || ""}
+                      onChange={(e) =>
+                        handleExperienceEdit(expIndex, "title", e.target.value)
+                      }
+                      className="w-full border rounded p-1 mb-1"
+                    />
+                    <input
+                      type="text"
+                      value={exp.employer || ""}
+                      onChange={(e) =>
+                        handleExperienceEdit(expIndex, "employer", e.target.value)
+                      }
+                      className="w-full border rounded p-1 mb-1"
+                    />
+                    <div className="flex gap-2">
+                      <input
+                        type="date"
+                        value={exp.startDate || ""}
+                        onChange={(e) =>
+                          handleExperienceEdit(expIndex, "startDate", e.target.value)
+                        }
+                        className="border rounded p-1"
+                      />
+                      <input
+                        type="date"
+                        value={exp.endDate || ""}
+                        onChange={(e) =>
+                          handleExperienceEdit(expIndex, "endDate", e.target.value)
+                        }
+                        className="border rounded p-1"
+                      />
+                    </div>
+                  </>
                 ) : (
-                  <span>{exp.title}</span>
-                )}
-                {" - "}
-                {isEditing ? (
-                  <input
-                    type="text"
-                    value={exp.employer || ""}
-                    onChange={(e) =>
-                      handleExperienceEdit(expIndex, "employer", e.target.value)
-                    }
-                    className="w-full border rounded p-1"
-                  />
-                ) : (
-                  <span>{exp.employer}</span>
+                  <>
+                    <div>{exp.title}</div>
+                    <div>{exp.employer}</div>
+                    <div className="text-sm text-gray-600">
+                      {exp.startDate} - {exp.endDate || "Present"}
+                    </div>
+                  </>
                 )}
               </div>
               <ul className="list-disc ml-6 mt-2">
@@ -132,9 +145,7 @@ export default function ModernCleanPreview({
                           className="w-full border rounded p-1"
                         />
                         <button
-                          onClick={() =>
-                            handleSaveToCustom(expIndex, resp)
-                          }
+                          onClick={() => handleSaveToCustom(expIndex, resp)}
                           disabled={savedResponsibilities[`${expIndex}-${resp}`]}
                           className="px-2 py-1 text-xs bg-blue-500 text-white rounded hover:bg-blue-600 disabled:bg-gray-400"
                         >
@@ -147,6 +158,14 @@ export default function ModernCleanPreview({
                   </li>
                 ))}
               </ul>
+              {isEditing && (
+                <button
+                  onClick={() => handleAddResponsibility(expIndex)}
+                  className="mt-2 text-sm text-blue-600 hover:text-blue-800"
+                >
+                  + Add Responsibility
+                </button>
+              )}
             </div>
           ))}
         </div>

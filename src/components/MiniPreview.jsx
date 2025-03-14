@@ -3,8 +3,10 @@ import React from 'react';
 const MiniPreview = ({ userDetails }) => {
   return (
     <div className="w-[33%] mr-2 bg-white shadow-xl rounded-xl border border-gray-200 overflow-y-auto max-h-fit">
-    <div className='text-gray-600 relative top-[-5px] left-[10px] bg-gray-200 px-2 py-1 rounded-full'>Sample Preview:</div>
-
+{/* Updated Note */}
+<div className='text-gray-600 relative top-[-5px] left-[10px] bg-gray-200 px-2 py-1 rounded-lg'>
+            Sample Preview: <span className='text-blue-500 text-sm cursor-pointer'> (More templates available!)</span>
+        </div>
     <div >
       {/* Reuse the same resume preview styles */}
       <div className="p-8 space-y-6 text-[11px] leading-relaxed">
@@ -70,7 +72,7 @@ const MiniPreview = ({ userDetails }) => {
                   </p>
                   </div>
                   <div>
-                    <ul className="list-disc pl-4">
+                    <ul className="list-disc pl-4 text-[10px]">
                       <li>Responsibilities</li>
                       <li>Responsibilities</li>
                     </ul>

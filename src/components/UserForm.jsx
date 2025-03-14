@@ -186,7 +186,7 @@ const UserForm = ({ onSave, onCancel, initialData, isEditing }) => {
       <MiniPreview userDetails={userDetails} />
 
       {/* Main Form */}
-      <div className="min-w-6xl mx-auto rounded-xl py-10 bg-gradient-to-br from-teal-50/95 via-blue-50 to-pink-200/60 animate-gradient-xy backdrop-blur-sm shadow-xl border border-white/10">
+      <div className="min-w-6xl mx-auto rounded-xl py-10 bg-gradient-to-br from-teal-50/95 via-blue-50 to-pink-200/30 animate-gradient-xy backdrop-blur-sm shadow-xl border border-white/10">
         <div className="max-w-5xl mx-auto px-10">
           <form onSubmit={handleSave} className="space-y-6">
             <div className="text-2xl font-semibold mb-6">
@@ -537,7 +537,7 @@ const UserForm = ({ onSave, onCancel, initialData, isEditing }) => {
                 trigger="Custom Skills:"
                 className="bg-white/90 shadow-lg border-0"
               >
-                <div className="space-y-6">
+                <div className="space-y-10 mt-4">
                   <div className="flex flex-wrap gap-5 justify-start">
                     {userDetails?.customSkills?.map((skillItem, index) => (
                       <div
@@ -566,7 +566,14 @@ const UserForm = ({ onSave, onCancel, initialData, isEditing }) => {
                           {openDropdown === index && (
                             <div
                               ref={dropdownRef}
-                              className="w-full absolute top-12 left-0 z-50 bg-slate-800 text-white rounded-lg shadow-lg p-4 border border-slate-700 space-y-2"
+                              className="absolute z-[9999] bg-slate-800 text-white rounded-lg shadow-lg p-4 border border-slate-700 space-y-2"
+                              // style={{
+                              //   top: '100%',
+                              //   left: '0',
+                              //   marginTop: '8px',
+                              //   width: '100%',
+                              //   position: 'absolute'
+                              // }}
                             >
                               <h4 className="font-bold text-sm mb-2">Map Skill to:</h4>
                               <div className="space-y-2 max-h-[200px] overflow-y-auto">

@@ -110,94 +110,134 @@ const Header = () => {
    };
 
    return (
-      <header className="border-b bg-white/70 backdrop-blur-md fixed top-0 w-full z-50">
+      <header className=" border-b bg-white/70 backdrop-blur-md fixed top-0 w-full z-50">
          <div className="container mx-auto px-4">
             <div className="flex items-center space-x-2 justify-between h-[5.3rem]">
                {/* Logo */}
-               <Link href="/" className="flex items-center space-x-2">
-                  <svg
-                     xmlns="http://www.w3.org/2000/svg"
-                     viewBox="0 0 50 48"
-                     className="h-10 ml-2"
-                  >
-                     {/* Paper/Wing Shape */}
-                     {/* <path
-                        d="M20 36c0 0-8-16 0-24s24-4 32-12s8-8 8-8s4 12-4 20-20 8-28 16S20 36 20 36z"
-                        fill="url(#gradient1)"
-                     /> */}
+               <Link href="/" className="flex items-center space-x-1">
+<svg
+   xmlns="http://www.w3.org/2000/svg"
+   viewBox="0 0 50 48"
+   className="h-20 ml-2"
+>
+   {/* Document Shadow */}
+   <rect
+      x="14"
+      y="10"
+      width="28"
+      height="36"
+      rx="2"
+      fill="#3B82F6"
+      opacity="0.2"
+   />
 
-                     {/* Document Base */}
-                     <rect
-                        x="12"
-                        y="8"
-                        width="28"
-                        height="36"
-                        rx="2"
-                        fill="url(#gradient2)"
-                     />
+   {/* Document Base */}
+   <rect
+      x="12"
+      y="8"
+      width="28"
+      height="36"
+      rx="2"
+      fill="url(#gradient2)"
+   />
 
-                     {/* Document Lines */}
-                     <rect
-                        x="18"
-                        y="16"
-                        width="16"
-                        height="2"
-                        rx="1"
-                        fill="#fff"
-                        opacity="0.6"
-                     />
-                     <rect
-                        x="18"
-                        y="22"
-                        width="12"
-                        height="2"
-                        rx="1"
-                        fill="#fff"
-                        opacity="0.6"
-                     />
-                     <rect
-                        x="18"
-                        y="28"
-                        width="14"
-                        height="2"
-                        rx="1"
-                        fill="#fff"
-                        opacity="0.6"
-                     />
+   {/* Folded Corner */}
+   <path
+      d="M40 8 L40 16 L32 8 Z"
+      fill="url(#gradient1)"
+   />
+   <path
+      d="M40 8 L40 16 L32 8 Z"
+      fill="url(#gradient1)"
+      opacity="0.8"
+   />
 
-                     {/* Gradients */}
-                     <defs>
-                        <linearGradient
-                           id="gradient1"
-                           x1="0"
-                           y1="20"
-                           x2="100%"
-                           y2="100%"
-                        >
-                           <stop offset="0%" stopColor="#818CF8" />
-                           <stop offset="100%" stopColor="#f0f569" />
-                        </linearGradient>
-                        <linearGradient
-                           id="gradient2"
-                           x1="0"
-                           y1="0"
-                           x2="100%"
-                           y2="100%"
-                        >
-                           <stop offset="0%" stopColor="#6366F1" />
-                           <stop offset="100%" stopColor="#4F46E5" />
-                        </linearGradient>
-                     </defs>
-                  </svg>
+   {/* Document Lines */}
+   <rect
+      x="18"
+      y="16"
+      width="16"
+      height="2"
+      rx="1"
+      fill="#fff"
+      opacity="0.8"
+   />
+   <rect
+      x="18"
+      y="22"
+      width="12"
+      height="2"
+      rx="1"
+      fill="#fff"
+      opacity="0.8"
+   />
+   <rect
+      x="18"
+      y="28"
+      width="14"
+      height="2"
+      rx="1"
+      fill="#fff"
+      opacity="0.8"
+   />
+
+   {/* Subtle Texture Effect */}
+   <rect
+      x="12"
+      y="8"
+      width="28"
+      height="36"
+      rx="2"
+      fill="url(#texture)"
+      opacity="0.2"
+   />
+
+   {/* Gradients */}
+   <defs>
+      <linearGradient
+         id="gradient1"
+         x1="0"
+         y1="0"
+         x2="1"
+         y2="1"
+      >
+         <stop offset="0%" stopColor="#EC4899" /> {/* Pink */}
+         <stop offset="100%" stopColor="#8B5CF6" /> {/* Purple */}
+      </linearGradient>
+      <linearGradient
+         id="gradient2"
+         x1="0"
+         y1="0"
+         x2="1"
+         y2="1"
+      >
+         <stop offset="0%" stopColor="#3B82F6" /> {/* Blue */}
+         <stop offset="100%" stopColor="#8B5CF6" /> {/* Purple */}
+      </linearGradient>
+
+      {/* Subtle Texture */}
+      <pattern
+         id="texture"
+         x="0"
+         y="0"
+         width="10"
+         height="10"
+         patternUnits="userSpaceOnUse"
+      >
+         <circle cx="1" cy="1" r="1" fill="#fff" />
+         <circle cx="6" cy="6" r="1" fill="#fff" />
+      </pattern>
+   </defs>
+</svg>
                   {/* <div className="flex flex-col"> */}
-                  <span
-                     className={`text-[2.3rem] pb-2 flex flex-col font-extrabold bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-500 bg-clip-text text-transparent hover:from-pink-500 hover:via-purple-600 hover:to-indigo-600 transition-all duration-300`}
+                  <div
+                     className={`font-[Raleway] text-[2.3rem] pb-2 flex flex-col font-extrabold bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-500 bg-clip-text text-transparent hover:from-pink-500 hover:via-purple-600 hover:to-indigo-600 transition-all duration-300`}
                   >
-                     ResumeOnFly
-                     <span className="text-xs text-black font-normal">
+                     <div className="m-0 p-0">ResumeOnFly</div> 
+                     <div className="text-xs text-black font-normal">
                         prod by <span className="font-bold"> CVtoSalary</span>
-                     </span>
-                  </span>
+                     </div>
+                  </div>
                   {/* </div> */}
                </Link>
 
