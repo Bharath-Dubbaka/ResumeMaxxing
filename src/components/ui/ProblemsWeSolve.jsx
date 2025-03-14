@@ -37,11 +37,11 @@ const problems = [
 
 const ProblemsWeSolve = () => {
    return (
-      <section className="py-28 bg-gradient-to-br from-pink-100/80 to-teal-100/50 animate-gradient-xy">
+      <section className="py-28  bg-gradient-to-br from-pink-100/80 to-teal-100/50 animate-gradient-xy">
          <h2 className="text-4xl font-extrabold text-center mb-10 text-gray-800">
             Problems We Solve
          </h2>
-         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 max-w-7xl mx-auto px-6">
+         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 max-w-5xl mx-auto px-6">
             {problems.map((problem, index) => (
                <div
                   key={index}

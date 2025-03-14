@@ -19,6 +19,8 @@ import ProblemsWeSolve from "../components/ui/ProblemsWeSolve";
 import HowWeSolve from "../components/ui/HowWeSolve";
 import TypeWriting from "../components/ui/TypeWriting";
 import AuthService from "../services/AuthService";
+import { StickyScrollRevealDemo } from "../components/aceternityUI/StickyScrollRevealDemo";
+import Whyus from "../components/ui/Whyus";
 
 export default function Home() {
    const router = useRouter();
@@ -47,7 +49,7 @@ export default function Home() {
          await AuthService.handleAuthFlow(dispatch, router, user, userDetails, {
             setUser,
             setUserQuota,
-            setUserDetails
+            setUserDetails,
          });
       } catch (error) {
          console.error("Login error:", error);
@@ -114,9 +116,10 @@ export default function Home() {
                   />
                </div>
             </div>
-            <VideoSection />
-
-            <HowItWorks />
+            <StickyScrollRevealDemo />
+            {/* <VideoSection /> */}
+            {/* <HowItWorks /> */}
+            <Whyus />
             <ProblemsWeSolve />
             <HowWeSolve />
          </div>

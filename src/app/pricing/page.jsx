@@ -145,7 +145,7 @@ const Pricing = () => {
                className: "class",
             }}
          />
-         <h2 className="text-4xl font-bold text-center mb-8 text-gray-900">
+         <h2 className="text-4xl font-bold text-center mb-8 text-gray-900 underline">
             Choose Your Plan
          </h2>
          <p className="text-center text-gray-600 mb-12">

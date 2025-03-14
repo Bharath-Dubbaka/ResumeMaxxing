@@ -105,3 +105,34 @@
    background-size: 200% auto;
    animation: gradient 4s linear infinite;
 }
+
+.dotted-pattern {
+   background-image: radial-gradient(
+         circle at center,
+         transparent 0%,
+         transparent 20%,
+         rgba(255, 234, 0, 0) 40%
+      ),
+      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 20 20'%3E%3Ctext x='10' y='15' fill='%23800080' font-size='5' text-anchor='middle'%3E*%3C/text%3E%3C/svg%3E");
+   background-size: 100% 100%, 16px 16px;
+   background-repeat: no-repeat, repeat;
+   position: relative; /* Add this to create a stacking context */
+}
+
+.dotted-pattern::before {
+   content: "";
+   position: absolute;
+   top: 0;
+   left: 0;
+   width: 100%;
+   height: 100%;
+   background-image: radial-gradient(
+      circle at center,
+      rgba(0, 0, 255, 0.5) 3px,
+      transparent 3px
+   ); /* Blue glow */
+   background-size: 16px 16px;
+   background-repeat: repeat;
+   mix-blend-mode: screen; /* Use screen blend mode for the glow effect */
+   pointer-events: none; /* Make the glow layer non-interactive */
+}

@@ -18,7 +18,7 @@ export const metadata = {
 export default function RootLayout({ children, pageProps }) {
    return (
       <html lang="en">
-         <body className={robotoMono.className}>
+         <body className={inter.className}>
             <Providers>
                <FirestoreSubscription />
                <Header {...pageProps} />
