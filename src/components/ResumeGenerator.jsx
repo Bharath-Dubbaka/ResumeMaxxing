@@ -359,12 +359,12 @@ const ResumeGenerator = () => {
   };
 
   return combinedSkills.length > 0 ? (
-    <Card className="bg-white/60 shadow-lg border-0 backdrop-blur-2xl rounded-xl mt-6">
+    <Card className="bg-white/60 shadow-lg border-0 backdrop-blur-2xl rounded-xl mt-6" >
       {/* <CardHeader className="border-b bg-white/40 backdrop-blur-xl px-6 py-4">
          <CardTitle>Resume Generator</CardTitle>
       </CardHeader> */}
       <CardContent>
-        <div className="space-y-4 p-4">
+        <div className="space-y-4 p-1 md:p-4">
           <Button
             onClick={generateResume}
             className="w-full mt-4 bg-gradient-to-r from-blue-500 to-indigo-500 hover:from-blue-600 hover:to-indigo-600 text-white rounded-lg"

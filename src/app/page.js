@@ -72,7 +72,7 @@ export default function Home() {
     <div className="">
       <div>
         {/* Hero Section */}
-        <div className="min-h-screen relative z-10 text-center space-y-8 pt-40 bg-gradient-to-br from-yellow-50/90 via-rose-50/95 to-purple-200/60 animate-gradient-xy">
+        <div className="min-h-screen relative z-10 text-center space-y-8 pt-40 bg-gradient-to-br from-yellow-50/90  to-purple-200/60 animate-gradient-xy">
           <TypeWriting />
           <p className="text-slate-900 text-xl md:text-2xl max-w-2xl mx-auto">
             <span className="font-bold">Create/Customize</span> your
@@ -96,7 +96,7 @@ export default function Home() {
             </Button>
           </div>
           {/* Features Section */}
-          <div className="grid md:grid-cols-3 gap-8 pt-10 pb-20 mb-10 px-20">
+          <div className="grid md:grid-cols-3 gap-8 pt-10 pb-20 mb-10 px-4 md:px-20">
             <FeatureCard
               title="AI-Powered Writing"
               description="Our AI analyzes your experience and generates professional descriptions that highlight your achievements."

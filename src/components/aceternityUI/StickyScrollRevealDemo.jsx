@@ -15,8 +15,14 @@ const content = [
          "🚀 :Save custom competencies for quick reuse across multiple resume versions and future re-edits",
       ].join("\n"),
       content: (
-         <div className="h-full w-full bg-[linear-gradient(to_bottom_right,var(--cyan-500),var(--emerald-500))] flex items-center justify-center text-black">
-            Master Profile Builder
+         <div className="h-full w-full flex items-center justify-center text-black">
+            <Image
+               src="/linearee.webp"
+               width={300}
+               height={300}
+               className="h-full w-full object-cover"
+               alt="AI 1 visualization"
+            />
          </div>
       ),
    },
@@ -35,7 +41,7 @@ const content = [
                width={300}
                height={300}
                className="h-full w-full object-cover"
-               alt="AI analysis visualization"
+               alt="AI 2 visualization"
             />
          </div>
       ),
@@ -48,8 +54,14 @@ const content = [
          "🚀 :Intelligent distribution of competencies across experience sections",
       ].join("\n"),
       content: (
-         <div className="h-full w-full bg-[linear-gradient(to_bottom_right,var(--orange-500),var(--yellow-500))] flex items-center justify-center text-black">
-            Resume Content Engine
+         <div className="h-full w-full flex items-center justify-center text-black">
+            <Image
+               src="/linear3.webp"
+               width={300}
+               height={300}
+               className="h-full w-full object-cover"
+               alt="AI 3 visualization"
+            />
          </div>
       ),
    },
@@ -62,8 +74,14 @@ const content = [
          "🚀 :Multiple industry-specific professional templates",
       ].join("\n"),
       content: (
-         <div className="h-full w-full bg-[linear-gradient(to_bottom_right,var(--purple-500),var(--pink-500))] flex items-center justify-center text-black">
-            Export Dashboard
+         <div className="h-full w-full flex items-center justify-center text-black">
+            <Image
+               src="/linear4.webp"
+               width={300}
+               height={300}
+               className="h-full w-full object-cover"
+               alt="AI analysis4 visualization"
+            />
          </div>
       ),
    },
@@ -132,7 +150,7 @@ export const StickyScroll = ({ content, contentClassName }) => {
 
    return (
       <motion.div
-         className="h-[45rem] overflow-y-auto flex justify-center relative space-x-10 rounded-md"
+         className="h-[40rem] overflow-y-auto flex justify-center relative space-x-10 rounded-md"
          ref={ref}
       >
          <div className="div relative flex items-start px-2">
@@ -165,7 +183,7 @@ export const StickyScroll = ({ content, contentClassName }) => {
          <div
             style={{ background: backgroundGradient }}
             className={cn(
-               "hidden lg:block h-80 w-96 rounded-md bg-white sticky top-10 overflow-hidden",
+               "hidden lg:block mt-28 h-80 w-[30rem] rounded-md bg-white sticky top-10 overflow-hidden",
                contentClassName
             )}
          >

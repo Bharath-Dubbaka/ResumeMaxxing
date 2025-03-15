@@ -3,7 +3,7 @@ import React from "react";
 const TermsAndConditions = () => {
    return (
       <div className="bg-gradient-to-br from-yellow-50/95 via-pink-50 to-blue-200/60 animate-gradient-xy">
-         <div className="py-28 max-w-4xl mx-auto ">
+         <div className="py-20 md:py-28 max-w-4xl mx-4 md:mx-auto  ">
             <h1 className="text-2xl font-bold mb-4">Terms and Conditions</h1>
             <p>
                These Terms and Conditions ("Terms") govern your access to and

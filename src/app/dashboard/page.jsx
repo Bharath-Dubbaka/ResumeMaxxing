@@ -6,7 +6,7 @@ import { useEffect } from "react";
 import JobDescriptionAnalyzer from "../../components/JobDescriptionAnalyzer";
 import ResumeGenerator from "../../components/ResumeGenerator";
 import { toast, Toaster } from "sonner";
-   
+
 export default function DashboardPage() {
    const { user, loading } = useSelector((state) => state.auth);
    const { userDetails } = useSelector((state) => state.firebase);
@@ -38,7 +38,7 @@ export default function DashboardPage() {
             }}
          />
 
-         <div className=" px-24 py-8 pt-32 rounded-xl">
+         <div className="px-2 sm:px-20 py-8 pt-20 sm:pt-32 rounded-xl">
             <h1 className="text-3xl font-bold mb-8 "></h1>
             <JobDescriptionAnalyzer />
             <ResumeGenerator />
