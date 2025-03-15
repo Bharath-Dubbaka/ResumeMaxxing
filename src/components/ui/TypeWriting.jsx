@@ -49,9 +49,9 @@ const TypeWriting = () => {
    };
 
    return (
-      <h1 className="text-5xl md:text-7xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-900 to-pink-900">
+      <h1 className="text-5xl md:text-7xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-900 to-pink-900 text-stroke text-stroke-black text-stroke-2 italic">
          {text}
-         <span className="animate-blink">|</span>
+         <span className="animate-blink ">|</span>
       </h1>
    );
 };

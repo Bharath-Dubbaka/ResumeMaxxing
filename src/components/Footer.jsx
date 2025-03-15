@@ -3,13 +3,17 @@ import Link from "next/link";
 
 const Footer = () => {
    return (
-      <footer className="bg-white border-t">
+      <footer className="bg-white border-t dotted-pattern">
          <div className="container mx-auto px-4 py-12">
             <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
                {/* Brand Column */}
                <div className="space-y-4">
                   <h2 className="flex flex-col text-2xl font-bold bg-gradient-to-r from-blue-900 to-pink-900 bg-clip-text text-transparent">
-                     ResumeOnFly
+                     <span
+                        className={`font-[Calibri] text-xl md:text-[2.3rem] pb-0 md:pb-2 font-extralight bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-500 bg-clip-text text-transparent`}
+                     >
+                        ResumeOnFly
+                     </span>
                      <span className="text-xs text-black font-normal">
                         prod by <span className="font-bold"> CVtoSalary</span>
                      </span>

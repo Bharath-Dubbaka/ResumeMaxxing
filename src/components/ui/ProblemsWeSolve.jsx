@@ -38,14 +38,27 @@ const problems = [
 const ProblemsWeSolve = () => {
    return (
       <section className="py-28  bg-gradient-to-br from-pink-100/80 to-teal-100/50 animate-gradient-xy">
-         <h2 className="text-4xl font-extrabold text-center mb-10 text-gray-800">
-            Problems We Solve
-         </h2>
+         <div className="text-center mb-6">
+            <h2 className="text-4xl font-bold text-center mb-2 underline">
+               Problems we solve{" "}
+            </h2>
+            <p className="text-xl text-gray-600 mb-4">
+               Struggling with endless resume tweaks, ATS rejections, and format
+               confusion?
+            </p>
+            <p className="text-gray-500 max-w-[80%] mx-auto">
+               We understand the frustration of modern job searches. We address
+               these challenges by eliminating tedious tailoring, ensuring ATS
+               compatibility, and providing expert-backed resume structures, so
+               you can focus on landing your dream job, not wrestling with your
+               resume."
+            </p>
+         </div>
          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 max-w-5xl mx-auto px-6">
             {problems.map((problem, index) => (
                <div
                   key={index}
-                  className="group relative bg-white p-6 rounded-xl shadow-lg hover:shadow-2xl transition duration-300 border border-gray-200 hover:border-gray-400"
+                  className="group relative bg-white p-6 rounded-xl shadow-lg hover:shadow-2xl transition duration-300 border border-gray-200 hover:border-gray-400  dotted-pattern"
                >
                   <div className="absolute -top-5 -left-5 rounded-full bg-gray-50 p-3 shadow-md group-hover:scale-105 transition-transform duration-300">
                      {problem.icon}

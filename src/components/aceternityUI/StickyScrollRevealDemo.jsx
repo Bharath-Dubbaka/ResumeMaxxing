@@ -90,12 +90,38 @@ const content = [
 export function StickyScrollRevealDemo() {
    return (
       <div className="backdrop-blur-md bg-gradient-to-br from-purple-200/60 to-yellow-50/95 animate-gradient-xy">
-         <h2 className="text-4xl font-bold text-center pt-16 bg-tra underline">
-            How this works:
-         </h2>
-         <p className="font-light text-center text-slate-600 py-4">
-            How to approach this, and how it solves the problem
-         </p>
+         <div className="text-center mb-2">
+            <h2 className="text-4xl font-bold text-center mb-2 underline">
+               How this works !
+            </h2>
+            <p className="text-xl text-gray-600 mb-4">
+               Our streamlined four-step process transforms your resume creation
+            </p>
+            <p className="text-gray-500 max-w-[80%] mx-auto">
+               <span className="font-bold"> Centralized Master Profile</span>,
+               <span className="hidden sm:inline">
+                  securely storing your professional details and reusable
+                  skills, eliminating repetitive entries.{" "}
+               </span>
+               <span className="font-bold">Smart Job Description Analysis</span>{" "}
+               <span className="hidden sm:inline">
+                  uses AI to extract key requirements and match them to profile,
+                  ensuring your resume is tailored to each opportunity.
+               </span>
+               <span className="font-bold">AI-Optimized Resume Generation</span>{" "}
+               <span className="hidden sm:inline">
+                  automatically creates targeted summaries and dynamic
+                  responsibilities, saving you hours of manual work.{" "}
+               </span>
+               <span className="font-bold">
+                  Finally, Professional Export & Templates{" "}
+               </span>
+               <span className="hidden sm:inline">
+                  provide ATS-friendly formats, allowing you to present a
+                  polished, impactful resume every time."
+               </span>
+            </p>
+         </div>
          <StickyScroll content={content} />
       </div>
    );
@@ -154,9 +180,9 @@ export const StickyScroll = ({ content, contentClassName }) => {
          ref={ref}
       >
          <div className="div relative flex items-start px-2">
-            <div className="max-w-4xl">
+            <div className="max-w-4xl px-4 md:px-0">
                {content.map((item, index) => (
-                  <div key={item.title + index} className="my-20">
+                  <div key={item.title + index} className="my-10 md:my-20">
                      <motion.h2
                         initial={{
                            opacity: 0,
@@ -177,7 +203,7 @@ export const StickyScroll = ({ content, contentClassName }) => {
                      </motion.p>
                   </div>
                ))}
-               <div className="h-40" />
+               <div className="h-10" />
             </div>
          </div>
          <div

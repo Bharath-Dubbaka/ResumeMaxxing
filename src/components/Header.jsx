@@ -28,6 +28,7 @@ const Header = () => {
    const router = useRouter();
    const [isDropdownOpen, setIsDropdownOpen] = useState(false);
    const [isLoading, setIsLoading] = useState(false);
+   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
    const handleLogout = async () => {
       try {
@@ -111,12 +112,33 @@ const Header = () => {
 
    return (
       <header className="border-b bg-white/70 backdrop-blur-md fixed top-0 w-full z-50">
-         <div className="container mx-auto px-1 sm:px-6">
+         <div className="container mx-auto px-1 sm:px-2 lg:px-6">
             <div className="flex items-center justify-between h-16 md:h-[5.3rem]">
-               {/* Logo - Mobile Optimized */}
+               {/* Mobile Menu Button */}
+               <div className="md:hidden flex items-center">
+                  <button
+                     onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+                     className="p-2 text-indigo-600 hover:bg-indigo-100 rounded-lg"
+                  >
+                     <svg
+                        className="w-6 h-6"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                     >
+                        <path
+                           strokeLinecap="round"
+                           strokeLinejoin="round"
+                           strokeWidth={2}
+                           d="M4 6h16M4 12h16M4 18h16"
+                        />
+                     </svg>
+                  </button>
+               </div>
+               {/* Logo - Centered on Mobile */}
                <Link
                   href="/"
-                  className="flex items-center space-x-1 flex-shrink-0"
+                  className="flex items-center space-x-1 md:ml-2 ml-0"
                >
                   <svg
                      xmlns="http://www.w3.org/2000/svg"
@@ -236,7 +258,9 @@ const Header = () => {
                      <div
                         className={`font-[Calibri] text-xl md:text-[2.3rem] pb-0 md:pb-2 font-extrabold bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-500 bg-clip-text text-transparent`}
                      >
-                        <span className="sm:inline">ResumeOnFly</span>
+                        <span className="sm:inline font-light">
+                           ResumeOnFly
+                        </span>
                      </div>
                      <div className="text-[0.6rem] md:text-xs text-black font-normal">
                         prod by <span className="font-bold">CVtoSalary</span>
@@ -244,7 +268,7 @@ const Header = () => {
                   </div>
                </Link>
 
-               {/* Navigation */}
+               {/* Desktop Navigation */}
                <nav className="hidden md:flex items-center space-x-8">
                   {["Faq", "Pricing", "About"].map((item) => (
                      <Link
@@ -257,9 +281,27 @@ const Header = () => {
                   ))}
                </nav>
 
+               {/* Mobile Navigation Menu */}
+               {isMobileMenuOpen && (
+                  <div className="absolute top-full left-0 w-full bg-white shadow-lg md:hidden">
+                     <div className="px-4 py-2 border-t border-indigo-100">
+                        {["Faq", "Pricing", "About"].map((item) => (
+                           <Link
+                              key={item}
+                              href={`/${item.toLowerCase()}`}
+                              className="block px-4 py-3 text-slate-700 hover:bg-indigo-50 rounded-lg"
+                              onClick={() => setIsMobileMenuOpen(false)}
+                           >
+                              {item}
+                           </Link>
+                        ))}
+                     </div>
+                  </div>
+               )}
+
                {/* User Section - Mobile Optimized */}
                {user && userQuota ? (
-                  <div className="flex items-center gap-2 md:gap-4 relative">
+                  <div className="flex items-center gap-1 md:gap-4 relative">
                      {/* Profile Image */}
                      {user.picture ? (
                         <img
@@ -455,7 +497,7 @@ const Header = () => {
                      </Button>
                      <Button
                         onClick={handleGetStarted}
-                        className=" px-2 md:px-4 py-0 md:py-2 bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-500 text-white text-sm md:text-base"
+                        className="text-xs text-white md:text-base px-2 md:px-4 py-0 md:py-2 bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-500 "
                      >
                         FREE Trial
                      </Button>

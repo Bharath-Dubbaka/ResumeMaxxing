@@ -11,11 +11,25 @@ import {
 const HowWeSolve = () => {
    return (
       <section className="py-20 bg-white rounded-lg bg-gradient-to-br from-teal-100/50  to-yellow-50/60 animate-gradient-xy">
-         <h2 className="text-4xl font-extrabold text-center mb-6 text-gray-800">
-            How We Solve These Problems
-         </h2>
+         <div className="text-center mb-6">
+            <h2 className="text-4xl font-bold text-center mb-2 underline">
+               How We Solve These Problems
+            </h2>
+            <p className="text-xl text-gray-600 mb-4">
+               We simplify your job search with a centralized, AI-powered resume
+               platform{" "}
+            </p>
+            <p className="text-gray-500 max-w-[80%] mx-auto">
+               Start with a master resume, leverage AI to analyze job
+               descriptions and generate custom responsibilities, and create
+               ATS-friendly, market-preferred resumes effortlessly. Our
+               intuitive editor and downloadable formats empower you to
+               fine-tune your resume, saving time and maximizing your chances of
+               success.
+            </p>
+         </div>
          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-6xl mx-auto px-4">
-            <div className="flex flex-col items-center bg-white p-6 rounded-lg shadow-md hover:shadow-xl transition-shadow duration-300">
+            <div className="flex flex-col items-center bg-white p-6 rounded-lg shadow-md hover:shadow-xl transition-shadow duration-300  dotted-pattern">
                <ClipboardCheck className="h-10 w-10 text-green-600 mb-4" />
                <h3 className="text-lg font-semibold mb-2 text-center">
                   Start with a Master Resume
@@ -27,7 +41,7 @@ const HowWeSolve = () => {
                   and reusable content, tailored to your needs.
                </p>
             </div>
-            <div className="flex flex-col items-center bg-white p-6 rounded-lg shadow-md hover:shadow-xl transition-shadow duration-300">
+            <div className="flex flex-col items-center bg-white p-6 rounded-lg shadow-md hover:shadow-xl transition-shadow duration-300  dotted-pattern">
                <Cpu className="h-10 w-10 text-blue-500 mb-4" />
                <h3 className="text-lg font-semibold mb-2 text-center">
                   AI-Powered Job Description Analysis
@@ -43,7 +57,7 @@ const HowWeSolve = () => {
                   to the next level.
                </p>
             </div>
-            <div className="flex flex-col items-center bg-white p-6 rounded-lg shadow-md hover:shadow-xl transition-shadow duration-300">
+            <div className="flex flex-col items-center bg-white p-6 rounded-lg shadow-md hover:shadow-xl transition-shadow duration-300  dotted-pattern">
                <Settings className="h-10 w-10 text-orange-500 mb-4" />
                <h3 className="text-lg font-semibold mb-2 text-center">
                   Generate and Save Custom Responsibilities
@@ -58,7 +72,7 @@ const HowWeSolve = () => {
                   customization faster and smarter.
                </p>
             </div>
-            <div className="flex flex-col items-center bg-white p-6 rounded-lg shadow-md hover:shadow-xl transition-shadow duration-300">
+            <div className="flex flex-col items-center bg-white p-6 rounded-lg shadow-md hover:shadow-xl transition-shadow duration-300  dotted-pattern">
                <File className="h-10 w-10 text-purple-600 mb-4" />
                <h3 className="text-lg font-semibold mb-2 text-center">
                   Generate ATS-Friendly Resumes
@@ -70,7 +84,7 @@ const HowWeSolve = () => {
                   recruiter queries and ATS storage.
                </p>
             </div>
-            <div className="flex flex-col items-center bg-white p-6 rounded-lg shadow-md hover:shadow-xl transition-shadow duration-300">
+            <div className="flex flex-col items-center bg-white p-6 rounded-lg shadow-md hover:shadow-xl transition-shadow duration-300  dotted-pattern">
                <Layout className="h-10 w-10 text-yellow-600 mb-4" />
                <h3 className="text-lg font-semibold mb-2 text-center">
                   “Market-Preferred” Resume Structure
@@ -82,7 +96,7 @@ const HowWeSolve = () => {
                   style.
                </p>
             </div>
-            <div className="flex flex-col items-center bg-white p-6 rounded-lg shadow-md hover:shadow-xl transition-shadow duration-300">
+            <div className="flex flex-col items-center bg-white p-6 rounded-lg shadow-md hover:shadow-xl transition-shadow duration-300  dotted-pattern">
                <Edit3 className="h-10 w-10 text-red-500 mb-4" />
                <h3 className="text-lg font-semibold mb-2 text-center">
                   Edit Without Hassle

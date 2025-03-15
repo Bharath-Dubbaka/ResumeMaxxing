@@ -87,7 +87,7 @@ export default function Whyus() {
                {features.map((feature, index) => (
                   <div
                      key={index}
-                     className="bg-white p-4 rounded-lg shadow-xl hover:shadow-md duration-300 hover:-translate-y-1.5 transition-transform"
+                     className="bg-white p-4 rounded-lg shadow-xl hover:shadow-md duration-300 hover:-translate-y-1.5 transition-transform  dotted-pattern"
                   >
                      <div className="flex items-start gap-3 py-1 my-2">
                         <span className="p-2 rounded-lg bg-gradient-to-br from-blue-300/40 to-pink-300/40 animate-gradient-xy">
