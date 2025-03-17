@@ -4,6 +4,7 @@ import Header from "../components/Header";
 import Footer from "../components/Footer";
 import { Providers } from "../components/Providers";
 import FirestoreSubscription from "../components/FirestoreSubscription";
+import Analytics from "../components/Analytics";
 
 const inter = Inter({ subsets: ["latin"] });
 const robotoMono = Roboto_Mono({ subsets: ["latin"] });
@@ -55,6 +56,7 @@ export default function RootLayout({ children, pageProps }) {
    return (
       <html lang="en">
          <body className={inter.className}>
+            <Analytics />
             <Providers>
                <FirestoreSubscription />
                <Header {...pageProps} />
