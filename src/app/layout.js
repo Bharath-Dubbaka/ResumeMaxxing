@@ -48,7 +48,7 @@ export const metadata = {
       "ATS resume builder",
       "AI resume writer",
       "recruiter-approved format",
-      "resume keyword optimizer",
+      "resume optimizer for job descriptions",
    ],
 };
 

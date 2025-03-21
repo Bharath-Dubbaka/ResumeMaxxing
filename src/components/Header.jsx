@@ -9,7 +9,7 @@ import Link from "next/link";
 import { Button } from "../components/ui/button";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { GoogleAuthProvider, signInWithPopup } from "firebase/auth";
 import { QuotaService } from "../services/QuotaService";
 import { UserDetailsService } from "../services/UserDetailsService";
@@ -26,9 +26,23 @@ const Header = () => {
    const { userQuota, userDetails } = useSelector((state) => state.firebase);
    const dispatch = useDispatch();
    const router = useRouter();
-   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
    const [isLoading, setIsLoading] = useState(false);
    const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+   const dropdownRef = useRef(null);
+
+   const handleClickOutside = (event) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+         setIsDropdownOpen(false);
+      }
+   };
+
+   useEffect(() => {
+      document.addEventListener("mousedown", handleClickOutside);
+      return () => {
+         document.removeEventListener("mousedown", handleClickOutside);
+      };
+   }, []);
 
    const handleLogout = async () => {
       try {
@@ -351,10 +365,18 @@ const Header = () => {
 
                      {/* Dropdown Menu - Mobile Positioning */}
                      {isDropdownOpen && (
-                        <div className="absolute right-0 top-full mt-1 md:mt-2 w-64 md:w-72 bg-white rounded-lg shadow-lg border border-indigo-100 py-2 z-50">
+                        <div
+                           ref={dropdownRef}
+                           className="absolute right-0 top-full mt-1 md:mt-2 w-64 md:w-[22rem] bg-white rounded-lg shadow-lg border border-indigo-100 py-2 z-50"
+                        >
                            <div className="px-4 py-2 border-b border-indigo-100">
-                              <p className="text-xs text-indigo-600">
-                                 {user.email}
+                              <p className="text-xs md:text-sm text-indigo-600">
+                                 Email: {user.email}
+                              </p>
+                           </div>
+                           <div className="px-4 py-2 border-b border-indigo-100">
+                              <p className="text-xs md:text-sm text-indigo-600">
+                                 ID: {user.uid}
                               </p>
                            </div>
                            {/* Upgrade to premium btn here and for user who are already on premium will be shown there premium endDate */}

@@ -33,7 +33,7 @@ export const AccordionItem = ({
           isOpen ? "opacity-100" : "max-h-0 opacity-0 overflow-hidden"
         )}
       >
-        <div className="px-6 pt-2 pb-6 bg-white">{children}</div>
+        <div className="px-3 md:px-6 pt-2 pb-6 bg-white">{children}</div>
       </div>
     </div>
   );

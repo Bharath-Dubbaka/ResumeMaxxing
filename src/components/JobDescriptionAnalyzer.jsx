@@ -62,7 +62,7 @@ export default function JobDescriptionAnalyzer() {
          // Combine generated skills with custom skills
          const allSkills = [
             ...analysis.technicalSkills,
-            ...(userDetails.customSkills?.map(cs => cs.skill) || [])
+            ...(userDetails.customSkills?.map((cs) => cs.skill) || []),
          ];
 
          setSkillMappings((prev) => {
@@ -74,11 +74,13 @@ export default function JobDescriptionAnalyzer() {
             const updatedMappings = allSkills.map((skill) => {
                const existingMapping = prev.find((m) => m.skill === skill);
                // If it's a custom skill, use its existing mappings
-               const customSkill = userDetails.customSkills?.find(cs => cs.skill === skill);
-               
+               const customSkill = userDetails.customSkills?.find(
+                  (cs) => cs.skill === skill
+               );
+
                if (existingMapping) return existingMapping;
                if (customSkill) return customSkill;
-               
+
                return {
                   skill,
                   experienceMappings: allExperienceTitles,
@@ -94,31 +96,39 @@ export default function JobDescriptionAnalyzer() {
    // Move the initialization logic outside useEffect
    const initializeCombinedSkills = () => {
       const skillsMap = new Map();
-      
+
       // Add generated skills first
-      analysis?.technicalSkills?.forEach(skill => {
+      analysis?.technicalSkills?.forEach((skill) => {
          if (!skillsMap.has(skill)) {
             skillsMap.set(skill, {
                skill,
-               experienceMappings: skillMappings.find(m => m.skill === skill)?.experienceMappings || [],
-               type: 'generated'
+               experienceMappings:
+                  skillMappings.find((m) => m.skill === skill)
+                     ?.experienceMappings || [],
+               type: "generated",
             });
          }
       });
 
       // Add custom skills at the end
-      userDetails?.customSkills?.forEach(skill => {
+      userDetails?.customSkills?.forEach((skill) => {
          if (!skillsMap.has(skill.skill)) {
             skillsMap.set(skill.skill, {
                ...skill,
-               type: 'custom'
+               type: "custom",
             });
          }
       });
 
       // Convert map to array while preserving order
-      const generatedSkills = analysis?.technicalSkills?.map(skill => skillsMap.get(skill)).filter(Boolean) || [];
-      const customSkills = userDetails?.customSkills?.map(skill => skillsMap.get(skill.skill)).filter(Boolean) || [];
+      const generatedSkills =
+         analysis?.technicalSkills
+            ?.map((skill) => skillsMap.get(skill))
+            .filter(Boolean) || [];
+      const customSkills =
+         userDetails?.customSkills
+            ?.map((skill) => skillsMap.get(skill.skill))
+            .filter(Boolean) || [];
 
       return [...generatedSkills, ...customSkills];
    };
@@ -128,8 +138,8 @@ export default function JobDescriptionAnalyzer() {
       setCombinedSkills(initialSkills);
       // Dispatch a plain object action
       dispatch({
-         type: 'skills/setCombinedSkills',
-         payload: initialSkills
+         type: "skills/setCombinedSkills",
+         payload: initialSkills,
       });
    }, [skillMappings, userDetails?.customSkills]);
 
@@ -186,41 +196,45 @@ export default function JobDescriptionAnalyzer() {
    //Skill ADD EDIT AND DELETE BELOW
    const handleAddSkill = () => {
       console.log("Current combinedSkills:", combinedSkills); // Log before adding
-      
+
       const newSkill = "";
-      
+
       // Get all experience titles
-      const allExperienceTitles = userDetails?.experience?.map(exp => exp.title) || [];
-      
+      const allExperienceTitles =
+         userDetails?.experience?.map((exp) => exp.title) || [];
+
       // Create new skill object with all experiences mapped
       const newSkillObj = {
          skill: newSkill,
          experienceMappings: allExperienceTitles,
-         type: 'generated'
+         type: "generated",
       };
 
       // Simply append to the end of all skills
       const updatedSkills = [...(combinedSkills || []), newSkillObj];
       console.log("Updated combinedSkills:", updatedSkills); // Log after adding
-      
+
       setCombinedSkills(updatedSkills);
-      
+
       // Update analysis
-      setAnalysis(prev => ({
+      setAnalysis((prev) => ({
          ...prev,
-         technicalSkills: [...(prev?.technicalSkills || []), newSkill]
+         technicalSkills: [...(prev?.technicalSkills || []), newSkill],
       }));
 
       // Update skill mappings
-      setSkillMappings(prev => [...prev, {
-         skill: newSkill,
-         experienceMappings: allExperienceTitles
-      }]);
+      setSkillMappings((prev) => [
+         ...prev,
+         {
+            skill: newSkill,
+            experienceMappings: allExperienceTitles,
+         },
+      ]);
 
       // Update Redux store
       dispatch({
-         type: 'skills/setCombinedSkills',
-         payload: updatedSkills
+         type: "skills/setCombinedSkills",
+         payload: updatedSkills,
       });
    };
 
@@ -252,24 +266,30 @@ export default function JobDescriptionAnalyzer() {
 
    const handleRemoveSkill = (index) => {
       const skillToRemove = combinedSkills[index]?.skill;
-      
+
       // Create updated arrays first
-      const updatedCombinedSkills = combinedSkills.filter(skill => skill.skill !== skillToRemove);
-      const updatedTechnicalSkills = analysis.technicalSkills.filter(skill => skill !== skillToRemove);
-      const updatedSkillMappings = skillMappings.filter(mapping => mapping.skill !== skillToRemove);
+      const updatedCombinedSkills = combinedSkills.filter(
+         (skill) => skill.skill !== skillToRemove
+      );
+      const updatedTechnicalSkills = analysis.technicalSkills.filter(
+         (skill) => skill !== skillToRemove
+      );
+      const updatedSkillMappings = skillMappings.filter(
+         (mapping) => mapping.skill !== skillToRemove
+      );
 
       // Update all states at once
       setCombinedSkills(updatedCombinedSkills);
-      setAnalysis(prev => ({
+      setAnalysis((prev) => ({
          ...prev,
-         technicalSkills: updatedTechnicalSkills
+         technicalSkills: updatedTechnicalSkills,
       }));
       setSkillMappings(updatedSkillMappings);
 
       // Update Redux store
       dispatch({
-         type: 'skills/setCombinedSkills',
-         payload: updatedCombinedSkills
+         type: "skills/setCombinedSkills",
+         payload: updatedCombinedSkills,
       });
       dispatch(setSkills(updatedTechnicalSkills));
       dispatch(setSkillsMapped(updatedSkillMappings));
@@ -353,7 +373,9 @@ export default function JobDescriptionAnalyzer() {
          }
 
          // Check if skill already exists in custom skills
-         const skillExists = userDetails.customSkills?.some(cs => cs.skill === skill);
+         const skillExists = userDetails.customSkills?.some(
+            (cs) => cs.skill === skill
+         );
          if (skillExists) {
             toast.error("This skill is already in your custom skills!");
             return;
@@ -362,18 +384,19 @@ export default function JobDescriptionAnalyzer() {
          // Create new custom skill
          const newCustomSkill = {
             skill: skill,
-            experienceMappings: userDetails.experience?.map(exp => exp.title) || []
+            experienceMappings:
+               userDetails.experience?.map((exp) => exp.title) || [],
          };
 
          // Create updated user details
          const updatedUserDetails = {
             ...userDetails,
-            customSkills: [...(userDetails.customSkills || []), newCustomSkill]
+            customSkills: [...(userDetails.customSkills || []), newCustomSkill],
          };
 
          // Save to Firestore using UserDetailsService
          await UserDetailsService.saveUserDetails(user.uid, updatedUserDetails);
-         
+
          // Update Redux store
          dispatch(setUserDetails(updatedUserDetails));
 
@@ -388,50 +411,68 @@ export default function JobDescriptionAnalyzer() {
    const consolidateSkills = useCallback(() => {
       const generatedSkills = analysis?.technicalSkills || [];
       const customSkills = userDetails?.customSkills || [];
-      
+
       // Combine all skills with their mappings
       const consolidatedMappings = [
-        ...generatedSkills.map(skill => ({
-          skill,
-          experienceMappings: skillMappings.find(m => m.skill === skill)?.experienceMappings || []
-        })),
-        ...customSkills
+         ...generatedSkills.map((skill) => ({
+            skill,
+            experienceMappings:
+               skillMappings.find((m) => m.skill === skill)
+                  ?.experienceMappings || [],
+         })),
+         ...customSkills,
       ];
 
       dispatch(setSkillsMapped(consolidatedMappings));
-      dispatch(setSkills(consolidatedMappings.map(s => s.skill)));
-   }, [analysis?.technicalSkills, userDetails?.customSkills, skillMappings, dispatch]);
+      dispatch(setSkills(consolidatedMappings.map((s) => s.skill)));
+   }, [
+      analysis?.technicalSkills,
+      userDetails?.customSkills,
+      skillMappings,
+      dispatch,
+   ]);
 
    // Add useEffect to run consolidation when analysis or customSkills change
    useEffect(() => {
       if (analysis?.technicalSkills || userDetails?.customSkills) {
          consolidateSkills();
       }
-   }, [analysis?.technicalSkills, userDetails?.customSkills, consolidateSkills]);
+   }, [
+      analysis?.technicalSkills,
+      userDetails?.customSkills,
+      consolidateSkills,
+   ]);
 
    // When user modifies mappings
    const handleUpdateMapping = (skillName, expTitle, isChecked) => {
-      setCombinedSkills(prev => {
-         const updated = prev.map(skill => {
+      setCombinedSkills((prev) => {
+         const updated = prev.map((skill) => {
             if (skill.skill === skillName) {
-               const newMappings = isChecked 
-                  ? [...new Set([...(skill.experienceMappings || []), expTitle])]
-                  : (skill.experienceMappings || []).filter(exp => exp !== expTitle);
-               
+               const newMappings = isChecked
+                  ? [
+                       ...new Set([
+                          ...(skill.experienceMappings || []),
+                          expTitle,
+                       ]),
+                    ]
+                  : (skill.experienceMappings || []).filter(
+                       (exp) => exp !== expTitle
+                    );
+
                return {
                   ...skill,
-                  experienceMappings: newMappings
+                  experienceMappings: newMappings,
                };
             }
             return skill;
          });
-         
+
          // Dispatch a plain object action
          dispatch({
-            type: 'skills/setCombinedSkills',
-            payload: updated
+            type: "skills/setCombinedSkills",
+            payload: updated,
          });
-         
+
          return updated;
       });
    };
@@ -443,21 +484,25 @@ export default function JobDescriptionAnalyzer() {
          // Create updated user details with the skill removed
          const updatedUserDetails = {
             ...userDetails,
-            customSkills: userDetails.customSkills.filter(skill => skill.skill !== skillToDelete)
+            customSkills: userDetails.customSkills.filter(
+               (skill) => skill.skill !== skillToDelete
+            ),
          };
 
          // Save to Firestore
          await UserDetailsService.saveUserDetails(user.uid, updatedUserDetails);
-         
+
          // Update Redux store with user details
          dispatch(setUserDetails(updatedUserDetails));
 
          // Update combined skills
-         const updatedCombinedSkills = combinedSkills.filter(skill => skill.skill !== skillToDelete);
+         const updatedCombinedSkills = combinedSkills.filter(
+            (skill) => skill.skill !== skillToDelete
+         );
          setCombinedSkills(updatedCombinedSkills);
          dispatch({
-            type: 'skills/setCombinedSkills',
-            payload: updatedCombinedSkills
+            type: "skills/setCombinedSkills",
+            payload: updatedCombinedSkills,
          });
 
          toast.success("Skill deleted successfully");
@@ -521,8 +566,8 @@ export default function JobDescriptionAnalyzer() {
 
                {analysis && (
                   <div className="p-6 space-y-6 border border-slate-300 rounded-lg bg-white">
-                     <div className="flex justify-between w-full ">
-                        <div className="min-w-[49%] border border-slate-200 p-4 rounded-lg bg-purple-50">
+                     <div className=" flex flex-col sm:flex sm:flex-row-reverse justify-between w-full ">
+                        <div className="min-w-full sm:min-w-[49%] border border-slate-200 p-4 rounded-lg bg-purple-50">
                            <h5 className="flex font-semibold">
                               Experience Required:{" "}
                               <p className="text-gray-700">
@@ -530,7 +575,7 @@ export default function JobDescriptionAnalyzer() {
                               </p>
                            </h5>
                         </div>
-                        <div className="min-w-[49%] border border-slate-200 p-4 rounded-lg bg-purple-50">
+                        <div className="min-w-full sm:min-w-[49%] border border-slate-200 p-4 rounded-lg bg-purple-50">
                            <h5 className="flex font-semibold">
                               Your Total Experience:{" "}
                               <p className="text-gray-700">
@@ -553,20 +598,29 @@ export default function JobDescriptionAnalyzer() {
                            {combinedSkills.map((skillObj, index) => (
                               <div
                                  key={index}
-                                 className="w-[23%] group relative border border-slate-200 py-2 px-3 bg-purple-50 rounded-xl"
+                                 className="w-[98%] lg:w-[23%] group relative border border-slate-200 py-2 px-3 bg-purple-50 rounded-xl"
                               >
                                  <div className="relative flex items-center gap-1">
                                     <input
                                        type="text"
                                        value={skillObj.skill}
-                                       onChange={(e) => handleSkillChange(e.target.value, index)}
+                                       onChange={(e) =>
+                                          handleSkillChange(
+                                             e.target.value,
+                                             index
+                                          )
+                                       }
                                        className="w-full px-3 py-2 text-sm bg-white text-black font-medium rounded-lg border border-slate-400 focus:border-blue-200 focus:ring-1 focus:ring-blue-300 outline-none transition-all duration-200 hover:bg-teal-50"
                                        placeholder="Enter skill"
                                        title="Edit Skill"
                                     />
-                                    {skillObj.type === 'generated' && (
+                                    {skillObj.type === "generated" && (
                                        <button
-                                          onClick={() => handleSaveToCustomSkills(skillObj.skill)}
+                                          onClick={() =>
+                                             handleSaveToCustomSkills(
+                                                skillObj.skill
+                                             )
+                                          }
                                           title="Save to Custom Skills"
                                           className="p-2 bg-white text-green-400 rounded-lg border border-green-600 hover:bg-green-100 transition-all duration-200"
                                        >
@@ -574,16 +628,23 @@ export default function JobDescriptionAnalyzer() {
                                        </button>
                                     )}
                                     <button
-                                       onClick={() => skillObj.type === 'custom' ? handleDeleteCustomSkill(skillObj.skill) : handleRemoveSkill(index)}
+                                       onClick={() =>
+                                          skillObj.type === "custom"
+                                             ? handleDeleteCustomSkill(
+                                                  skillObj.skill
+                                               )
+                                             : handleRemoveSkill(index)
+                                       }
                                        title="Remove Skill"
                                        className="p-2 bg-white text-rose-400 rounded-lg border border-red-600 hover:bg-red-200 transition-all duration-200"
                                     >
                                        <Trash2 size={16} />
                                     </button>
                                     <button
-                                    
                                        data-index={index}
-                                       onClick={() => handleDropdownToggle(index)}
+                                       onClick={() =>
+                                          handleDropdownToggle(index)
+                                       }
                                        title="Map Skill to Experience"
                                        className={`p-2 bg-white text-blue-400 rounded-lg border border-blue-600 hover:bg-blue-100 transition-all duration-200 ${
                                           openDropdown === index
