@@ -177,13 +177,14 @@ const ResumePreview = ({
         />
       </div>
 
-      <div className="mt-4 flex justify-end gap-4">
-        <Button onClick={() => setIsEditing(!isEditing)} className="mr-2">
+      <div className="mt-4 flex justify-end gap-4 sticky bottom-0 py-4 bg-white/80 backdrop-blur-xl border-t shadow-lg">
+        <Button onClick={() => setIsEditing(!isEditing)} className="mr-2 bg-red-500">
           {isEditing ? "Save Changes" : "Edit Resume"}
         </Button>
         <Button
           onClick={() => downloadAsWord(selectedTemplate)}
           disabled={loading}
+          className=" bg-teal-800"
         >
           Download as Word
         </Button>

@@ -23,7 +23,7 @@ export const metadata = {
       url: "https://resumeonfly.com/",
       title: "🚀 Get Hired Faster: AI-Optimized Resumes with 97% ATS Success Rate",
       description:
-         "Tired of resume rejections? Our AI analyzes job descriptions, optimizes keywords, and formats resumes for maximum recruiter impact. Free ATS check included!",
+         "Tired of resume rejections? Our AI analyzes job descriptions, optimizes keywords, and formats resumes for maximum recruiter impact. Free ATS optimization included!",
       siteName: "ResumeOnFly by CVtoSalary",
       images: [
          {

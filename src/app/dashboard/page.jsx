@@ -38,8 +38,30 @@ export default function DashboardPage() {
             }}
          />
 
-         <div className="px-2 sm:px-20 py-8 pt-20 sm:pt-32 rounded-xl">
+         <div className="px-2 sm:px-20 py-8 pt-20 sm:pt-16 rounded-xl">
             <h1 className="text-3xl font-bold mb-8 "></h1>
+            <div className="p-4 mb-2 bg-yellow-50 border-l-4 border-yellow-400 rounded-lg text-sm text-gray-700">
+               <p>
+                  <strong>How to use this tool:</strong>
+               </p>
+               <ul className="list-disc pl-5 mt-2 space-y-1">
+                  <li>
+                     <strong>Option 1:</strong> Paste a job description and
+                     click <em>"Analyze Job Description"</em> to extract key
+                     requirements.
+                  </li>
+                  <li>
+                     <strong>Option 2:</strong> Click <em>"Generate Resume"</em>{" "}
+                     to create a resume based on the analyzed job description
+                     and extracted skills, or generate it using only your saved
+                     custom data (no job description required).
+                  </li>
+                  <li>
+                     The resume will be personalized based on the analyzed job
+                     description (if provided) or your stored details.
+                  </li>
+               </ul>
+            </div>
             <JobDescriptionAnalyzer />
             <ResumeGenerator />
          </div>

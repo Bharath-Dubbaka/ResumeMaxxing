@@ -27,7 +27,7 @@ export default function StandardPreview({
                         type="text"
                         value={resumeData.fullName || ""}
                         onChange={(e) => handleEdit("fullName", e.target.value)}
-                        className="w-full text-center border rounded p-1"
+                        className="w-full text-center border rounded p-1 focus:border-orange-500 focus:outline-none"
                      />
                   ) : (
                      resumeData.fullName
@@ -41,7 +41,7 @@ export default function StandardPreview({
                         onChange={(e) =>
                            handleEdit("contactInformation", e.target.value)
                         }
-                        className="w-full text-center border rounded p-1"
+                        className="w-full text-center border rounded p-1 focus:border-orange-500 focus:outline-none"
                      />
                   ) : (
                      resumeData.contactInformation
@@ -60,7 +60,7 @@ export default function StandardPreview({
                      onChange={(e) =>
                         handleEdit("professionalSummary", e.target.value)
                      }
-                     className="w-full border rounded p-2"
+                     className="w-full border rounded p-2 focus:border-orange-500 focus:outline-none"
                      rows={4}
                   />
                ) : (
@@ -79,7 +79,7 @@ export default function StandardPreview({
                      onChange={(e) =>
                         handleEdit("technicalSkills", e.target.value)
                      }
-                     className="w-full border rounded p-2"
+                     className="w-full border rounded p-2 focus:border-orange-500 focus:outline-none"
                      rows={2}
                   />
                ) : (
@@ -108,7 +108,7 @@ export default function StandardPreview({
                                           e.target.value
                                        )
                                     }
-                                    className="w-full border rounded p-1 font-bold"
+                                    className="w-full border rounded p-1 font-bold focus:border-orange-500 focus:outline-none"
                                  />
                                  <input
                                     type="text"
@@ -120,7 +120,7 @@ export default function StandardPreview({
                                           e.target.value
                                        )
                                     }
-                                    className="w-full border rounded p-1"
+                                    className="w-full border rounded p-1 focus:border-orange-500 focus:outline-none"
                                  />
                                  <input
                                     type="text"
@@ -132,7 +132,7 @@ export default function StandardPreview({
                                           e.target.value
                                        )
                                     }
-                                    className="w-full border rounded p-1"
+                                    className="w-full border rounded p-1 focus:border-orange-500 focus:outline-none"
                                     placeholder="Location (optional)"
                                  />
                               </div>
@@ -159,7 +159,7 @@ export default function StandardPreview({
                                        e.target.value
                                     )
                                  }
-                                 className="w-24 border rounded p-1 text-sm"
+                                 className="w-24 border rounded p-1 text-sm focus:border-orange-500 focus:outline-none"
                               />
                               <span>-</span>
                               <input
@@ -172,7 +172,7 @@ export default function StandardPreview({
                                        e.target.value
                                     )
                                  }
-                                 className="w-24 border rounded p-1 text-sm"
+                                 className="w-24 border rounded p-1 text-sm focus:border-orange-500 focus:outline-none"
                               />
                            </div>
                         ) : (
@@ -211,7 +211,7 @@ export default function StandardPreview({
                                                       e.target.value
                                                    )
                                                 }
-                                                className="w-full border rounded p-2 min-h-[60px]"
+                                                className="w-full border rounded p-2 min-h-[60px] focus:border-orange-500 focus:outline-none"
                                              />
                                           </div>
                                           <button
@@ -233,7 +233,7 @@ export default function StandardPreview({
                                                    updatedExperience
                                                 );
                                              }}
-                                             className="text-red-500 hover:text-red-700 p-1 bg-gray-100 rounded-lg flex justify-center items-center align-middle"
+                                             className="text-orange-500 hover:text-orange-700 p-1 bg-gray-100 rounded-lg flex justify-center items-center align-middle focus:border-orange-500 focus:outline-none"
                                           >
                                              <span className="sr-only">
                                                 Delete

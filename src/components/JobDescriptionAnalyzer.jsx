@@ -543,12 +543,26 @@ export default function JobDescriptionAnalyzer() {
          </CardHeader>
          <CardContent className="p-2 md:p-6 bg-transparent">
             <div className="space-y-4">
+               {/* User Guide */}
+               {/* <p className="text-sm text-gray-600 bg-yellow-50 p-3 rounded-lg">
+                  Paste a job description below, and our tool will analyze the
+                  key requirements, such as experience, skills, and
+                  qualifications.
+               </p> */}
+
                <Textarea
-                  placeholder="Paste your job description here..."
-                  className="min-h-[200px] resize-none p-4 font-sans text-base"
+                  placeholder="Preferred 8+ years experience in at least one modern web front-end development. Strong proficiency in Typescript and JavaScript, HTML5, and CSS3.... etc"
+                  className="min-h-[200px] resize-none p-4 font-sans text-base shadow-lg "
                   value={jobDescription}
                   onChange={(e) => setJobDescription(e.target.value)}
                />
+
+               {/* Helper Note */}
+               {/* <p className="text-xs text-gray-600">
+                  Tip: Ensure the job description is detailed for more accurate
+                  insights.
+               </p> */}
+
                <Button
                   onClick={analyzeJobDescription}
                   className="w-full bg-gradient-to-r from-blue-500 to-indigo-500 hover:from-blue-600 hover:to-indigo-600 text-white rounded-lg"
@@ -564,9 +578,14 @@ export default function JobDescriptionAnalyzer() {
                   )}
                </Button>
 
+               {/* Explanation */}
+               <p className="text-xs text-gray-600">
+                  Clicking "Analyze" will extract key details from the job
+                  description, such as required experience and skills.
+               </p>
                {analysis && (
                   <div className="p-6 space-y-6 border border-slate-300 rounded-lg bg-white">
-                     <div className=" flex flex-col sm:flex sm:flex-row-reverse justify-between w-full ">
+                     {/* <div className=" flex flex-col sm:flex sm:flex-row-reverse justify-between w-full ">
                         <div className="min-w-full sm:min-w-[49%] border border-slate-200 p-4 rounded-lg bg-purple-50">
                            <h5 className="flex font-semibold">
                               Experience Required:{" "}
@@ -588,7 +607,7 @@ export default function JobDescriptionAnalyzer() {
                               </p>
                            </h5>
                         </div>
-                     </div>
+                     </div> */}
 
                      <div className="border-t border-slate-300">
                         <h3 className="text-xl font-semibold mb-4  mt-4">

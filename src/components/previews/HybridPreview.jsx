@@ -23,7 +23,7 @@ export default function HybridPreview({
                         type="text"
                         value={resumeData.fullName || ""}
                         onChange={(e) => handleEdit("fullName", e.target.value)}
-                        className="w-full border rounded p-1"
+                        className="w-full border rounded p-1 focus:border-orange-500 focus:outline-none"
                      />
                   ) : (
                      resumeData.fullName
@@ -37,7 +37,7 @@ export default function HybridPreview({
                         onChange={(e) =>
                            handleEdit("contactInformation", e.target.value)
                         }
-                        className="w-full border rounded p-1"
+                        className="w-full border rounded p-1   "
                      />
                   ) : (
                      resumeData.contactInformation

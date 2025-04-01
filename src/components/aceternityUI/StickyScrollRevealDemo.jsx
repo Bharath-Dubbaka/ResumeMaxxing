@@ -17,10 +17,10 @@ const content = [
       content: (
          <div className="h-full w-full flex items-center justify-center text-black">
             <Image
-               src="/linearee.webp"
-               width={300}
-               height={300}
-               className="h-full w-full object-cover"
+               src="/slides/slideDemoOne.png"
+               width={900}
+               height={900}
+               className="h-full w-full object-fill"
                alt="AI 1 visualization"
             />
          </div>
@@ -37,10 +37,10 @@ const content = [
       content: (
          <div className="h-full w-full flex items-center justify-center text-black">
             <Image
-               src="/linear.webp"
-               width={300}
-               height={300}
-               className="h-full w-full object-cover"
+               src="/slides/slideDemoTwo.png"
+               width={900}
+               height={900}
+               className="h-full w-full object-fill"
                alt="AI 2 visualization"
             />
          </div>
@@ -56,10 +56,10 @@ const content = [
       content: (
          <div className="h-full w-full flex items-center justify-center text-black">
             <Image
-               src="/linear3.webp"
-               width={300}
-               height={300}
-               className="h-full w-full object-cover"
+               src="/slides/slideDemoThree.png"
+               width={900}
+               height={900}
+               className="h-full w-full object-fill"
                alt="AI 3 visualization"
             />
          </div>
@@ -76,10 +76,10 @@ const content = [
       content: (
          <div className="h-full w-full flex items-center justify-center text-black">
             <Image
-               src="/linear4.webp"
-               width={300}
-               height={300}
-               className="h-full w-full object-cover"
+               src="/slides/slideDemoFour.png"
+               width={900}
+               height={900}
+               className="h-full w-full object-fill"
                alt="AI analysis4 visualization"
             />
          </div>
@@ -89,7 +89,7 @@ const content = [
 
 export function StickyScrollRevealDemo() {
    return (
-      <div className="backdrop-blur-md bg-gradient-to-br from-purple-200/60 to-yellow-50/95 animate-gradient-xy">
+      <div className="backdrop-blur-md bg-gradient-to-br from-purple-200/60 to-yellow-50/95 animate-gradient-xy pt-16">
          <div className="text-center mb-2">
             <h2 className="text-4xl font-bold text-center mb-2 underline">
                How this works !
@@ -176,10 +176,10 @@ export const StickyScroll = ({ content, contentClassName }) => {
 
    return (
       <motion.div
-         className="h-[40rem] overflow-y-auto flex justify-center relative space-x-10 rounded-md"
+         className="h-[40rem] overflow-y-auto flex  justify-center relative space-x-4 w-full rounded-md "
          ref={ref}
       >
-         <div className="div relative flex items-start px-2">
+         <div className="div relative flex items-start px-16 lg:px-2 lg:w-[38%]">
             <div className="max-w-4xl px-4 md:px-0">
                {content.map((item, index) => (
                   <div key={item.title + index} className="my-10 md:my-20">
@@ -197,7 +197,7 @@ export const StickyScroll = ({ content, contentClassName }) => {
                      <motion.p
                         initial={{ opacity: 0 }}
                         animate={{ opacity: activeCard === index ? 1 : 0.3 }}
-                        className="text-lg text-slate-800 max-w-sm mt-10 whitespace-pre-line"
+                        className="text-lg text-slate-800 w-full mt-10 whitespace-pre-line"
                      >
                         {item.description}
                      </motion.p>
@@ -209,7 +209,7 @@ export const StickyScroll = ({ content, contentClassName }) => {
          <div
             style={{ background: backgroundGradient }}
             className={cn(
-               "hidden lg:block mt-28 h-80 w-[30rem] rounded-md bg-white sticky top-10 overflow-hidden",
+               "hidden lg:block mt-28 lg:h-[24rem] border border-slate-400 w-[50%] rounded-md bg-white sticky top-10 overflow-hidden",
                contentClassName
             )}
          >
