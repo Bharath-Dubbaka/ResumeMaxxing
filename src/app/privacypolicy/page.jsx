@@ -7,7 +7,7 @@ const PrivacyPolicy = () => {
             <h1 className="text-2xl font-bold mb-4">Privacy Policy</h1>
             <p className="mb-2">
                This Privacy Policy was last updated on 01/01/2025. It explains
-               how ResumeOnFly, a product by CVtoSalary ("we," "us," or "our"),
+               how ResumeOnFly ("we," "us," or "our"),
                collects, uses, and shares your personal information when you use
                the ResumeOnFly website and services (the "Services").
             </p>
