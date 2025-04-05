@@ -1,3 +1,6 @@
+// components/payment/PaymentButton.jsx
+
+
 "use client";
 
 import { useState } from "react";

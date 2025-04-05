@@ -1,4 +1,5 @@
-// src/services/QuotaServices.tsx
+// src/services/QuotaServices.jsx..
+
 import { db } from "../services/firebase";
 import { doc, getDoc, setDoc, updateDoc, onSnapshot } from "firebase/firestore";
 

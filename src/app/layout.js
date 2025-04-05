@@ -24,7 +24,7 @@ export const metadata = {
       title: "🚀 Get Hired Faster: AI-Optimized Resumes with 97% ATS Success Rate",
       description:
          "Tired of resume rejections? Our AI analyzes job descriptions, optimizes keywords, and formats resumes for maximum recruiter impact. Free ATS optimization included!",
-      siteName: "ResumeOnFly by CVtoSalary",
+      siteName: "ResumeOnFly",
       images: [
          {
             url: "https://resumeonfly.com/opengrapgh-image.png",

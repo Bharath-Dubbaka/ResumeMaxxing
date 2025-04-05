@@ -1,3 +1,5 @@
+// lib/payment.js
+
 import Razorpay from "razorpay";
 
 if (!process.env.RAZORPAY_KEY_ID || !process.env.RAZORPAY_KEY_SECRET) {

@@ -10,11 +10,13 @@ import { useSelector, useDispatch } from "react-redux";
 import { setUser } from "../../store/slices/authSlice";
 import { setUserDetails, setUserQuota } from "../../store/slices/firebaseSlice";
 import { toast, Toaster } from "sonner";
+import { DodoPaymentButton } from "../../app/api/payment/DodoPaymentButton";
 
 const Pricing = () => {
    const router = useRouter();
    const { userDetails, userQuota } = useSelector((state) => state.firebase);
    const [isLoading, setIsLoading] = useState(false);
+   const [showInternational, setShowInternational] = useState(false);
    const dispatch = useDispatch();
    const { user } = useSelector((state) => state.auth);
 
@@ -198,9 +200,6 @@ const Pricing = () => {
                </p>
                <div className="flex items-center space-x-2 mb-2">
                   <p className="text-xl text-gray-400 line-through">₹999</p>
-                  {/* <span className="bg-red-500 text-white text-xs font-bold px-2 py-0.5 rounded">
-                     ₹300 OFF
-                  </span> */}
                </div>
 
                <p className="text-sm text-gray-500 mb-6">100 Credits</p>
@@ -218,13 +217,38 @@ const Pricing = () => {
                      100 Downloads
                   </li>
                </ul>
-               <button
-                  onClick={handleUpgradeNow}
-                  className="px-6 py-3 rounded-lg text-white font-semibold bg-indigo-600 hover:bg-indigo-700 transition-all duration-200"
-                  disabled={setUserQuota?.subscription?.type === "premium"}
-               >
-                  Upgrade Now
-               </button>
+
+               {/* Payment Buttons */}
+               <div className="space-y-4 w-full">
+                  <button
+                     onClick={handleUpgradeNow}
+                     className="w-full px-6 py-3 rounded-lg text-white font-semibold bg-indigo-600 hover:bg-indigo-700 transition-all duration-200"
+                     disabled={userQuota?.subscription?.type === "premium"}
+                  >
+                     Pay in INR (₹499)
+                  </button>
+
+                  <div className="flex items-center justify-between w-full">
+                     <div className="border-t border-gray-300 w-1/4"></div>
+                     <p className="text-sm text-gray-500">Or pay in USD</p>
+                     <div className="border-t border-gray-300 w-1/4"></div>
+                  </div>
+
+                  {user && (
+                     <DodoPaymentButton
+                        userId={user.uid}
+                        userEmail={user.email}
+                        userName={user.name}
+                        onSuccess={async () => {
+                           const quota = await QuotaService.getUserQuota(
+                              user.uid
+                           );
+                           dispatch(setUserQuota(quota));
+                           router.push("/dashboard");
+                        }}
+                     />
+                  )}
+               </div>
             </div>
 
             {/* Enterprise Plan */}

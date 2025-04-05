@@ -52,6 +52,7 @@ const content = [
          "🚀 :Automated creation of targeted professional summaries based on provided Master info and job description",
          "🚀 :Dynamic generation of role-specific or title-based responsibilities",
          "🚀 :Intelligent distribution of competencies across experience sections",
+         "🚀 :Preview and edit resumes with real-time formatting",
       ].join("\n"),
       content: (
          <div className="h-full w-full flex items-center justify-center text-black">
@@ -68,7 +69,6 @@ const content = [
    {
       title: "STEP 4: Professional Export & Templates",
       description: [
-         "🚀 :Preview and edit resumes with real-time formatting",
          "🚀 :Download as ATS-friendly Word documents",
          "🚀 :Save AI-generated content to master profile",
          "🚀 :Multiple industry-specific professional templates",

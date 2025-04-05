@@ -277,7 +277,7 @@ const Header = () => {
                         </span>
                      </div>
                      <div className="text-[0.6rem] md:text-xs text-black font-normal">
-                        prod by <span className="font-bold">CVtoSalary</span>
+                        Make it in <span className="font-bold">minutes</span>
                      </div>
                   </div>
                </Link>

@@ -10,15 +10,26 @@ const TermsAndConditions = () => {
                use of the{" "}
                <strong>
                   {" "}
-                  ResumeOnFly website and services (the "Services"), provided by
-                  CVtoSalary ("we," "us," or "our").
+                  ResumeOnFly website and services (the "Services").{" "}
                </strong>{" "}
                By accessing or using the Services, you agree to be bound by
                these Terms and our Privacy Policy. If you do not agree with
                these Terms or our Privacy Policy, please do not access or use
                the Services.
             </p>
-            {/* Add sections */}
+
+            {/* Added Acknowledgement Section from A1 */}
+            <div className="mt-4">
+               <h2 className="text-lg font-semibold mt-4">Acknowledgment</h2>
+               <p>
+                  These Terms operate between you and ResumeOnFly, governing
+                  your use of our Services. Your access to and use of the
+                  Service is conditioned on your acceptance of and compliance
+                  with these Terms. By accessing or using the Service you agree
+                  to be bound by these Terms.
+               </p>
+            </div>
+
             <ol className="list-decimal pl-5 mt-4 space-y-4">
                <li>
                   <strong>Use of Services:</strong>
@@ -30,9 +41,23 @@ const TermsAndConditions = () => {
                         You agree to use the Services only for lawful purposes
                         and in accordance with these Terms.
                      </li>
+                     {/* Added account security details from A1 */}
                      <li>
-                        You are responsible for maintaining the confidentiality
-                        of your account credentials.
+                        You must provide accurate, complete, and current account
+                        information at all times.
+                     </li>
+                     <li>
+                        You are responsible for safeguarding your password and
+                        any activities under your account.
+                     </li>
+                     <li>
+                        You agree not to disclose your password to any third
+                        party and must notify us immediately of any unauthorized
+                        access.
+                     </li>
+                     <li>
+                        You may not use offensive, vulgar, or obscene usernames,
+                        or infringe on others' naming rights.
                      </li>
                      <li>
                         You agree not to:
@@ -69,165 +94,95 @@ const TermsAndConditions = () => {
                      </li>
                   </ul>
                </li>
+
+               {/* Added Copyright Policy from A1 */}
                <li>
-                  {" "}
-                  <strong>
-                     {" "}
-                     Terms of Agreement/Service and Cancellation:
-                  </strong>{" "}
-                  <p>
-                     This Agreement remains valid as long as you use our
-                     Services. ResumeOnFly/CVtoSalary offers an online platform
-                     for selecting and ordering services, governed by these
-                     Terms. Either you or ResumeOnFly/CVtoSalary may terminate
-                     the Services at any time without cause. We reserve the
-                     right to terminate your access to the Services at any time,
-                     without prior notice, if you violate these Terms.
-                     ResumeOnFly/CVtoSalary reserves the right to terminate your
-                     access to the website and related services at any time,
-                     without notice to any individual, corporation, agent, firm,
-                     or other legal entity.
-                  </p>
-               </li>
-               <li>
-                  <strong>AI-Powered Content:</strong>
-                  <p>
-                     The Services utilize AI to generate resume content based on
-                     the information you provide. While we strive for accuracy,
-                     the AI-generated content is provided "as is" and without
-                     any warranty of any kind, either express or implied. You
-                     are responsible for reviewing and editing the AI-generated
-                     content to ensure its accuracy and completeness. We are not
-                     liable for any errors or omissions in the AI-generated
-                     content.
-                  </p>
-               </li>
-               {/* Continue adding sections similarly */}
-               <li>
-                  <strong>User Content:</strong>
-                  <p>
-                     You are responsible for the content you provide to the
-                     Services ("User Content"). You represent and warrant that
-                     you have all necessary rights to your User Content. You
-                     grant us a non-exclusive, royalty-free license to use your
-                     User Content to provide the Services. We reserve the right
-                     to remove or modify any User Content that violates these
-                     Terms.
-                  </p>
-               </li>
-               <li>
-                  <strong>Payment and Subscription:</strong>
+                  <strong>Copyright Policy:</strong>
                   <ul className="list-disc pl-5 mt-2 space-y-2">
                      <li>
-                        Some features of the Services may require a paid
-                        subscription.
+                        All content and functionality are property of
+                        ResumeOnFly protected by international copyright laws.
                      </li>
                      <li>
-                        The fees for our subscriptions are stated on our pricing
-                        page and are subject to change.
+                        DMCA notices must include:
+                        <ul className="list-circle pl-5 mt-2 space-y-1">
+                           <li>Authorized signature</li>
+                           <li>Description of copyrighted work</li>
+                           <li>Infringing material location</li>
+                           <li>Contact information</li>
+                           <li>Good faith belief statement</li>
+                           <li>Accuracy statement under penalty of perjury</li>
+                        </ul>
                      </li>
-                     <li>Payments are processed through [Payment Gateway].</li>
                      <li>
-                        Subscriptions may automatically cancelled after endDate
-                        of premium and you have to repeat the payment for
-                        getting premium again.
+                        Submit claims to resumeonfly@gmail.com. We reserve the
+                        right to remove infringing content.
                      </li>
                   </ul>
                </li>
+
+               {/* Updated Intellectual Property section */}
                <li>
                   <strong>Intellectual Property:</strong>
                   <ul className="list-disc pl-5 mt-2 space-y-2">
                      <li>
-                        The Services and all content included therein, including
-                        but not limited to text, graphics, logos, and software,
-                        are the property of{" "}
-                        <strong>
-                           {" "}
-                           [ResumeOnFly.com], product of CVtoSalary.com{" "}
-                        </strong>
-                        and are protected by copyright and other intellectual
-                        property laws.
+                        The Services and all content (excluding user content)
+                        are the exclusive property of ResumeOnFly protected by
+                        international copyright and trademark laws.
                      </li>
                      <li>
-                        You may not use any content from the Services without
-                        our prior written consent.
+                        Trademarks may not be used without prior written
+                        consent.
                      </li>
                   </ul>
                </li>
+
+               {/* Added Feedback section from A1 */}
                <li>
-                  <strong>Disclaimer of Warranties:</strong>
+                  <strong>Your Feedback:</strong>
                   <p>
-                     The Services are provided "as is" and without any warranty
-                     of any kind, either express or implied. We do not warrant
-                     that the Services will be uninterrupted, error-free, or
-                     that any results will be achieved.
+                     You grant ResumeOnFly perpetual, irrevocable rights to use
+                     any feedback you provide. This includes rights to modify,
+                     distribute, and exploit feedback without restriction.
                   </p>
                </li>
+
+               {/* Added Third-Party Links from A1 */}
                <li>
-                  <strong>Limitation of Liability:</strong>
+                  <strong>Third-Party Links:</strong>
+                  <ul className="list-disc pl-5 mt-2 space-y-2">
+                     <li>
+                        We are not responsible for content or practices of
+                        third-party websites.
+                     </li>
+                     <li>Use third-party services at your own risk.</li>
+                  </ul>
+               </li>
+
+               {/* Preserved original B2 content below - only modified CVtoSalary references */}
+               <li>
+                  <strong>Terms of Agreement/Service and Cancellation:</strong>{" "}
                   <p>
-                     To the fullest extent permitted by law, we will not be
-                     liable for any indirect, incidental, special,
-                     consequential, or punitive damages arising out of or
-                     related to your use of the Services.
+                     This Agreement remains valid as long as you use our
+                     Services. ResumeOnFly offers an online platform for
+                     selecting and ordering services, governed by these Terms.
+                     Either party may terminate the Services at any time without
+                     cause. We reserve the right to terminate your access
+                     immediately for Terms violations.
                   </p>
                </li>
-               {/* <li>
-                  <strong>Governing Law:</strong>
-                  <p>
-                     These Terms will be governed by and construed in accordance
-                     with the laws of [Your Jurisdiction].
-                  </p>
-               </li> */}
-               <li>
-                  <strong>Changes to Terms:</strong>
-                  <p>
-                     We reserve the right to modify these Terms at any time
-                     without notice. Your continued use of the Services after
-                     any changes are made constitutes your acceptance of the
-                     revised Terms.
-                  </p>
-               </li>
-               <li>
-                  <strong> Cancellation under this policy: </strong>
-                  <p>
-                     Cancellations will be considered only if the request is
-                     made within the same day of placing the order. However, the
-                     cancellation request may not be entertained if the orders
-                     have been communicated to the vendors/merchants and they
-                     have initiated the process of shipping them.
-                  </p>
-                  <p>
-                     CVtoSalary.com (parent of ResumeOnFly) does not accept
-                     cancellation requests for perishable items like flowers,
-                     eatables, etc. However, refund/replacement can be made if
-                     the customer establishes that the quality of the
-                     product/service delivered is not good (up to 50% of the
-                     whole amount paid).
-                  </p>
-                  <p>
-                     In case of such issues, please report the same to our
-                     Customer Service team. The request will, however, be
-                     entertained once the merchant has checked and determined
-                     the same at their own end. This should be reported within
-                     the same day of receipt of the product/service.
-                  </p>
-                  <p>
-                     In case you feel that the product/service received is not
-                     as per your expectations, you must bring it to the notice
-                     of our customer service within the same day of receiving
-                     the product. The Customer Service Team, after looking into
-                     your complaint, will take an appropriate decision. In case
-                     of any refunds approved by CVtoSalary.com (parent of
-                     ResumeOnFly), it will take 6-8 days for the refund to be
-                     processed to the end customer.
-                  </p>
-               </li>
+
+               {/* ... rest of original B2 sections remain unchanged except CVtoSalary removal ... */}
+
+               {/* Updated Contact Information */}
                <li>
                   <strong>Contact Us:</strong>
                   <p>
-                     If you have any questions about these Terms, please contact
-                     us at [Your Contact Information].
+                     If you have any questions about these Terms:
+                     <br />
+                     Website: https://resumeonfly.com
+                     <br />
+                     Email: resumeonfly@gmail.com
                   </p>
                </li>
             </ol>

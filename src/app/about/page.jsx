@@ -7,7 +7,7 @@ const About = () => {
             <h2 className="flex flex-col text-4xl font-bold text-center mb-12 underline">
                About ResumeOnFly{" "}
                <span className="text-sm mt-2 text-blue-600 font-medium">
-                  (prod by CVtoSalary)
+                  {/* (prod by CVtoSalary) */}
                </span>
             </h2>
 

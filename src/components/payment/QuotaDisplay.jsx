@@ -1,3 +1,5 @@
+// components/payment/quotadisplay.jsx
+
 'use client';
 
 import { CrownIcon } from 'lucide-react';

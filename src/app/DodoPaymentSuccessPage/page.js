@@ -1,9 +1,7 @@
-// app/paymeny-sucess/page.js
-
 'use client';
 
 import { useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useSelector, useDispatch } from 'react-redux';
 import { Loader2 } from 'lucide-react';
 import { doc, updateDoc } from 'firebase/firestore';
@@ -11,8 +9,9 @@ import { db } from '../../services/firebase';
 import { QuotaService } from '../../services/QuotaService';
 import { setUserQuota } from '../../store/slices/firebaseSlice';
 
-export default function PaymentSuccessPage() {
+export default function DodoPaymentSuccessPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const dispatch = useDispatch();
   const { user } = useSelector((state) => state.auth);
 
@@ -22,22 +21,19 @@ export default function PaymentSuccessPage() {
       return;
     }
 
-    const searchParams = new URLSearchParams(window.location.search);
-    const paymentId = searchParams.get('razorpay_payment_id');
+    const userId = searchParams.get('userId');
+    const paymentId = searchParams.get('payment_id');
     
     if (paymentId) {
-      // Store payment ID for polling
-      window.localStorage.setItem('razorpay_payment_id', paymentId);
-      
       const verifyAndUpdateUser = async () => {
         try {
           // First verify the payment
-          const verifyResponse = await fetch('/api/payment/verify-payment', {
+          const verifyResponse = await fetch('/api/payment/verify-dodo-payment', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ 
               paymentId,
-              userId: user.uid 
+              userId: userId || user.uid 
             }),
           });
           
@@ -60,9 +56,6 @@ export default function PaymentSuccessPage() {
                   Date.now() + 30 * 24 * 60 * 60 * 1000
                 ).toISOString(),
               });
-
-              // Clear payment ID from storage
-              window.localStorage.removeItem('razorpay_payment_id');
               
               // Update Redux state
               const quota = await QuotaService.getUserQuota(user.uid);
@@ -96,10 +89,10 @@ export default function PaymentSuccessPage() {
     } else {
       router.push('/dashboard');
     }
-  }, [user, router, dispatch]);
+  }, [user, router, dispatch, searchParams]);
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-purple-200/60 via-pink-50/95 to-blue-200/60">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-indigo-200/60 via-pink-50/95 to-blue-200/60">
       <div className="text-center space-y-4">
         <div className="flex justify-center mb-4">
           <Loader2 className="w-12 h-12 animate-spin text-indigo-600" />
