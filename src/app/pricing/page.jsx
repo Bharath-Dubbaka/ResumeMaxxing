@@ -10,7 +10,6 @@ import { useSelector, useDispatch } from "react-redux";
 import { setUser } from "../../store/slices/authSlice";
 import { setUserDetails, setUserQuota } from "../../store/slices/firebaseSlice";
 import { toast, Toaster } from "sonner";
-import { DodoPaymentButton } from "../../app/api/payment/DodoPaymentButton";
 
 const Pricing = () => {
    const router = useRouter();
@@ -19,6 +18,73 @@ const Pricing = () => {
    const [showInternational, setShowInternational] = useState(false);
    const dispatch = useDispatch();
    const { user } = useSelector((state) => state.auth);
+
+   const handleDodoPayment = async () => {
+      if (!user) {
+         await handleGetStarted();
+         return;
+      }
+
+      if (userQuota?.subscription?.type === "premium") {
+         toast.error("Already in premium mode");
+         return;
+      }
+
+      setIsLoading(true);
+      try {
+         // Call Dodo payment endpoint
+         const response = await fetch("/api/dodo/create-payment-link", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+               userId: user.uid,
+               userEmail: user.email,
+               userName: user.name,
+               currency: "USD", // Default to USD, can be made dynamic
+            }),
+         });
+
+         const { paymentLink } = await response.json();
+         if (!paymentLink)
+            throw new Error("Failed to create Dodo payment link");
+
+         // Open Dodo payment in new window
+         const dodoWindow = window.open(paymentLink, "_blank");
+
+         // Start polling for Dodo payment status
+         const checkDodoPayment = setInterval(async () => {
+            try {
+               const verifyResponse = await fetch("/api/dodo/verify-payment", {
+                  method: "POST",
+                  headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify({
+                     userId: user.uid,
+                  }),
+               });
+
+               const data = await verifyResponse.json();
+               if (data.success) {
+                  clearInterval(checkDodoPayment);
+                  // Refresh quota data
+                  const quota = await QuotaService.getUserQuota(user.uid);
+                  dispatch(setUserQuota(quota));
+                  router.push("/dashboard");
+               }
+            } catch (error) {
+               console.error("Error verifying Dodo payment:", error);
+            }
+         }, 2000);
+
+         // Stop checking after 5 minutes
+         setTimeout(() => {
+            clearInterval(checkDodoPayment);
+            setIsLoading(false);
+         }, 300000);
+      } catch (error) {
+         console.error("Dodo payment error:", error);
+         setIsLoading(false);
+      }
+   };
 
    const handleGetStarted = async () => {
       try {
@@ -235,18 +301,13 @@ const Pricing = () => {
                   </div>
 
                   {user && (
-                     <DodoPaymentButton
-                        userId={user.uid}
-                        userEmail={user.email}
-                        userName={user.name}
-                        onSuccess={async () => {
-                           const quota = await QuotaService.getUserQuota(
-                              user.uid
-                           );
-                           dispatch(setUserQuota(quota));
-                           router.push("/dashboard");
-                        }}
-                     />
+                     <button
+                        onClick={handleDodoPayment}
+                        className="w-full px-6 py-3 rounded-lg text-white font-semibold bg-green-600 hover:bg-green-700 transition-all duration-200"
+                        disabled={userQuota?.subscription?.type === "premium"}
+                     >
+                        Pay in USD ($8.99)
+                     </button>
                   )}
                </div>
             </div>
