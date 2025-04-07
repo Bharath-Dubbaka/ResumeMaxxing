@@ -1,4 +1,4 @@
-// app/paymeny-sucess/page.js
+// src/app/payment-success/page.js
 
 'use client';
 
@@ -54,7 +54,7 @@ export default function PaymentSuccessPage() {
                 'generates.used': 0, 
                 'parsing.limit': 100,
                 'parsing.used': 0,
-                'subscription.type': 'premium',
+                'subscription.type': 'premium', 
                 'subscription.startDate': new Date().toISOString(),
                 'subscription.endDate': new Date(
                   Date.now() + 30 * 24 * 60 * 60 * 1000

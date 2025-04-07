@@ -3,7 +3,8 @@ import axios from "axios";
 
 export async function POST(req) {
    try {
-      const { userEmail, userName } = await req.json();
+      const { userEmail, userName, userId } = await req.json();
+      const baseUrl = process.env.NEXT_PUBLIC_APP_PATH_URL;
 
       // Mandatory billing fields based on Dodo API requirements
       const billingDetails = {
@@ -30,7 +31,10 @@ export async function POST(req) {
                },
             ],
             payment_link: true,
-            return_url: `${process.env.NEXT_PUBLIC_APP_PATH_URL}/dashboard`,
+            return_url: `${process.env.NEXT_PUBLIC_APP_PATH_URL}/dodo-payment-success`,
+            metadata: {
+               userId: userId, // Include user ID for webhook handling
+            },
          },
          {
             headers: {

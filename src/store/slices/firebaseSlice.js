@@ -15,7 +15,7 @@ const firebaseSlice = createSlice({
          state.userDetails = action.payload;
          state.loading = false;
       },
-      setUserQuota: (state, action) => {
+      setUserQuota: (state, action) => { 
          state.userQuota = action.payload;
       },
       setLoading: (state, action) => {

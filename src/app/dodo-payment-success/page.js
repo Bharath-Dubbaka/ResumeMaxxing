@@ -1,120 +1,210 @@
-// app/DodoPaymentSuccessPage/page.js
 "use client";
-
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { useSelector } from "react-redux";
+import { useSelector, useDispatch } from "react-redux";
+import { Loader2 } from "lucide-react";
+import { QuotaService } from "../../services/QuotaService";
+import { setUserQuota } from "../../store/slices/firebaseSlice";
+import { doc, updateDoc, getDoc, setDoc } from "firebase/firestore";
+import { db } from "../../services/firebase";
 
-export default function DodoPaymentSuccess() {
+export default function DodoSuccessPage() {
    const router = useRouter();
-   const [status, setStatus] = useState("processing");
+   const dispatch = useDispatch();
    const { user } = useSelector((state) => state.auth);
+   const [status, setStatus] = useState("Verifying payment...");
+   const [error, setError] = useState(null);
 
    useEffect(() => {
-      // Extract payment ID from URL query parameters
-      const urlParams = new URLSearchParams(window.location.search);
-      const paymentId = urlParams.get("payment_id");
-      const userId = urlParams.get("userId");
-
-      if (paymentId) {
-         // Store the payment ID in localStorage for verification
-         window.localStorage.setItem("dodo_payment_id", paymentId);
-
-         // Verify the payment
-         verifyPayment(userId, paymentId);
-      } else {
-         setStatus("error");
+      if (!user) {
+         setStatus("User not logged in. Redirecting...");
+         setTimeout(() => router.push("/"), 2000);
+         return;
       }
-   }, []);
 
-   const verifyPayment = async (userId, paymentId) => {
-      try {
-         const response = await fetch("/api/payment/verify-dodo-payment", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ userId, paymentId }),
-         });
+      const params = new URLSearchParams(window.location.search);
+      const paymentId = params.get("payment_id");
+      const paymentStatus = params.get("status");
 
-         const result = await response.json();
+      if (!paymentId) {
+         setStatus("No payment information found. Redirecting...");
+         setTimeout(() => router.push("/dashboard"), 2000);
+         return;
+      }
 
-         if (result.success) {
-            setStatus("success");
-            // Redirect to dashboard after 3 seconds
-            setTimeout(() => {
-               router.push("/dashboard");
-            }, 3000);
-         } else {
-            setStatus("error");
+      // Store the payment ID for later verification attempts
+      localStorage.setItem("dodo_payment_id", paymentId);
+      console.log(
+         `Processing payment ${paymentId} with status ${paymentStatus} for user ${user.uid}`
+      );
+
+      const verifyAndUpdateUser = async () => {
+         try {
+            // First try to verify payment with our backend
+            setStatus("Contacting payment server...");
+            const verifyResponse = await fetch("/api/dodo/verify-payment", {
+               method: "POST",
+               headers: { "Content-Type": "application/json" },
+               body: JSON.stringify({
+                  paymentId,
+                  userId: user.uid,
+               }),
+            });
+
+            // Parse response, handle non-JSON errors
+            let data;
+            try {
+               data = await verifyResponse.json();
+            } catch (parseError) {
+               console.error(
+                  "Error parsing verification response:",
+                  parseError
+               );
+               setError(
+                  "Server returned an invalid response. Please contact support."
+               );
+
+               // If status is explicitly "succeeded", proceed anyway
+               if (paymentStatus !== "succeeded") {
+                  return; // Exit if we can't parse response and status isn't successful
+               }
+            }
+
+            // If API verification succeeded
+            if (data?.success) {
+               setStatus("Payment verified! Updating your account...");
+
+               // Refresh quota from database
+               try {
+                  const quota = await QuotaService.getUserQuota(user.uid);
+                  dispatch(setUserQuota(quota));
+
+                  // Clear payment ID from localStorage
+                  localStorage.removeItem("dodo_payment_id");
+
+                  setStatus("Success! Redirecting to dashboard...");
+                  setTimeout(() => router.push("/dashboard"), 3000);
+                  return;
+               } catch (quotaError) {
+                  console.error("Error fetching updated quota:", quotaError);
+                  // Continue with backup plan
+               }
+            }
+
+            // If API verification failed but Dodo reports success or we have status=succeeded in URL
+            if (paymentStatus === "succeeded") {
+               setStatus(
+                  "Payment successful! Updating your account directly..."
+               );
+
+               // Check if quota document exists
+               const quotaRef = doc(db, "quotas", user.uid);
+               const quotaSnap = await getDoc(quotaRef);
+
+               try {
+                  // Use setDoc with merge if doc doesn't exist, otherwise updateDoc
+                  if (!quotaSnap.exists()) {
+                     await setDoc(
+                        quotaRef,
+                        {
+                           downloads: { limit: 100, used: 0 },
+                           generates: { limit: 100, used: 0 },
+                           parsing: { limit: 100, used: 0 },
+                           subscription: {
+                              type: "premium",
+                              startDate: new Date().toISOString(),
+                              endDate: new Date(
+                                 Date.now() + 30 * 24 * 60 * 60 * 1000
+                              ).toISOString(),
+                           },
+                        },
+                        { merge: true }
+                     );
+                  } else {
+                     await updateDoc(quotaRef, {
+                        "downloads.limit": 100,
+                        "downloads.used": 0,
+                        "generates.limit": 100,
+                        "generates.used": 0,
+                        "parsing.limit": 100,
+                        "parsing.used": 0,
+                        "subscription.type": "premium",
+                        "subscription.startDate": new Date().toISOString(),
+                        "subscription.endDate": new Date(
+                           Date.now() + 30 * 24 * 60 * 60 * 1000
+                        ).toISOString(),
+                     });
+                  }
+
+                  // Clear payment ID
+                  localStorage.removeItem("dodo_payment_id");
+
+                  // Update Redux state
+                  const quota = await QuotaService.getUserQuota(user.uid);
+                  dispatch(setUserQuota(quota));
+
+                  setStatus("Success! Redirecting to dashboard...");
+                  setTimeout(() => router.push("/dashboard"), 3000);
+               } catch (updateError) {
+                  console.error("Error updating user data:", updateError);
+                  setError(
+                     "Payment processed but account update failed. Please contact support."
+                  );
+                  setTimeout(() => router.push("/dashboard"), 5000);
+               }
+            } else {
+               console.error(
+                  "Payment verification failed:",
+                  data?.error || "Unknown error"
+               );
+               setError(
+                  `Payment verification failed. Status: ${
+                     paymentStatus || "unknown"
+                  }. Please contact support.`
+               );
+               setTimeout(() => router.push("/dashboard"), 5000);
+            }
+         } catch (error) {
+            console.error("Error in payment verification process:", error);
+            setError(
+               "Verification error. Please contact support with reference: " +
+                  paymentId
+            );
+            setTimeout(() => router.push("/dashboard"), 5000);
          }
-      } catch (error) {
-         console.error("Error verifying payment:", error);
-         setStatus("error");
-      }
-   };
+      };
+
+      verifyAndUpdateUser();
+   }, [user, router, dispatch]);
 
    return (
-      <div className="container mx-auto px-4 py-28 flex flex-col items-center justify-center min-h-screen bg-gradient-to-br from-yellow-50/95 via-pink-50 to-blue-200/60">
-         <div className="bg-white p-8 rounded-2xl shadow-lg max-w-md w-full text-center">
-            <h1 className="text-2xl font-bold mb-4">
-               {status === "processing" && "Processing Your Payment..."}
-               {status === "success" && "Payment Successful!"}
-               {status === "error" && "Payment Verification Failed"}
-            </h1>
-
-            {status === "processing" && (
-               <div className="flex justify-center">
-                  <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600"></div>
-               </div>
-            )}
-
-            {status === "success" && (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-purple-200/60 via-pink-50/95 to-blue-200/60">
+         <div className="text-center space-y-4 p-8 bg-white rounded-xl shadow-lg max-w-md w-full">
+            {error ? (
                <>
-                  <div className="text-green-500 mb-4">
-                     <svg
-                        className="h-16 w-16 mx-auto"
-                        fill="currentColor"
-                        viewBox="0 0 20 20"
-                     >
-                        <path
-                           fillRule="evenodd"
-                           d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
-                           clipRule="evenodd"
-                        />
-                     </svg>
-                  </div>
-                  <p className="mb-4">
-                     Your account has been upgraded to Premium!
-                  </p>
+                  <h1 className="text-3xl font-bold text-orange-600">
+                     Payment Processing
+                  </h1>
+                  <p className="text-gray-700">{error}</p>
                   <p className="text-sm text-gray-500">
-                     Redirecting to dashboard...
+                     You will be redirected to dashboard shortly...
                   </p>
-               </>
-            )}
-
-            {status === "error" && (
-               <>
-                  <div className="text-red-500 mb-4">
-                     <svg
-                        className="h-16 w-16 mx-auto"
-                        fill="currentColor"
-                        viewBox="0 0 20 20"
-                     >
-                        <path
-                           fillRule="evenodd"
-                           d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
-                           clipRule="evenodd"
-                        />
-                     </svg>
+                  <div className="flex justify-center mt-4">
+                     <Loader2 className="w-8 h-8 animate-spin text-orange-500" />
                   </div>
-                  <p className="mb-4">
-                     We couldn't verify your payment. Please contact support.
+               </>
+            ) : (
+               <>
+                  <div className="flex justify-center mb-4">
+                     <Loader2 className="w-12 h-12 animate-spin text-indigo-600" />
+                  </div>
+                  <h1 className="text-3xl font-bold text-green-600">
+                     Payment Successful!
+                  </h1>
+                  <p className="text-gray-600">
+                     Thank you for upgrading to Premium.
                   </p>
-                  <button
-                     onClick={() => router.push("/dashboard")}
-                     className="px-4 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700"
-                  >
-                     Go to Dashboard
-                  </button>
+                  <p className="text-sm text-gray-500">{status}</p>
                </>
             )}
          </div>

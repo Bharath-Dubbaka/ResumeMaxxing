@@ -24,7 +24,7 @@ export const createPaymentLink = async (userId, userEmail, userName) => {
          currency: "INR",
          accept_partial: false,
          description:
-            "Upgrade to Premium - ResumeOnFly.com (prod of CVtoSalary)",
+            "Upgrade to One Month Premium - ResumeOnFly.com (prod of CVtoSalary)",
          customer: {
             name: userName,
             email: userEmail,

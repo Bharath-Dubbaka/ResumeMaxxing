@@ -125,8 +125,13 @@ export class QuotaService {
       const userRef = doc(db, "quotas", uid);
       const currentDate = new Date();
 
-      const premiumQuota = {
-         ...this.DEFAULT_PREMIUM_QUOTA,
+      const updateData = {
+         "downloads.limit": 100,
+         "downloads.used": 0,
+         "generates.limit": 100,
+         "generates.used": 0,
+         "parsing.limit": 100,
+         "parsing.used": 0,
          subscription: {
             type: "premium",
             startDate: currentDate.toISOString(),
@@ -136,8 +141,13 @@ export class QuotaService {
          },
       };
 
-      await setDoc(userRef, premiumQuota);
-      return premiumQuota; // Return the new quota
+      try {
+         await updateDoc(userRef, updateData);
+         return updateData;
+      } catch (error) {
+         console.error("Firestore update error:", error);
+         throw error;
+      }
    }
 
    static listenToUserQuota(uid, callback) {

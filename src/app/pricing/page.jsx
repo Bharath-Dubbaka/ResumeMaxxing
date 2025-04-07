@@ -48,34 +48,40 @@ const Pricing = () => {
          if (!paymentLink)
             throw new Error("Failed to create Dodo payment link");
 
-         // Open Dodo payment in new window
+         // Store user ID before opening payment window
+         const currentUserId = user.uid;
+         localStorage.setItem("dodo_pending_user", currentUserId);
+
+         // Open payment window
          const dodoWindow = window.open(paymentLink, "_blank");
 
-         // Start polling for Dodo payment status
+         // Polling verification
          const checkDodoPayment = setInterval(async () => {
             try {
-               const verifyResponse = await fetch("/api/dodo/verify-payment", {
+               const response = await fetch("/api/dodo/verify-payment", {
                   method: "POST",
                   headers: { "Content-Type": "application/json" },
                   body: JSON.stringify({
-                     userId: user.uid,
+                     paymentId: localStorage.getItem("dodo_payment_id"),
+                     userId: currentUserId,
                   }),
                });
 
-               const data = await verifyResponse.json();
+               const data = await response.json();
                if (data.success) {
                   clearInterval(checkDodoPayment);
-                  // Refresh quota data
-                  const quota = await QuotaService.getUserQuota(user.uid);
+                  localStorage.removeItem("dodo_payment_id");
+                  localStorage.removeItem("dodo_pending_user");
+                  const quota = await QuotaService.getUserQuota(currentUserId);
                   dispatch(setUserQuota(quota));
                   router.push("/dashboard");
                }
             } catch (error) {
-               console.error("Error verifying Dodo payment:", error);
+               console.error("Verification error:", error);
             }
          }, 2000);
 
-         // Stop checking after 5 minutes
+         // Timeout after 5 minutes
          setTimeout(() => {
             clearInterval(checkDodoPayment);
             setIsLoading(false);
