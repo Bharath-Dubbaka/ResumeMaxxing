@@ -30,6 +30,22 @@ const Header = () => {
    const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
    const [isDropdownOpen, setIsDropdownOpen] = useState(false);
    const dropdownRef = useRef(null);
+   const [countryCode, setCountryCode] = useState(null);
+
+   // Add this useEffect to detect country
+   useEffect(() => {
+      const detectCountry = async () => {
+         try {
+            const response = await fetch("https://ipapi.co/json/");
+            const data = await response.json();
+            setCountryCode(data.country_code); // 'IN' for India
+         } catch (error) {
+            console.error("Error detecting country:", error);
+            setCountryCode(null); // Default to null if detection fails
+         }
+      };
+      detectCountry();
+   }, []);
 
    const handleClickOutside = (event) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
@@ -68,7 +84,24 @@ const Header = () => {
    };
 
    const handleUpgradeClick = async () => {
+      // Option 1: Redirect to pricing page
+      // router.push("/pricing");
+
+      // Option 2: Implement payment flow directly
+
+      if (userQuota?.subscription?.type === "premium") {
+         alert("Already in premium mode");
+         return;
+      }
+
+      setIsLoading(true);
+
       try {
+         window.localStorage.removeItem("razorpay_payment_id");
+         window.localStorage.removeItem("payment_verified");
+
+         const currency = countryCode === "IN" ? "INR" : "USD";
+
          const response = await fetch("/api/payment/create-payment-link", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
@@ -76,18 +109,56 @@ const Header = () => {
                userId: user.uid,
                userEmail: user.email,
                userName: user.name,
+               currency: currency,
             }),
          });
 
          const { paymentLink } = await response.json();
+
          if (!paymentLink) throw new Error("Failed to create payment link");
 
-         // Open payment in new window
-         window.open(paymentLink, "_blank");
+         // Handle different payment flows based on currency
+         if (currency !== "INR") {
+            window.location.href = paymentLink;
+            return;
+         } else {
+            window.open(paymentLink, "_blank");
+         }
 
-         // Start polling for payment status
+         // Start polling logic (same as pricing page)
+         console.log("Starting payment verification polling");
          const checkPaymentStatus = setInterval(async () => {
             try {
+               // First check if payment was already verified in success page
+               if (window.localStorage.getItem("payment_verified") === "true") {
+                  console.log("Payment already verified in success page");
+                  clearInterval(checkPaymentStatus);
+                  window.localStorage.removeItem("payment_verified");
+                  window.localStorage.removeItem("razorpay_payment_id");
+
+                  // Refresh quota data and redirect
+                  const quota = await QuotaService.getUserQuota(user.uid);
+                  dispatch(setUserQuota(quota));
+                  router.push("/dashboard");
+                  return;
+               }
+
+               // Check if we have a payment ID in localStorage
+               const paymentId = window.localStorage.getItem(
+                  "razorpay_payment_id"
+               );
+
+               // If no payment ID yet, just wait for the next poll
+               if (!paymentId) {
+                  console.log("No payment ID found yet, waiting...");
+                  return;
+               }
+
+               console.log(
+                  "Verifying payment ID from pricing page:",
+                  paymentId
+               );
+
                const verifyResponse = await fetch(
                   "/api/payment/verify-payment",
                   {
@@ -95,20 +166,32 @@ const Header = () => {
                      headers: { "Content-Type": "application/json" },
                      body: JSON.stringify({
                         userId: user.uid,
-                        paymentId: window.localStorage.getItem(
-                           "razorpay_payment_id"
-                        ),
+                        paymentId: paymentId,
                      }),
                   }
                );
 
+               if (!verifyResponse.ok) {
+                  console.error(
+                     `Verification response not OK: ${verifyResponse.status}`
+                  );
+                  const errorText = await verifyResponse.text();
+                  console.error(`Error details: ${errorText}`);
+                  return;
+               }
+
                const data = await verifyResponse.json();
+               console.log("Verification response:", data);
+
                if (data.success) {
+                  console.log("Payment verified successfully!");
                   clearInterval(checkPaymentStatus);
-                  // Refresh quota data
+                  window.localStorage.removeItem("razorpay_payment_id");
                   const quota = await QuotaService.getUserQuota(user.uid);
                   dispatch(setUserQuota(quota));
-                  setIsDropdownOpen(false);
+                  router.push("/dashboard");
+               } else {
+                  console.log("Payment not verified yet", data);
                }
             } catch (error) {
                console.error("Error verifying payment:", error);
@@ -117,10 +200,13 @@ const Header = () => {
 
          // Stop checking after 5 minutes
          setTimeout(() => {
+            console.log("Payment polling timeout reached (5 minutes)");
             clearInterval(checkPaymentStatus);
+            setIsLoading(false);
          }, 300000);
       } catch (error) {
          console.error("Error initiating payment:", error);
+         if (setIsLoading) setIsLoading(false);
       }
    };
 

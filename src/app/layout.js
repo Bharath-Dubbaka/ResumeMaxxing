@@ -12,43 +12,53 @@ const robotoSlab = Roboto_Slab({ subsets: ["latin"], weights: ["400", "700"] });
 
 export const metadata = {
    title: {
-      default: "ResumeOnFly: AI Resume Builder That Gets 3x More Interviews",
+      default:
+         "ResumeOnFly: Updates your resume according to Job description in Minutes",
       template: "%s | ResumeOnFly",
    },
    description:
-      "Beat ATS systems & land dream jobs faster! AI-powered resume builder creates recruiter-approved resumes tailored to job descriptions in 5 minutes. Free trial + 97% satisfaction rate.",
+      "Tired of updating resume for each and every Job Description? let our AI do that in just Minutes for FREE, get 100 resume downloads for just $10.99.",
 
    openGraph: {
       type: "website",
       url: "https://resumeonfly.com/",
-      title: "🚀 Get Hired Faster: AI-Optimized Resumes with 97% ATS Success Rate",
+      title: "🚀 Updates your resume according to Job description in Minutes",
       description:
-         "Tired of resume rejections? Our AI analyzes job descriptions, optimizes keywords, and formats resumes for maximum recruiter impact. Free ATS optimization included!",
+         "Tired of updating resume for each and every Job Description? let our AI do that in just Minutes for FREE, get 100 resume downloads for just $10.99.",
       siteName: "ResumeOnFly",
       images: [
          {
             url: "https://resumeonfly.com/opengrapgh-image.png",
             width: 1200,
             height: 630,
-            alt: "AI transforming resume into job offer with 90% success rate badge",
+            alt: "Tired of updating resume for each and every Job Description? let our AI do that in just Minutes for FREE, get 100 resume downloads for just $10.99.",
          },
       ],
    },
 
    twitter: {
       card: "summary_large_image",
-      title: "The Resume Secret Top Candidates Know 🤫",
+      title: "🚀 Updates your resume according to Job description in Minutes",
       description:
-         "How to create ATS-friendly resumes that get 3x more callbacks (AI-powered + recruiter-approved templates). Free trial →",
+         "Tired of updating resume for each and every Job Description? let our AI do that in just Minutes for FREE, get 100 resume downloads for just $10.99.",
+      images: ["https://resumeonfly.com/opengrapgh-image.png"],
+      creator: "@resumeonfly",
+   },
+   linkedin: {
+      card: "summary_large_image",
+      title: "🚀 Updates your resume according to Job description in Minutes",
+      description:
+         "Tired of updating resume for each and every Job Description? let our AI do that in just Minutes for FREE, get 100 resume downloads for just $10.99.",
       images: ["https://resumeonfly.com/opengrapgh-image.png"],
       creator: "@resumeonfly",
    },
 
    keywords: [
-      "ATS resume builder",
-      "AI resume writer",
-      "recruiter-approved format",
-      "resume optimizer for job descriptions",
+      "AI resume builder",
+      "AI resume update",
+      "Customize resume as per job descriptions",
+      "AI resume customization",
+      "AI Job Hunting Tool",
    ],
 };
 

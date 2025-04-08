@@ -28,6 +28,7 @@ const Pricing = () => {
    const { user } = useSelector((state) => state.auth);
    const [countryCode, setCountryCode] = useState(null);
 
+   //CORS issue so enable extension in development
    const getUserCountry = async () => {
       try {
          const response = await fetch("https://ipapi.co/json/");
@@ -48,7 +49,7 @@ const Pricing = () => {
    }, []);
 
    const isIndia = countryCode === "IN";
-   const price = isIndia ? "₹499" : "$5.99";
+   const price = isIndia ? "₹899" : "$10.99";
    const currency = isIndia ? "INR" : "USD";
 
    const handleGetStarted = async () => {
@@ -98,6 +99,7 @@ const Pricing = () => {
       if (userQuota?.subscription?.type === "premium") {
          toast.error("Already in premium mode");
          console.log("Already in premium mode");
+         alert("Already in premium mode");
          return;
       }
       setIsLoading(true);
