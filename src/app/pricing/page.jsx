@@ -1,5 +1,14 @@
+// app/pricing/page.jsx
+// User is on /pricing page and initiates payment
+// Payment link is created successfully (POST /api/payment/create-payment-link 200)
+// User completes payment and gets redirected to /payment-success with Razorpay parameters
+// Two successful payment verifications occur:
+// First: Payment pay_QGImOE3MGMHLeu verified successfully (200 response)
+// Second: Payment pay_QGImOE3MGMHLeu verified successfully (200 response)
+// User is redirected to /dashboard
+
 "use client";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { CheckCircle } from "lucide-react";
 import { auth } from "../../services/firebase";
 import { GoogleAuthProvider, signInWithPopup } from "firebase/auth";
@@ -10,7 +19,6 @@ import { useSelector, useDispatch } from "react-redux";
 import { setUser } from "../../store/slices/authSlice";
 import { setUserDetails, setUserQuota } from "../../store/slices/firebaseSlice";
 import { toast, Toaster } from "sonner";
-
 const Pricing = () => {
    const router = useRouter();
    const { userDetails, userQuota } = useSelector((state) => state.firebase);
@@ -18,84 +26,34 @@ const Pricing = () => {
    const [showInternational, setShowInternational] = useState(false);
    const dispatch = useDispatch();
    const { user } = useSelector((state) => state.auth);
+   const [countryCode, setCountryCode] = useState(null);
 
-   const handleDodoPayment = async () => {
-      if (!user) {
-         await handleGetStarted();
-         return;
-      }
-
-      if (userQuota?.subscription?.type === "premium") {
-         toast.error("Already in premium mode");
-         return;
-      }
-
-      setIsLoading(true);
+   const getUserCountry = async () => {
       try {
-         // Call Dodo payment endpoint
-         const response = await fetch("/api/dodo/create-payment-link", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-               userId: user.uid,
-               userEmail: user.email,
-               userName: user.name,
-               currency: "USD", // Default to USD, can be made dynamic
-            }),
-         });
-
-         const { paymentLink } = await response.json();
-         if (!paymentLink)
-            throw new Error("Failed to create Dodo payment link");
-
-         // Store user ID before opening payment window
-         const currentUserId = user.uid;
-         localStorage.setItem("dodo_pending_user", currentUserId);
-
-         // Open payment window
-         const dodoWindow = window.open(paymentLink, "_blank");
-
-         // Polling verification
-         const checkDodoPayment = setInterval(async () => {
-            try {
-               const response = await fetch("/api/dodo/verify-payment", {
-                  method: "POST",
-                  headers: { "Content-Type": "application/json" },
-                  body: JSON.stringify({
-                     paymentId: localStorage.getItem("dodo_payment_id"),
-                     userId: currentUserId,
-                  }),
-               });
-
-               const data = await response.json();
-               if (data.success) {
-                  clearInterval(checkDodoPayment);
-                  localStorage.removeItem("dodo_payment_id");
-                  localStorage.removeItem("dodo_pending_user");
-                  const quota = await QuotaService.getUserQuota(currentUserId);
-                  dispatch(setUserQuota(quota));
-                  router.push("/dashboard");
-               }
-            } catch (error) {
-               console.error("Verification error:", error);
-            }
-         }, 2000);
-
-         // Timeout after 5 minutes
-         setTimeout(() => {
-            clearInterval(checkDodoPayment);
-            setIsLoading(false);
-         }, 300000);
+         const response = await fetch("https://ipapi.co/json/");
+         const data = await response.json();
+         return data.country_code; // 'IN' for India
       } catch (error) {
-         console.error("Dodo payment error:", error);
-         setIsLoading(false);
+         console.error("Error detecting country:", error);
+         return null;
       }
    };
+
+   useEffect(() => {
+      const detectCountry = async () => {
+         const country = await getUserCountry();
+         setCountryCode(country);
+      };
+      detectCountry();
+   }, []);
+
+   const isIndia = countryCode === "IN";
+   const price = isIndia ? "₹499" : "$5.99";
+   const currency = isIndia ? "INR" : "USD";
 
    const handleGetStarted = async () => {
       try {
          setIsLoading(true);
-
          if (user) {
             if (userDetails) {
                router.push("/dashboard");
@@ -104,10 +62,8 @@ const Pricing = () => {
             }
             return;
          }
-
          const provider = new GoogleAuthProvider();
          const result = await signInWithPopup(auth, provider);
-
          dispatch(
             setUser({
                email: result.user.email,
@@ -116,15 +72,12 @@ const Pricing = () => {
                uid: result.user.uid,
             })
          );
-
          const quota = await QuotaService.getUserQuota(result.user.uid);
          dispatch(setUserQuota(quota));
-
          const details = await UserDetailsService.getUserDetails(
             result.user.uid
          );
          dispatch(setUserDetails(details));
-
          if (details) {
             router.push("/dashboard");
          } else {
@@ -142,15 +95,19 @@ const Pricing = () => {
          await handleGetStarted();
          return;
       }
-
       if (userQuota?.subscription?.type === "premium") {
          toast.error("Already in premium mode");
          console.log("Already in premium mode");
          return;
       }
-
       setIsLoading(true);
+
       try {
+         // Clear any previous payment data to avoid confusion
+         window.localStorage.removeItem("razorpay_payment_id");
+         window.localStorage.removeItem("payment_verified");
+
+         console.log("Creating payment link for", user.uid);
          const response = await fetch("/api/payment/create-payment-link", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
@@ -158,18 +115,62 @@ const Pricing = () => {
                userId: user.uid,
                userEmail: user.email,
                userName: user.name,
+               currency: currency,
             }),
          });
 
          const { paymentLink } = await response.json();
+         console.log("Payment link created:", paymentLink);
+
          if (!paymentLink) throw new Error("Failed to create payment link");
 
-         // Open payment in new window
-         window.open(paymentLink, "_blank");
+         // For PayPal/international payments, use same window to avoid auth issues
+         // The key difference is:
+         // INR transactions: Open in new window/tab, original app window maintains state and polls
+         // USD transactions: Direct redirect in same window, authentication state must be recovered after redirect to solve Paypal err
+         //read:::https://claude.ai/chat/87ebb9f5-6946-42fb-8056-7315530aded7
+         if (currency !== "INR") {
+            window.location.href = paymentLink;
+            return; // Exit early as we're redirecting away
+         } else {
+            // For INR payments, open in new window and poll
+            window.open(paymentLink, "_blank");
+         }
 
          // Start polling for payment status
+         console.log("Starting payment verification polling");
          const checkPaymentStatus = setInterval(async () => {
             try {
+               // First check if payment was already verified in success page
+               if (window.localStorage.getItem("payment_verified") === "true") {
+                  console.log("Payment already verified in success page");
+                  clearInterval(checkPaymentStatus);
+                  window.localStorage.removeItem("payment_verified");
+                  window.localStorage.removeItem("razorpay_payment_id");
+
+                  // Refresh quota data and redirect
+                  const quota = await QuotaService.getUserQuota(user.uid);
+                  dispatch(setUserQuota(quota));
+                  router.push("/dashboard");
+                  return;
+               }
+
+               // Check if we have a payment ID in localStorage
+               const paymentId = window.localStorage.getItem(
+                  "razorpay_payment_id"
+               );
+
+               // If no payment ID yet, just wait for the next poll
+               if (!paymentId) {
+                  console.log("No payment ID found yet, waiting...");
+                  return;
+               }
+
+               console.log(
+                  "Verifying payment ID from pricing page:",
+                  paymentId
+               );
+
                const verifyResponse = await fetch(
                   "/api/payment/verify-payment",
                   {
@@ -177,20 +178,32 @@ const Pricing = () => {
                      headers: { "Content-Type": "application/json" },
                      body: JSON.stringify({
                         userId: user.uid,
-                        paymentId: window.localStorage.getItem(
-                           "razorpay_payment_id"
-                        ),
+                        paymentId: paymentId,
                      }),
                   }
                );
 
+               if (!verifyResponse.ok) {
+                  console.error(
+                     `Verification response not OK: ${verifyResponse.status}`
+                  );
+                  const errorText = await verifyResponse.text();
+                  console.error(`Error details: ${errorText}`);
+                  return;
+               }
+
                const data = await verifyResponse.json();
+               console.log("Verification response:", data);
+
                if (data.success) {
+                  console.log("Payment verified successfully!");
                   clearInterval(checkPaymentStatus);
-                  // Refresh quota data
+                  window.localStorage.removeItem("razorpay_payment_id");
                   const quota = await QuotaService.getUserQuota(user.uid);
                   dispatch(setUserQuota(quota));
                   router.push("/dashboard");
+               } else {
+                  console.log("Payment not verified yet", data);
                }
             } catch (error) {
                console.error("Error verifying payment:", error);
@@ -199,6 +212,7 @@ const Pricing = () => {
 
          // Stop checking after 5 minutes
          setTimeout(() => {
+            console.log("Payment polling timeout reached (5 minutes)");
             clearInterval(checkPaymentStatus);
             setIsLoading(false);
          }, 300000);
@@ -209,7 +223,7 @@ const Pricing = () => {
    };
 
    return (
-      <div className="container mx-auto px-4 py-28 bg-gradient-to-br from-yellow-50/95 via-pink-50 to-blue-200/60 animate-gradient-xy">
+      <div className="px-4 lg:px-10 py-28 bg-gradient-to-br from-yellow-50/95 via-pink-50 to-blue-200/60 animate-gradient-xy">
          <Toaster
             position="top-center"
             toastOptions={{
@@ -255,7 +269,6 @@ const Pricing = () => {
                   Get Started
                </button>
             </div>
-
             {/* Premium Plan */}
             <div className="relative flex flex-col items-center bg-white p-8 rounded-2xl shadow-lg hover:shadow-xl transition-shadow duration-300 border-4 border-purple-600">
                <div className="absolute top-4 right-4 bg-indigo-600 text-white text-xs font-semibold px-2 py-1 rounded">
@@ -264,16 +277,17 @@ const Pricing = () => {
                <h3 className="text-2xl font-semibold text-gray-900 mb-4">
                   Premium
                </h3>
-               <p className="text-5xl font-extrabold text-indigo-600 mb-2">
-                  ₹499
-                  <span className="text-4xl font-bold text-indigo-600 mb-2">
+               <p className=" text-4xl lg:text-5xl font-extrabold text-indigo-600 mb-2">
+                  {price}
+                  <span className="text-3xl lg:text-4xl font-bold text-indigo-600 mb-2">
                      /month
                   </span>
                </p>
                <div className="flex items-center space-x-2 mb-2">
-                  <p className="text-xl text-gray-400 line-through">₹999</p>
+                  <p className="text-xl text-gray-400 line-through">
+                     {isIndia ? "(₹1299rs)" : "($12.99 USD)"}
+                  </p>
                </div>
-
                <p className="text-sm text-gray-500 mb-6">100 Credits</p>
                <ul className="text-gray-700 mb-6 space-y-2">
                   <li className="flex items-center">
@@ -289,7 +303,6 @@ const Pricing = () => {
                      100 Downloads
                   </li>
                </ul>
-
                {/* Payment Buttons */}
                <div className="space-y-4 w-full">
                   <button
@@ -297,27 +310,10 @@ const Pricing = () => {
                      className="w-full px-6 py-3 rounded-lg text-white font-semibold bg-indigo-600 hover:bg-indigo-700 transition-all duration-200"
                      disabled={userQuota?.subscription?.type === "premium"}
                   >
-                     Pay in INR (₹499)
+                     {isIndia ? "Pay (₹899rs)" : "PayPal ($10.99 USD)"}
                   </button>
-
-                  <div className="flex items-center justify-between w-full">
-                     <div className="border-t border-gray-300 w-1/4"></div>
-                     <p className="text-sm text-gray-500">Or pay in USD</p>
-                     <div className="border-t border-gray-300 w-1/4"></div>
-                  </div>
-
-                  {user && (
-                     <button
-                        onClick={handleDodoPayment}
-                        className="w-full px-6 py-3 rounded-lg text-white font-semibold bg-green-600 hover:bg-green-700 transition-all duration-200"
-                        disabled={userQuota?.subscription?.type === "premium"}
-                     >
-                        Pay in USD ($8.99)
-                     </button>
-                  )}
                </div>
             </div>
-
             {/* Enterprise Plan */}
             <div className="relative flex flex-col items-center bg-white p-8 rounded-2xl shadow-lg hover:shadow-xl transition-shadow duration-300">
                <h3 className="text-2xl font-semibold text-gray-900 mb-4">
@@ -362,5 +358,4 @@ const Pricing = () => {
       </div>
    );
 };
-
 export default Pricing;
