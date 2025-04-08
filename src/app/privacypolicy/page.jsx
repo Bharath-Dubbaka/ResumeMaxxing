@@ -16,11 +16,11 @@ const PrivacyPolicy = () => {
                visitors. This document contains types of information that is
                collected and recorded by ResumeOnFly and how we use it.
             </p>
-            {/* <p className="mb-2">
+            <p className="mb-2">
                <strong>Please note:</strong> Since ResumeOnFly is a product of
                CVtoSalary, you may see CVtoSalary's name during payment
                processing and other related transactions.
-            </p> */}
+            </p>
             <p className="mb-2">
                If you have additional questions or require more information
                about our Privacy Policy, do not hesitate to contact us at

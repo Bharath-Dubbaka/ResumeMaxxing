@@ -10,7 +10,8 @@ const TermsAndConditions = () => {
                use of the{" "}
                <strong>
                   {" "}
-                  ResumeOnFly website and services (the "Services").{" "}
+                  ResumeOnFly (prod by CVtoSalary) website and services (the
+                  "Services").{" "}
                </strong>{" "}
                By accessing or using the Services, you agree to be bound by
                these Terms and our Privacy Policy. If you do not agree with

@@ -7,7 +7,7 @@ const About = () => {
             <h2 className="flex flex-col text-4xl font-bold text-center mb-12 underline">
                About ResumeOnFly{" "}
                <span className="text-sm mt-2 text-blue-600 font-medium">
-                  {/* (prod by CVtoSalary) */}
+                  (prod by CVtoSalary)
                </span>
             </h2>
 
@@ -163,11 +163,11 @@ const About = () => {
 
                {/* Payment Note */}
                <div className="p-4 bg-blue-50/50 rounded-lg border border-blue-200 text-center">
-                  {/* <strong className="text-blue-800">Important Note:</strong>{" "}
+                  <strong className="text-blue-800">Important Note:</strong>{" "}
                   <span className="text-blue-700">
                      During payment processing, you may see CVtoSalary's name as
                      our parent company
-                  </span> */}
+                  </span>
                </div>
             </div>
          </div>

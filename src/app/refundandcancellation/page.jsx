@@ -8,11 +8,12 @@ const RefundAndCancellation = () => {
 
             <div className="mb-2 pb-2">
                <p>
-                  Cancellations will be considered only if the request is made
-                  within the same day of placing the order. However, the
-                  cancellation request may not be entertained if the orders have
-                  been communicated to the vendors/merchants and they have
-                  initiated the process of shipping them.
+                  ResumeOnFly (prod by CVtoSalary), Cancellations will be
+                  considered only if the request is made within the same day of
+                  placing the order. However, the cancellation request may not
+                  be entertained if the orders have been communicated to the
+                  vendors/merchants and they have initiated the process of
+                  shipping them.
                </p>
             </div>
 

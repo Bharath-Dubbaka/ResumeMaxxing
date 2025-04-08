@@ -15,7 +15,7 @@ const Footer = () => {
                         ResumeOnFly
                      </span>
                      <span className="text-xs text-black font-normal">
-                        {/* prod by <span className="font-bold"> CVtoSalary</span> */}
+                        prod by <span className="font-bold"> CVtoSalary</span>
                      </span>
                   </h2>
                   <p className="text-slate-600">
