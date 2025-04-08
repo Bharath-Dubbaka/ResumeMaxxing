@@ -179,7 +179,7 @@ export const StickyScroll = ({ content, contentClassName }) => {
          className="h-[40rem] overflow-y-auto flex  justify-center relative space-x-4 w-full rounded-md "
          ref={ref}
       >
-         <div className="div relative flex items-start px-16 lg:px-2 lg:w-[38%]">
+         <div className="div relative flex items-start px-6 lg:px-2 lg:w-[38%]">
             <div className="max-w-4xl px-4 md:px-0">
                {content.map((item, index) => (
                   <div key={item.title + index} className="my-10 md:my-20">

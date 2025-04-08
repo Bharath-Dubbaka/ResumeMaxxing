@@ -83,7 +83,7 @@ export default function Home() {
                   <span className="font-bold">
                      AI technology in just minutes
                   </span>{" "}
-                  for any Job Description, to{" "}
+                  as per Job Description, to{" "}
                   <span className="font-bold"> 10x your speed</span> and{" "}
                   <span className="font-bold">10x your chances</span> to land
                   your dream job.
