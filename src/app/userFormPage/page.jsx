@@ -24,8 +24,14 @@ function UserFormContent() {
             return;
          }
 
-         if (userDetails && !isEditing) {
-            router.push("/dashboard");
+         // Remove this condition that's causing the immediate redirect
+         // Only redirect to dashboard if no details exist and user is trying to access dashboard
+         if (
+            !userDetails &&
+            !isEditing &&
+            router.pathname !== "/userFormPage"
+         ) {
+            router.push("/userFormPage");
             return;
          }
       }

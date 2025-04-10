@@ -15,10 +15,10 @@ import { QuotaService } from "../services/QuotaService";
 import { UserDetailsService } from "../services/UserDetailsService";
 import { setUser } from "../store/slices/authSlice";
 import { setUserDetails, setUserQuota } from "../store/slices/firebaseSlice";
-import { Roboto_Slab, Inter } from "next/font/google"; // Import Inter here!
-import AuthService from "../services/AuthService"; // Import AuthService
+import { Roboto_Slab, Inter } from "next/font/google";
+import AuthService from "../services/AuthService";
 
-const inter = Inter({ subsets: ["latin"] }); // Initialize Inter font
+const inter = Inter({ subsets: ["latin"] });
 const robotoSlab = Roboto_Slab({ subsets: ["latin"] });
 
 const Header = () => {
@@ -210,6 +210,30 @@ const Header = () => {
       }
    };
 
+   // Navigation items - conditional based on login status
+   const getNavigationItems = () => {
+      const baseItems = ["Faq", "Pricing", "About"];
+
+      // Add Dashboard and Master Resume links for logged-in users
+      if (user && userQuota) {
+         return [...baseItems, "Dashboard", "Master Resume"];
+      }
+
+      return baseItems;
+   };
+
+   // URLs for navigation items
+   const getNavigationUrl = (item) => {
+      const lowerItem = item.toLowerCase();
+
+      // Special case for "Master Resume"
+      if (lowerItem === "master resume") {
+         return "/userFormPage";
+      }
+
+      return `/${lowerItem}`;
+   };
+
    return (
       <header className="border-b bg-white/70 backdrop-blur-md fixed top-0 w-full z-50">
          <div className="container mx-auto px-1 sm:px-2 lg:px-6">
@@ -353,7 +377,6 @@ const Header = () => {
                         </pattern>
                      </defs>
                   </svg>
-                  {/* <div className="flex flex-col"> */}
                   <div className="flex flex-col">
                      <div
                         className={`font-[Calibri] text-xl md:text-[2.3rem] pb-0 md:pb-2 font-extrabold bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-500 bg-clip-text text-transparent`}
@@ -373,10 +396,10 @@ const Header = () => {
 
                {/* Desktop Navigation */}
                <nav className="hidden md:flex items-center space-x-8">
-                  {["Faq", "Pricing", "About"].map((item) => (
+                  {getNavigationItems().map((item) => (
                      <Link
                         key={item}
-                        href={`/${item.toLowerCase()}`}
+                        href={getNavigationUrl(item)}
                         className="text-slate-600 hover:text-indigo-600 font-medium transition-colors duration-200 hover:scale-105 transform"
                      >
                         {item}
@@ -388,10 +411,10 @@ const Header = () => {
                {isMobileMenuOpen && (
                   <div className="absolute top-full left-0 w-full bg-white shadow-lg md:hidden">
                      <div className="px-4 py-2 border-t border-indigo-100">
-                        {["Faq", "Pricing", "About"].map((item) => (
+                        {getNavigationItems().map((item) => (
                            <Link
                               key={item}
-                              href={`/${item.toLowerCase()}`}
+                              href={getNavigationUrl(item)}
                               className="block px-4 py-3 text-slate-700 hover:bg-indigo-50 rounded-lg"
                               onClick={() => setIsMobileMenuOpen(false)}
                            >
@@ -468,7 +491,30 @@ const Header = () => {
                                  ID: {user.uid}
                               </p>
                            </div>
-                           {/* Upgrade to premium btn here and for user who are already on premium will be shown there premium endDate */}
+
+                           {/* Quick Links Section */}
+                           <div className="px-4 py-3 border-b border-indigo-100">
+                              <p className="text-sm font-medium text-indigo-900 mb-2">
+                                 Quick Links
+                              </p>
+                              <div className="flex space-x-2">
+                                 <Link
+                                    href="/dashboard"
+                                    className="flex-1 py-2 px-3 bg-indigo-100 hover:bg-indigo-200 text-indigo-700 text-xs font-medium rounded-lg transition-all duration-200 text-center"
+                                    onClick={() => setIsDropdownOpen(false)}
+                                 >
+                                    Dashboard
+                                 </Link>
+                                 <Link
+                                    href="/userFormPage"
+                                    className="flex-1 py-2 px-3 bg-indigo-100 hover:bg-indigo-200 text-indigo-700 text-xs font-medium rounded-lg transition-all duration-200 text-center"
+                                    onClick={() => setIsDropdownOpen(false)}
+                                 >
+                                    Master Resume
+                                 </Link>
+                              </div>
+                           </div>
+
                            {/* Premium Section */}
                            <div className="px-4 py-3 border-b border-indigo-100">
                               {userQuota.subscription.type === "free" ? (
