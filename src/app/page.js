@@ -117,7 +117,7 @@ export default function Home() {
                </div>
             </div>
             <StickyScrollRevealDemo />
-            {/* <VideoSection /> */}
+            <VideoSection />
             {/* <HowItWorks /> */}
             <Whyus />
             <ProblemsWeSolve />
