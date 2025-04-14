@@ -68,7 +68,7 @@ export default function Whyus() {
    ];
 
    return (
-      <section className="py-16 px-6 sm:px-6 lg:px-28 bg-gradient-to-br from-yellow-50/95  to-pink-100/80 animate-gradient-xy">
+      <section className="py-16 px-6 sm:px-6 lg:px-28 bg-gradient-to-br from-yellow-50/90  to-pink-100/80 animate-gradient-xy">
          <div className="max-w-7xl mx-auto">
             <div className="text-center mb-6">
                <h2 className="text-4xl font-bold text-center mb-2 underline">

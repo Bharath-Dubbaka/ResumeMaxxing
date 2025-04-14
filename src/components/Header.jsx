@@ -238,8 +238,8 @@ const Header = () => {
       <header className="border-b bg-white/70 backdrop-blur-md fixed top-0 w-full z-50">
          <div className="container mx-auto px-1 sm:px-2 lg:px-6">
             <div className="flex items-center justify-between h-16 md:h-[5.3rem]">
-               {/* Mobile Menu Button */}
-               <div className="md:hidden flex items-center">
+               {/* Mobile Menu Button - Now visible up to lg screens */}
+               <div className="lg:hidden flex items-center">
                   <button
                      onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
                      className="p-2 text-indigo-600 hover:bg-indigo-100 rounded-lg"
@@ -379,13 +379,13 @@ const Header = () => {
                   </svg>
                   <div className="flex flex-col">
                      <div
-                        className={`font-[Calibri] text-xl md:text-[2.3rem] pb-0 md:pb-2 font-extrabold bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-500 bg-clip-text text-transparent`}
+                        className={`font-[Calibri] text-2xl md:text-[2.3rem] pb-0 md:pb-2 font-extrabold bg-gradient-to-r from-purple-800  to-pink-800 p-[2px] animate-shine transition-all duration-300 bg-clip-text text-transparent`}
                      >
-                        <span className="sm:inline font-light">
+                        <span className="sm:inline font-light ">
                            ResumeOnFly
                         </span>
                      </div>
-                     <div className="text-[0.6rem] md:text-xs text-black font-normal">
+                     <div className="text-[0.6rem] md:text-xs text-black font-normal pl-1">
                         <span className="text-xs text-black font-normal">
                            prod by{" "}
                            <span className="font-bold"> CVtoSalary</span>
@@ -394,8 +394,8 @@ const Header = () => {
                   </div>
                </Link>
 
-               {/* Desktop Navigation */}
-               <nav className="hidden md:flex items-center space-x-8">
+               {/* Desktop Navigation - Now only shows on lg screens and up */}
+               <nav className="hidden lg:flex items-center lg:space-x-8">
                   {getNavigationItems().map((item) => (
                      <Link
                         key={item}
@@ -409,7 +409,7 @@ const Header = () => {
 
                {/* Mobile Navigation Menu */}
                {isMobileMenuOpen && (
-                  <div className="absolute top-full left-0 w-full bg-white shadow-lg md:hidden">
+                  <div className=" lg:hidden absolute top-full left-0 w-full bg-white shadow-lg">
                      <div className="px-4 py-2 border-t border-indigo-100">
                         {getNavigationItems().map((item) => (
                            <Link
@@ -447,7 +447,7 @@ const Header = () => {
                            <span className="truncate max-w-[120px]">
                               {user.name}
                            </span>
-                           <span className="text-xs bg-gradient-to-r from-indigo-500 to-purple-500 text-white px-2 py-0.5 rounded-full ml-2">
+                           <span className="text-xs text-white px-2 py-1 ml-2 rounded-full bg-gradient-to-r from-purple-700 via-pink-800 to-purple-700 p-[2px] animate-shine">
                               {userQuota.subscription.type}
                            </span>
                         </p>
@@ -644,7 +644,7 @@ const Header = () => {
                      )}
                   </div>
                ) : (
-                  <div className="flex items-center gap-2 md:gap-4">
+                  <div className="flex items-center gap-2 md:gap-2">
                      <Button
                         onClick={handleGetStarted}
                         variant="ghost"
@@ -654,7 +654,7 @@ const Header = () => {
                      </Button>
                      <Button
                         onClick={handleGetStarted}
-                        className="text-xs text-white md:text-base px-2 md:px-4 py-0 md:py-2 bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-500 "
+                        className="text-xs text-white md:text-base px-2 md:px-4 py-0 md:py-2 bg-gradient-to-r from-purple-700 via-pink-800 to-purple-700 p-[2px] animate-shine transition-all duration-300"
                      >
                         FREE Trial
                      </Button>

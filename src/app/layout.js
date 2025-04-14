@@ -13,7 +13,7 @@ const robotoSlab = Roboto_Slab({ subsets: ["latin"], weights: ["400", "700"] });
 export const metadata = {
    title: {
       default:
-         "ResumeOnFly: Updates your resume according to Job description in Minutes",
+         "ResumeOnFly: Built for busy job seekers — upload your master resume once, and customize it for every job in a few clicks",
       template: "%s | ResumeOnFly",
    },
    description:
@@ -22,7 +22,7 @@ export const metadata = {
    openGraph: {
       type: "website",
       url: "https://resumeonfly.com/",
-      title: "🚀 Updates your resume according to Job description in Minutes",
+      title: "🚀 Built for busy job seekers — upload your master resume once, and customize it for every job in a few clicks",
       description:
          "Tired of updating resume for each and every Job Description? let our AI do that in just Minutes for FREE, get 100 resume downloads for just $10.99.",
       siteName: "ResumeOnFly",
@@ -38,7 +38,7 @@ export const metadata = {
 
    twitter: {
       card: "summary_large_image",
-      title: "🚀 Updates your resume according to Job description in Minutes",
+      title: "🚀 Built for busy job seekers — upload your master resume once, and customize it for every job in a few clicks",
       description:
          "Tired of updating resume for each and every Job Description? let our AI do that in just Minutes for FREE, get 100 resume downloads for just $10.99.",
       images: ["https://resumeonfly.com/opengrapgh-image.png"],
@@ -46,7 +46,7 @@ export const metadata = {
    },
    linkedin: {
       card: "summary_large_image",
-      title: "🚀 Updates your resume according to Job description in Minutes",
+      title: "🚀 Built for busy job seekers — upload your master resume once, and customize it for every job in a few clicks",
       description:
          "Tired of updating resume for each and every Job Description? let our AI do that in just Minutes for FREE, get 100 resume downloads for just $10.99.",
       images: ["https://resumeonfly.com/opengrapgh-image.png"],
@@ -55,9 +55,9 @@ export const metadata = {
 
    keywords: [
       "AI resume builder",
-      "AI resume update",
-      "Customize resume as per job descriptions",
-      "AI resume customization",
+      "AI resume enhancer",
+      "update resume as per job descriptions",
+      "update my resume",
       "AI Job Hunting Tool",
    ],
 };

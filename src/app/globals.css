@@ -136,3 +136,17 @@
    mix-blend-mode: screen; /* Use screen blend mode for the glow effect */
    pointer-events: none; /* Make the glow layer non-interactive */
 }
+
+@keyframes shine {
+   from {
+      background-position: 200% 0;
+   }
+   to {
+      background-position: -200% 0;
+   }
+}
+
+.animate-shine {
+   background-size: 200% auto;
+   animation: shine 3s linear infinite;
+}
