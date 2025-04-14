@@ -16,8 +16,8 @@ export const createPaymentLink = async (
    currency
 ) => {
    const priceMap = {
-      INR: 89900, // ₹899
-      USD: 1099, // $10.99
+      INR: 69900, // ₹699
+      USD: 899, // $8.99
    };
    const amount = priceMap[currency] || priceMap["INR"]; // Fallback to INR
    try {

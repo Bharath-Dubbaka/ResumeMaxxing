@@ -49,7 +49,7 @@ const Pricing = () => {
    }, []);
 
    const isIndia = countryCode === "IN";
-   const price = isIndia ? "₹899" : "$10.99";
+   const price = isIndia ? "₹699" : "$8.99";
    const currency = isIndia ? "INR" : "USD";
 
    const handleGetStarted = async () => {
@@ -312,7 +312,7 @@ const Pricing = () => {
                      className="w-full px-6 py-3 rounded-lg text-white font-semibold bg-indigo-600 hover:bg-indigo-700 transition-all duration-200"
                      disabled={userQuota?.subscription?.type === "premium"}
                   >
-                     {isIndia ? "Pay (₹899rs)" : "PayPal ($10.99 USD)"}
+                     {isIndia ? "Pay (₹699rs)" : "PayPal ($8.99 USD)"}
                   </button>
                </div>
             </div>
