@@ -118,18 +118,20 @@ const MiniPreview = ({ userDetails, user }) => {
                         ))}
                      </div>
                   ) : (
-                     <div className="text-gray-600 italic space-y-2">
+                     <div className="text-gray-600 italic">
                         {/* <p>
                            Summarize your work experience by listing each job
                            with your responsibilities in 2-3 lines. Start with
                            your most recent job and work backwards using the
                            format below:
                         </p> */}
-                        <div className="flex justify-between">
+                        <div className="flex justify-between ">
                            <p className="font-semibold">Job Title </p>
                            <p>(Month/year - Month/year)</p>
                         </div>
-                        <p className="font-semibold">Company Name, Location</p>
+                        <div className="font-semibold mt-0">
+                           Company Name, Location
+                        </div>
                         <ul className="list-disc pl-4">
                            <li>
                               {" "}

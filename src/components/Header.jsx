@@ -395,12 +395,12 @@ const Header = () => {
                </Link>
 
                {/* Desktop Navigation - Now only shows on lg screens and up */}
-               <nav className="hidden lg:flex items-center lg:space-x-8">
+               <nav className="hidden lg:flex items-center lg:space-x-6">
                   {getNavigationItems().map((item) => (
                      <Link
                         key={item}
                         href={getNavigationUrl(item)}
-                        className="text-slate-600 hover:text-indigo-600 font-normal transition-colors duration-200 hover:scale-105 transform"
+                        className="text-slate-600 hover:text-indigo-600 font-normal text-sm transition-colors duration-200 hover:scale-105 transform"
                      >
                         {item}
                      </Link>

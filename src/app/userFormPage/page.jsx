@@ -75,7 +75,7 @@ function UserFormContent() {
    return (
       <div className="min-h-screen bg-gradient-to-br from-yellow-50/95 via-pink-50 to-blue-200/60 animate-gradient-xy">
          <Toaster position="top-center" />
-         <div className="container mx-auto py-8 px-2 pt-20 lg:pt-28">
+         <div className="container mx-auto py-8 px-8 pt-20 lg:pt-28">
             <UserForm
                initialData={userDetails}
                onSave={handleSaveDetails}
