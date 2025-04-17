@@ -236,7 +236,7 @@ const Header = () => {
 
    return (
       <header className="border-b bg-white/70 backdrop-blur-md fixed top-0 w-full z-50">
-         <div className="container mx-auto px-1 sm:px-2 lg:px-6">
+         <div className="px-1 sm:px-2 lg:px-6">
             <div className="flex items-center justify-between h-16 md:h-[5.3rem]">
                {/* Mobile Menu Button - Now visible up to lg screens */}
                <div className="lg:hidden flex items-center">
@@ -400,7 +400,7 @@ const Header = () => {
                      <Link
                         key={item}
                         href={getNavigationUrl(item)}
-                        className="text-slate-600 hover:text-indigo-600 font-medium transition-colors duration-200 hover:scale-105 transform"
+                        className="text-slate-600 hover:text-indigo-600 font-normal transition-colors duration-200 hover:scale-105 transform"
                      >
                         {item}
                      </Link>
