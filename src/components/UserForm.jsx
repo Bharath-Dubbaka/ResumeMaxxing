@@ -24,7 +24,7 @@ import { toast, Toaster } from "sonner";
 import { Accordion, AccordionItem } from "../components/Accordion";
 import MiniPreview from "./MiniPreview";
 
-const UserForm = ({ onSave, onCancel, initialData, isEditing }) => {
+const UserForm = ({ onSave, onCancel, initialData, user, isEditing }) => {
    const [isLoading, setIsLoading] = useState(false);
    const [userDetails, setUserDetails] = useState(() => {
       if (initialData) {
@@ -47,6 +47,8 @@ const UserForm = ({ onSave, onCancel, initialData, isEditing }) => {
 
    const [openDropdown, setOpenDropdown] = useState(null);
    const dropdownRef = useRef(null);
+
+   console.log(user, "user from form ");
 
    useEffect(() => {
       function handleClickOutside(event) {
@@ -199,16 +201,18 @@ const UserForm = ({ onSave, onCancel, initialData, isEditing }) => {
    };
 
    return (
-      <div className="relative min-h-screen md:flex  md:space-evenly">
+      <div className="relative min-h-screen md:flex ">
          {/* Mini Preview */}
-         <MiniPreview userDetails={userDetails} />
+         <div className="hidden lg:block lg:w-1/3 lg:h-fit lg:sticky lg:top-24">
+            <MiniPreview userDetails={userDetails} user={user} />
+         </div>
 
          {/* Main Form */}
-         <div className="min-w-6xl mx-auto rounded-xl py-10 bg-gradient-to-br from-teal-50/95 via-blue-50 to-pink-200/30 animate-gradient-xy backdrop-blur-sm shadow-xl border border-white/10">
+         <div className="w-full lg:w-2/3 mx-auto md:px-4 lg:px-0 rounded-xl py-10 bg-gradient-to-br from-teal-50/95 via-blue-50 to-pink-200/30 animate-gradient-xy backdrop-blur-sm shadow-xl border border-white/10">
             <div className="max-w-5xl mx-1 md:mx-auto px-1 lg:px-10">
                <form onSubmit={handleSave} className="space-y-6">
-                  <div className="text-2xl font-semibold mb-6">
-                     Master Resume Builder
+                  <div className="text-2xl font-semibold mb-6 underline">
+                     Master Resume Builder:
                   </div>
 
                   <Accordion>
@@ -226,7 +230,11 @@ const UserForm = ({ onSave, onCancel, initialData, isEditing }) => {
                               </Label>
                               <Input
                                  className="h-10 font-sans text-base hover:border-gray-800"
-                                 value={userDetails.fullName}
+                                 value={
+                                    userDetails.fullName
+                                       ? userDetails.fullName
+                                       : user.name
+                                 }
                                  onChange={(e) =>
                                     handleChange("fullName", e.target.value)
                                  }
@@ -240,7 +248,11 @@ const UserForm = ({ onSave, onCancel, initialData, isEditing }) => {
                               <Input
                                  className="h-10 font-sans text-base hover:border-gray-800"
                                  type="email"
-                                 value={userDetails.email}
+                                 value={
+                                    userDetails.email
+                                       ? userDetails.email
+                                       : user.email
+                                 }
                                  onChange={(e) =>
                                     handleChange("email", e.target.value)
                                  }

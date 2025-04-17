@@ -81,6 +81,7 @@ function UserFormContent() {
                onSave={handleSaveDetails}
                onCancel={() => router.push("/dashboard")}
                isEditing={isEditing}
+               user={user}
             />
          </div>
       </div>

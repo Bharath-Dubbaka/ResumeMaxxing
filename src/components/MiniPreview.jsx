@@ -1,8 +1,9 @@
 import React from "react";
 
-const MiniPreview = ({ userDetails }) => {
+const MiniPreview = ({ userDetails, user }) => {
+   console.log(userDetails.experience, "userDetails.experience from mini prev");
    return (
-      <div className="hidden lg:flex lg:flex-col lg:max-w-[36%] mr-2 bg-white shadow-xl rounded-xl border border-gray-200 overflow-y-auto max-h-fit">
+      <div className="hidden lg:flex lg:flex-col mr-2 bg-white shadow-xl rounded-xl border border-gray-200 overflow-y-auto max-h-fit">
          {/* Updated Note */}
          <div className="text-gray-600 relative top-[-5px] left-[10px] bg-gray-200 px-2 py-1 rounded-lg">
             Sample Preview:{" "}
@@ -17,12 +18,12 @@ const MiniPreview = ({ userDetails }) => {
                {/* Header */}
                <div className="text-center border-b border-gray-200 pb-4">
                   <h1 className="text-xl font-semibold text-gray-900">
-                     {userDetails?.fullName || "Your Name"}
+                     {userDetails?.fullName || user?.name}
                   </h1>
                   <p className="text-gray-600 mt-1">
-                     {userDetails?.email && userDetails?.phone
-                        ? `${userDetails.email} | ${userDetails.phone}`
-                        : "Enter your city, state, ZIP Code and (optionally) your LinkedIn URL"}
+                     {(userDetails?.email || user?.email) +
+                        " | " +
+                        (userDetails?.phone || "Cell/Phone")}
                   </p>
                </div>
 
@@ -33,7 +34,7 @@ const MiniPreview = ({ userDetails }) => {
                   </h2>
                   <p className="text-gray-600 italic">
                      {userDetails?.summary ||
-                        "Use this section to give recruiters a quick glimpse of your professional profile. In just 3-4 lines, highlight your background, education and main skills."}
+                        "This section will be auto-generated as your per job description and desired skills. In 5-8 lines, highlighting your background, education and main skills as needed."}
                   </p>
                </div>
 
@@ -52,8 +53,8 @@ const MiniPreview = ({ userDetails }) => {
                      </div>
                   ) : (
                      <p className="text-gray-600 italic">
-                        List your professional skills in bullet points so
-                        they're easy for recruiters to read.
+                        List of your skills as per provided job description and
+                        custom saved. Ex: Java, Spring, React.js, Node.js
                      </p>
                   )}
                </div>
@@ -81,6 +82,24 @@ const MiniPreview = ({ userDetails }) => {
                               </div>
                               <div>
                                  <ul className="list-disc pl-4 text-[10px]">
+                                    {/* Safely handle both strings and arrays */}
+                                    {Array.isArray(
+                                       exp?.customResponsibilities
+                                    ) ? (
+                                       exp.customResponsibilities.map(
+                                          (item, idx) =>
+                                             typeof item === "string" &&
+                                             item.trim() ? (
+                                                <li key={idx}>{item}</li>
+                                             ) : null
+                                       )
+                                    ) : typeof exp?.customResponsibilities ===
+                                         "string" &&
+                                      exp.customResponsibilities.trim() ? (
+                                       <li>
+                                          {exp.customResponsibilities.trim()}
+                                       </li>
+                                    ) : null}
                                     <li>Responsibilities</li>
                                     <li>Responsibilities</li>
                                  </ul>
@@ -90,16 +109,17 @@ const MiniPreview = ({ userDetails }) => {
                      </div>
                   ) : (
                      <div className="text-gray-600 italic space-y-2">
-                        <p>
+                        {/* <p>
                            Summarize your work experience by listing each job
                            with your responsibilities in 2-3 lines. Start with
                            your most recent job and work backwards using the
                            format below:
-                        </p>
-                        <p>
-                           Job Title & Time employed (Month/year - Month/year)
-                        </p>
-                        <p>Company Name</p>
+                        </p> */}
+                        <div className="flex justify-between">
+                           <p className="font-semibold">Job Title </p>
+                           <p>(Month/year - Month/year)</p>
+                        </div>
+                        <p className="font-semibold">Company Name, Location</p>
                         <ul className="list-disc pl-4">
                            <li>Responsibilities</li>
                            <li>Responsibilities</li>
@@ -133,10 +153,7 @@ const MiniPreview = ({ userDetails }) => {
                      </div>
                   ) : (
                      <p className="text-gray-600 italic">
-                        Include your degree, school name and the year you
-                        graduated. If you don't have a degree, list coursework
-                        or training that's relevant to the job you're applying
-                        for.
+                        Masters - Oxford Uni, 2019-03 - 2021-01
                      </p>
                   )}
                </div>
