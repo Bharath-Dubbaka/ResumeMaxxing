@@ -70,8 +70,8 @@ const MiniPreview = ({ userDetails, user }) => {
                            <div key={index}>
                               <div className="flex justify-between">
                                  <p className="font-medium text-gray-800">
-                                    <p>{exp.title}</p>
-                                    <p>
+                                    <p className="font-semibold">{exp.title}</p>
+                                    <p className="font-semibold">
                                        {exp.employer}{" "}
                                        {exp.location ? `| ${exp.location}` : ""}
                                     </p>
@@ -100,8 +100,18 @@ const MiniPreview = ({ userDetails, user }) => {
                                           {exp.customResponsibilities.trim()}
                                        </li>
                                     ) : null}
-                                    <li>Responsibilities</li>
-                                    <li>Responsibilities</li>
+                                    <li>
+                                       Responsibilities generated based on
+                                       Job/skills
+                                    </li>
+                                    <li>
+                                       Responsibilities generated based on
+                                       Job/skills
+                                    </li>
+                                    <li>
+                                       Responsibilities generated based on
+                                       Job/skills
+                                    </li>{" "}
                                  </ul>
                               </div>
                            </div>
@@ -121,9 +131,18 @@ const MiniPreview = ({ userDetails, user }) => {
                         </div>
                         <p className="font-semibold">Company Name, Location</p>
                         <ul className="list-disc pl-4">
-                           <li>Responsibilities</li>
-                           <li>Responsibilities</li>
-                           <li>Responsibilities</li>
+                           <li>
+                              {" "}
+                              Responsibilities generated based on Job/skills
+                           </li>
+                           <li>
+                              {" "}
+                              Responsibilities generated based on Job/skills
+                           </li>
+                           <li>
+                              {" "}
+                              Responsibilities generated based on Job/skills
+                           </li>
                         </ul>
                      </div>
                   )}
