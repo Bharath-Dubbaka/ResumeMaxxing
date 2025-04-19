@@ -40,6 +40,14 @@ export default function JobDescriptionAnalyzer() {
    const [skillMappings, setSkillMappings] = useState([]);
    const dropdownRef = useRef(null); // Add ref for dropdown
    const [combinedSkills, setCombinedSkills] = useState([]);
+   // console.log("test")
+
+   // Add this useEffect to clean up duplicates when the component mounts
+   useEffect(() => {
+      if (skillMappings.length > 0) {
+         removeDuplicateSkillMappings();
+      }
+   }, []);
 
    // Add click outside handler
    useEffect(() => {
@@ -95,53 +103,51 @@ export default function JobDescriptionAnalyzer() {
 
    // Move the initialization logic outside useEffect
    const initializeCombinedSkills = () => {
-      const skillsMap = new Map();
+      const customSkillSet = new Set(
+         userDetails?.customSkills?.map((cs) => cs.skill) || []
+      );
 
-      // Add generated skills first
-      analysis?.technicalSkills?.forEach((skill) => {
-         if (!skillsMap.has(skill)) {
-            skillsMap.set(skill, {
+      // Separate generated and custom skills
+      const generated =
+         analysis?.technicalSkills
+            ?.filter((skill) => !customSkillSet.has(skill))
+            .map((skill) => ({
                skill,
                experienceMappings:
                   skillMappings.find((m) => m.skill === skill)
                      ?.experienceMappings || [],
                type: "generated",
-            });
-         }
-      });
+            })) || [];
 
-      // Add custom skills at the end
-      userDetails?.customSkills?.forEach((skill) => {
-         if (!skillsMap.has(skill.skill)) {
-            skillsMap.set(skill.skill, {
-               ...skill,
-               type: "custom",
-            });
-         }
-      });
+      const custom =
+         userDetails?.customSkills?.map((skill) => ({
+            ...skill,
+            type: "custom",
+         })) || [];
 
-      // Convert map to array while preserving order
-      const generatedSkills =
-         analysis?.technicalSkills
-            ?.map((skill) => skillsMap.get(skill))
-            .filter(Boolean) || [];
-      const customSkills =
-         userDetails?.customSkills
-            ?.map((skill) => skillsMap.get(skill.skill))
-            .filter(Boolean) || [];
-
-      return [...generatedSkills, ...customSkills];
+      return [...generated, ...custom];
    };
 
    useEffect(() => {
-      const initialSkills = initializeCombinedSkills();
-      setCombinedSkills(initialSkills);
-      // Dispatch a plain object action
-      dispatch({
-         type: "skills/setCombinedSkills",
-         payload: initialSkills,
-      });
-   }, [skillMappings, userDetails?.customSkills]);
+      // Only run this effect if we have necessary data and skillMappings has changed
+      if (
+         (analysis?.technicalSkills || userDetails?.customSkills) &&
+         skillMappings.length > 0
+      ) {
+         const initialSkills = initializeCombinedSkills();
+
+         // Only update state if the skills have actually changed
+         if (JSON.stringify(initialSkills) !== JSON.stringify(combinedSkills)) {
+            setCombinedSkills(initialSkills);
+
+            // Dispatch to Redux store
+            dispatch({
+               type: "skills/setCombinedSkills",
+               payload: initialSkills,
+            });
+         }
+      }
+   }, [skillMappings, userDetails?.customSkills, analysis?.technicalSkills]);
 
    const calculateTotalExperience = (experiences) => {
       let totalMonths = 0;
@@ -164,38 +170,71 @@ export default function JobDescriptionAnalyzer() {
       return (totalMonths / 12).toFixed(1);
    };
 
-   const handleSkillMappingChange = (skill, expTitle, checked) => {
-      console.log("Skill Mapping Change:", { skill, expTitle, checked });
-      let updatedMappings;
+   const handleSkillMappingChange = (skill, expTitle, checked, isCustom) => {
       setSkillMappings((prev) => {
-         updatedMappings = prev.map((mapping) =>
+         if (isCustom) {
+            // Update custom skills in userDetails
+            const updatedCustom = userDetails.customSkills.map((cs) =>
+               cs.skill === skill
+                  ? {
+                       ...cs,
+                       experienceMappings: checked
+                          ? [...cs.experienceMappings, expTitle]
+                          : cs.experienceMappings.filter((t) => t !== expTitle),
+                    }
+                  : cs
+            );
+            dispatch(
+               setUserDetails({ ...userDetails, customSkills: updatedCustom })
+            );
+            return prev;
+         }
+         return prev.map((mapping) =>
             mapping.skill === skill
                ? {
                     ...mapping,
                     experienceMappings: checked
-                       ? [...mapping.experienceMappings, expTitle]
+                       ? [...new Set([...mapping.experienceMappings, expTitle])]
                        : mapping.experienceMappings.filter(
-                            (title) => title !== expTitle
+                            (t) => t !== expTitle
                          ),
                  }
                : mapping
          );
-         dispatch(setSkillsMapped(updatedMappings));
-
-         console.log("Updated Skill Mappings:", updatedMappings);
-         return updatedMappings;
       });
-
-      dispatch(setSkillsMapped(skillMappings));
    };
 
    const handleDropdownToggle = (index) => {
       setOpenDropdown(openDropdown === index ? null : index);
    };
 
-   //Skill ADD EDIT AND DELETE BELOW
+   // Add this helper function to clean up duplicates in the skill mappings
+   const removeDuplicateSkillMappings = useCallback(() => {
+      setSkillMappings((prevMappings) => {
+         const uniqueSkills = {};
+         const uniqueMappings = [];
+
+         for (const mapping of prevMappings) {
+            const skill = mapping.skill;
+            if (!uniqueSkills[skill]) {
+               uniqueSkills[skill] = true;
+               uniqueMappings.push(mapping);
+            }
+         }
+
+         // Only update if there's an actual change
+         if (uniqueMappings.length !== prevMappings.length) {
+            return uniqueMappings;
+         }
+         return prevMappings;
+      });
+   }, []);
+
+   // Fix for the handleAddSkill function
+
+   // Complete rewrite of handleAddSkill
    const handleAddSkill = () => {
-      console.log("Current combinedSkills:", combinedSkills); // Log before adding
+      console.log("Current combinedSkills:", combinedSkills);
 
       const newSkill = "";
 
@@ -210,81 +249,34 @@ export default function JobDescriptionAnalyzer() {
          type: "generated",
       };
 
-      // Simply append to the end of all skills
-      const updatedSkills = [...(combinedSkills || []), newSkillObj];
-      console.log("Updated combinedSkills:", updatedSkills); // Log after adding
-
-      setCombinedSkills(updatedSkills);
-
       // Update analysis
-      setAnalysis((prev) => ({
-         ...prev,
-         technicalSkills: [...(prev?.technicalSkills || []), newSkill],
-      }));
-
-      // Update skill mappings
-      setSkillMappings((prev) => [
-         ...prev,
-         {
-            skill: newSkill,
-            experienceMappings: allExperienceTitles,
-         },
-      ]);
-
-      // Update Redux store
-      dispatch({
-         type: "skills/setCombinedSkills",
-         payload: updatedSkills,
-      });
-   };
-
-   const handleSkillChange = (newSkill, index) => {
-      console.log("Changing skill:", { newSkill, index });
-
-      setAnalysis((prev) => {
-         if (!prev) return null;
-
-         const updatedSkills = [...prev.technicalSkills];
-         updatedSkills[index] = newSkill;
-
-         // Update skill mappings with new skill name
-         setSkillMappings((prevMappings) => {
-            const updatedMappings = prevMappings.map((mapping, i) =>
-               i === index ? { ...mapping, skill: newSkill } : mapping
-            );
-            console.log("Updated Skill Mappings:", updatedMappings);
-            return updatedMappings;
-         });
-
-         console.log("Updated Skills Array:", updatedSkills);
-         return {
-            ...prev,
-            technicalSkills: updatedSkills,
-         };
-      });
-   };
-
-   const handleRemoveSkill = (index) => {
-      const skillToRemove = combinedSkills[index]?.skill;
-
-      // Create updated arrays first
-      const updatedCombinedSkills = combinedSkills.filter(
-         (skill) => skill.skill !== skillToRemove
-      );
-      const updatedTechnicalSkills = analysis.technicalSkills.filter(
-         (skill) => skill !== skillToRemove
-      );
-      const updatedSkillMappings = skillMappings.filter(
-         (mapping) => mapping.skill !== skillToRemove
-      );
-
-      // Update all states at once
-      setCombinedSkills(updatedCombinedSkills);
+      const updatedTechnicalSkills = [
+         ...(analysis?.technicalSkills || []),
+         newSkill,
+      ];
       setAnalysis((prev) => ({
          ...prev,
          technicalSkills: updatedTechnicalSkills,
       }));
-      setSkillMappings(updatedSkillMappings);
+
+      // Update combinedSkills
+      const updatedCombinedSkills = [...(combinedSkills || []), newSkillObj];
+      console.log("Updated combinedSkills:", updatedCombinedSkills);
+      setCombinedSkills(updatedCombinedSkills);
+
+      // Update skill mappings - ensure no duplicates
+      setSkillMappings((prev) => {
+         // Check if a mapping for empty skill already exists
+         const emptySkillMapping = prev.find((m) => m.skill === "");
+         if (emptySkillMapping) return prev;
+
+         // Add new mapping
+         const newMapping = {
+            skill: newSkill,
+            experienceMappings: allExperienceTitles,
+         };
+         return [...prev, newMapping];
+      });
 
       // Update Redux store
       dispatch({
@@ -292,7 +284,109 @@ export default function JobDescriptionAnalyzer() {
          payload: updatedCombinedSkills,
       });
       dispatch(setSkills(updatedTechnicalSkills));
-      dispatch(setSkillsMapped(updatedSkillMappings));
+   };
+
+   // Complete rewrite of handleSkillChange
+   const handleSkillChange = (newSkill, index) => {
+      // Store the current skill name before changing it
+      const currentSkill = combinedSkills[index]?.skill;
+
+      // Update combinedSkills first
+      setCombinedSkills((prev) => {
+         const updated = [...prev];
+         if (updated[index]) {
+            updated[index] = {
+               ...updated[index],
+               skill: newSkill,
+            };
+         }
+         return updated;
+      });
+
+      // Update analysis.technicalSkills
+      setAnalysis((prev) => {
+         if (!prev) return null;
+
+         const updatedSkills = [...prev.technicalSkills];
+         const technicalIndex = updatedSkills.indexOf(currentSkill);
+         if (technicalIndex !== -1) {
+            updatedSkills[technicalIndex] = newSkill;
+         }
+
+         return {
+            ...prev,
+            technicalSkills: updatedSkills,
+         };
+      });
+
+      // Update skillMappings - replace the old skill mapping with a new one
+      setSkillMappings((prev) => {
+         // Find the mapping for the current skill
+         const currentMapping = prev.find(
+            (mapping) => mapping.skill === currentSkill
+         );
+
+         // If no mapping exists, don't modify the array
+         if (!currentMapping) return prev;
+
+         // Filter out the old mapping and add updated one
+         return [
+            ...prev.filter((mapping) => mapping.skill !== currentSkill),
+            {
+               skill: newSkill,
+               experienceMappings: currentMapping.experienceMappings || [],
+            },
+         ];
+      });
+
+      // Update Redux store
+      dispatch(
+         setSkills((prevSkills) => {
+            return prevSkills.map((skill) =>
+               skill === currentSkill ? newSkill : skill
+            );
+         })
+      );
+   };
+
+   const handleRemoveSkill = (index) => {
+      const skillToRemove = combinedSkills[index]?.skill;
+      if (!skillToRemove && skillToRemove !== "") return;
+
+      // Remove from combinedSkills
+      setCombinedSkills((prev) => prev.filter((_, i) => i !== index));
+
+      // Remove from analysis.technicalSkills
+      setAnalysis((prev) => {
+         if (!prev) return null;
+         return {
+            ...prev,
+            technicalSkills: prev.technicalSkills.filter(
+               (skill) => skill !== skillToRemove
+            ),
+         };
+      });
+
+      // Remove from skillMappings
+      setSkillMappings((prev) =>
+         prev.filter((mapping) => mapping.skill !== skillToRemove)
+      );
+
+      // Update Redux store
+      dispatch({
+         type: "skills/setCombinedSkills",
+         payload: combinedSkills.filter((_, i) => i !== index),
+      });
+      dispatch(
+         setSkills(
+            analysis.technicalSkills.filter((skill) => skill !== skillToRemove)
+         )
+      );
+      dispatch(
+         setSkillsMapped(
+            skillMappings.filter((mapping) => mapping.skill !== skillToRemove)
+         )
+      );
    };
 
    //ANALYZE
@@ -365,46 +459,31 @@ export default function JobDescriptionAnalyzer() {
    };
 
    // Add this new handler
+   // Modify handleSaveToCustomSkills
    const handleSaveToCustomSkills = async (skill) => {
-      try {
-         if (!user?.uid || !userDetails) {
-            console.log("Please login to save custom skills");
-            return;
-         }
+      // Get current mappings for the skill
+      const currentMappings =
+         skillMappings.find((m) => m.skill === skill)?.experienceMappings || [];
 
-         // Check if skill already exists in custom skills
-         const skillExists = userDetails.customSkills?.some(
-            (cs) => cs.skill === skill
-         );
-         if (skillExists) {
-            toast.error("This skill is already in your custom skills!");
-            return;
-         }
+      // Create new custom skill with current mappings
+      const newCustomSkill = {
+         skill,
+         experienceMappings: currentMappings,
+      };
 
-         // Create new custom skill
-         const newCustomSkill = {
-            skill: skill,
-            experienceMappings:
-               userDetails.experience?.map((exp) => exp.title) || [],
-         };
+      // Remove from generated skills
+      setAnalysis((prev) => ({
+         ...prev,
+         technicalSkills: prev.technicalSkills.filter((s) => s !== skill),
+      }));
 
-         // Create updated user details
-         const updatedUserDetails = {
-            ...userDetails,
-            customSkills: [...(userDetails.customSkills || []), newCustomSkill],
-         };
-
-         // Save to Firestore using UserDetailsService
-         await UserDetailsService.saveUserDetails(user.uid, updatedUserDetails);
-
-         // Update Redux store
-         dispatch(setUserDetails(updatedUserDetails));
-
-         toast.success("Skill added to custom skills!");
-      } catch (error) {
-         console.error("Error saving custom skill:", error);
-         toast.error("Failed to save skill. Please try again.");
-      }
+      // Update user details
+      const updatedUserDetails = {
+         ...userDetails,
+         customSkills: [...(userDetails.customSkills || []), newCustomSkill],
+      };
+      await UserDetailsService.saveUserDetails(user.uid, updatedUserDetails);
+      dispatch(setUserDetails(updatedUserDetails));
    };
 
    // Move consolidateSkills outside useEffect
@@ -434,14 +513,15 @@ export default function JobDescriptionAnalyzer() {
 
    // Add useEffect to run consolidation when analysis or customSkills change
    useEffect(() => {
-      if (analysis?.technicalSkills || userDetails?.customSkills) {
+      // Only run when we have necessary data and avoid unnecessary updates
+      const hasSkills =
+         analysis?.technicalSkills?.length > 0 ||
+         userDetails?.customSkills?.length > 0;
+
+      if (hasSkills && !isAnalyzing) {
          consolidateSkills();
       }
-   }, [
-      analysis?.technicalSkills,
-      userDetails?.customSkills,
-      consolidateSkills,
-   ]);
+   }, [analysis?.technicalSkills, userDetails?.customSkills, isAnalyzing]);
 
    // When user modifies mappings
    const handleUpdateMapping = (skillName, expTitle, isChecked) => {
@@ -478,38 +558,24 @@ export default function JobDescriptionAnalyzer() {
    };
 
    const handleDeleteCustomSkill = async (skillToDelete) => {
-      try {
-         if (!user?.uid || !userDetails) return;
-
-         // Create updated user details with the skill removed
-         const updatedUserDetails = {
-            ...userDetails,
-            customSkills: userDetails.customSkills.filter(
-               (skill) => skill.skill !== skillToDelete
-            ),
-         };
-
-         // Save to Firestore
-         await UserDetailsService.saveUserDetails(user.uid, updatedUserDetails);
-
-         // Update Redux store with user details
-         dispatch(setUserDetails(updatedUserDetails));
-
-         // Update combined skills
-         const updatedCombinedSkills = combinedSkills.filter(
+      // Remove from custom skills
+      const updatedUserDetails = {
+         ...userDetails,
+         customSkills: userDetails.customSkills.filter(
             (skill) => skill.skill !== skillToDelete
-         );
-         setCombinedSkills(updatedCombinedSkills);
-         dispatch({
-            type: "skills/setCombinedSkills",
-            payload: updatedCombinedSkills,
-         });
+         ),
+      };
 
-         toast.success("Skill deleted successfully");
-      } catch (error) {
-         console.error("Error deleting skill:", error);
-         toast.error("Failed to delete skill");
+      // Add back to generated skills if it exists in analysis
+      if (analysis?.technicalSkills.includes(skillToDelete)) {
+         setAnalysis((prev) => ({
+            ...prev,
+            technicalSkills: [...prev.technicalSkills, skillToDelete],
+         }));
       }
+
+      await UserDetailsService.saveUserDetails(user.uid, updatedUserDetails);
+      dispatch(setUserDetails(updatedUserDetails));
    };
 
    // useEffect(() => {
@@ -617,7 +683,11 @@ export default function JobDescriptionAnalyzer() {
                            {combinedSkills.map((skillObj, index) => (
                               <div
                                  key={index}
-                                 className="w-[98%] lg:w-[23%] group relative border border-slate-200 py-2 px-3 bg-purple-50 rounded-xl"
+                                 className={`w-[98%] lg:w-[23%] group relative border ${
+                                    skillObj.type === "custom"
+                                       ? "border-green-500 bg-green-50"
+                                       : "border-slate-200 bg-purple-50"
+                                 } py-2 px-3 rounded-xl`}
                               >
                                  <div className="relative flex items-center gap-1">
                                     <input
@@ -705,28 +775,40 @@ export default function JobDescriptionAnalyzer() {
                                                       >
                                                          <input
                                                             type="checkbox"
-                                                            id={`mapping-${index}-${i}`}
-                                                            checked={skillMappings[
-                                                               index
-                                                            ]?.experienceMappings.includes(
-                                                               exp.title
-                                                            )}
-                                                            disabled={
-                                                               isTitleBased
+                                                            checked={
+                                                               skillObj.type ===
+                                                               "custom"
+                                                                  ? userDetails.customSkills
+                                                                       .find(
+                                                                          (
+                                                                             cs
+                                                                          ) =>
+                                                                             cs.skill ===
+                                                                             skillObj.skill
+                                                                       )
+                                                                       ?.experienceMappings?.includes(
+                                                                          exp.title
+                                                                       )
+                                                                  : skillMappings
+                                                                       .find(
+                                                                          (m) =>
+                                                                             m.skill ===
+                                                                             skillObj.skill
+                                                                       )
+                                                                       ?.experienceMappings?.includes(
+                                                                          exp.title
+                                                                       )
                                                             }
                                                             onChange={(e) =>
                                                                handleSkillMappingChange(
                                                                   skillObj.skill,
                                                                   exp.title,
                                                                   e.target
-                                                                     .checked
+                                                                     .checked,
+                                                                  skillObj.type ===
+                                                                     "custom"
                                                                )
                                                             }
-                                                            className={`rounded border-slate-500 text-blue-500 focus:ring-blue-500 ${
-                                                               isTitleBased
-                                                                  ? "cursor-not-allowed"
-                                                                  : ""
-                                                            }`}
                                                          />
                                                          <label
                                                             htmlFor={`mapping-${index}-${i}`}
