@@ -685,8 +685,8 @@ export default function JobDescriptionAnalyzer() {
                                  key={index}
                                  className={`w-[98%] lg:w-[23%] group relative border ${
                                     skillObj.type === "custom"
-                                       ? "border-green-500 bg-green-50"
-                                       : "border-slate-200 bg-purple-50"
+                                       ? "border-green-200 bg-green-100/70"
+                                       : "border-slate-200 bg-purple-100/70"
                                  } py-2 px-3 rounded-xl`}
                               >
                                  <div className="relative flex items-center gap-1">
