@@ -764,6 +764,8 @@ export default function JobDescriptionAnalyzer() {
                                                    const isTitleBased =
                                                       exp.responsibilityType ===
                                                       "titleBased";
+                                                   const inputId = `mapping-${index}-${i}`;
+
                                                    return (
                                                       <div
                                                          key={i}
@@ -774,6 +776,7 @@ export default function JobDescriptionAnalyzer() {
                                                          }`}
                                                       >
                                                          <input
+                                                            id={inputId} // 👈 give the input an ID
                                                             type="checkbox"
                                                             checked={
                                                                skillObj.type ===
@@ -811,7 +814,7 @@ export default function JobDescriptionAnalyzer() {
                                                             }
                                                          />
                                                          <label
-                                                            htmlFor={`mapping-${index}-${i}`}
+                                                            htmlFor={inputId} // 👈 match it here
                                                             className={`text-sm ${
                                                                isTitleBased
                                                                   ? "cursor-not-allowed"
