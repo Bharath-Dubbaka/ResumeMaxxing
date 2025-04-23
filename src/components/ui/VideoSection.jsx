@@ -40,7 +40,7 @@ const VideoSection = () => {
             <div className="w-full md:w-3/5 aspect-video mb-6 md:mb-0 shadow-2xl">
                <iframe
                   className="w-full h-full rounded-md"
-                  src="https://www.youtube.com/embed/RrA9dKEpL94?autoplay=1&mute=1"
+                  src="https://www.youtube.com/embed/UiOkeCEpL94?autoplay=1&mute=1"
                   title="How to Build Your AI Resume"
                   frameBorder="0"
                   allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
