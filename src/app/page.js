@@ -163,7 +163,7 @@ export default function Home() {
                      <div className="w-full lg:w-3/5 aspect-video mb-6 md:mb-0 shadow-2xl">
                         <iframe
                            className="w-full h-full rounded-md"
-                           src="https://www.youtube.com/embed/RrA9dKEpL94?&vq=hd1080&modestbranding=1&rel=0"
+                           src="https://www.youtube.com/embed/zRR9SISA7sw?&vq=hd1080&modestbranding=1&rel=0"
                            title="How to Build Your AI Resume"
                            frameBorder="0"
                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
