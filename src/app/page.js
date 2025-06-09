@@ -1,10 +1,5 @@
 "use client";
-import { Button } from "../components/ui/button";
-import FeatureCard from "../components/ui/FeaturedCard";
-import VideoSection from "../components/ui/VideoSection";
-import Link from "next/link";
-import { auth } from "../services/firebase";
-import { GoogleAuthProvider, signInWithPopup } from "firebase/auth";
+
 import { QuotaService } from "../services/QuotaService";
 import { UserDetailsService } from "../services/UserDetailsService";
 import { useRouter } from "next/navigation";
@@ -14,12 +9,10 @@ import { setUserDetails, setUserQuota } from "../store/slices/firebaseSlice";
 import { useState } from "react";
 import { Spinner } from "../components/ui/spinner";
 import { useEffect } from "react";
-import HowItWorks from "../components/ui/HowItWorks";
 import ProblemsWeSolve from "../components/ui/ProblemsWeSolve";
 import HowWeSolve from "../components/ui/HowWeSolve";
 import TypeWriting from "../components/ui/TypeWriting";
 import AuthService from "../services/AuthService";
-import { StickyScrollRevealDemo } from "../components/aceternityUI/StickyScrollRevealDemo";
 import Whyus from "../components/ui/Whyus";
 
 export default function Home() {
@@ -29,6 +22,7 @@ export default function Home() {
    const dispatch = useDispatch();
    const { user } = useSelector((state) => state.auth);
 
+   
    useEffect(() => {
       if (user) {
          const unsubscribe = QuotaService.listenToUserQuota(

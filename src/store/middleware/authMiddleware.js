@@ -8,7 +8,21 @@ import { UserDetailsService } from "../../services/UserDetailsService";
 export const createAuthMiddleware = (store) => {
    onAuthStateChanged(auth, async (firebaseUser) => {
       if (firebaseUser) {
+         // test development only logs for token of user from firebase
+         // const token = await firebaseUser.getIdToken();
+         // console.log("Your Firebase Token:", token);
+
          try {
+            //test API call for development only logs for token of user from firebase
+            // const response = await fetch("http://localhost:9999/", {
+            //    headers: {
+            //       Authorization: `Bearer ${token}`,
+            //       "Content-Type": "application/json",
+            //    },
+            // });
+            // const data = await response.json();
+            // console.log("API Response:", data);
+
             const userData = {
                email: firebaseUser.email || "",
                name: firebaseUser.displayName || "",
