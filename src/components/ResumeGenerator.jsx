@@ -196,13 +196,17 @@ const ResumeGenerator = () => {
          return;
       }
 
-      const hasQuota = await QuotaService.checkQuota(user.uid, "generates");
+      //checking if quota available or not
+      const quota = await QuotaService.getUserQuota();
+      const generatesUsed = quota?.generates?.used ?? 0;
+      const generatesLimit = quota?.generates?.limit ?? 0;
+      const hasQuota = generatesUsed < generatesLimit;
       if (!hasQuota) {
          toast.error("Generate quota exceeded. Please upgrade your plan.");
          console.log("Generate quota exceeded. Please upgrade your plan.");
-
-         return;
+         throw new Error("Generate quota exceeded. Please upgrade your plan.");
       }
+
       const allSkills = getAllSkills();
 
       setLoading(true);
@@ -242,7 +246,7 @@ const ResumeGenerator = () => {
          setResumeContent(newResumeContent);
          setRefreshPreview((prev) => !prev);
 
-         await QuotaService.incrementUsage(user.uid, "generates");
+         await QuotaService.incrementUsage("generates");
       } catch (error) {
          console.error("Error generating resume:", error);
          console.log("Failed to generate resume. Please try again.");
@@ -290,7 +294,7 @@ const ResumeGenerator = () => {
          };
 
          // Save to Firestore
-         await UserDetailsService.saveUserDetails(user.uid, updatedUserDetails);
+         await UserDetailsService.saveUserDetails(updatedUserDetails);
 
          // Update Redux store with the correct action
          dispatch(setUserDetails(updatedUserDetails));
@@ -307,11 +311,15 @@ const ResumeGenerator = () => {
 
    const downloadAsWord = async (template) => {
       // Check quota before proceeding
-      const hasQuota = await QuotaService.checkQuota(user?.uid, "downloads");
+      const quota = await QuotaService.getUserQuota();
+      const downloadsUsed = quota?.downloads?.used ?? 0;
+      const downloadsLimit = quota?.downloads?.limit ?? 0;
+      const hasQuota = downloadsUsed < downloadsLimit;
       if (!hasQuota) {
-         console.log("Download quota exceeded. Please upgrade your plan.");
          toast.error("Download quota exceeded. Please upgrade your plan.");
-         return;
+
+         console.log("Download quota exceeded. Please upgrade your plan.");
+         throw new Error("Download quota exceeded. Please upgrade your plan.");
       }
 
       try {
@@ -361,7 +369,7 @@ const ResumeGenerator = () => {
             window.URL.revokeObjectURL(url);
          });
 
-         await QuotaService.incrementUsage(user.uid, "downloads");
+         await QuotaService.incrementUsage("downloads");
 
          // Refresh the quota display
          //  await refreshUserQuota();

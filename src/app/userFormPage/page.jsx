@@ -41,10 +41,8 @@ function UserFormContent() {
       try {
          if (!user) return;
          setIsSaving(true);
-         await UserDetailsService.saveUserDetails(user.uid, details);
-         const updatedDetails = await UserDetailsService.getUserDetails(
-            user.uid
-         );
+         await UserDetailsService.saveUserDetails(details);
+         const updatedDetails = await UserDetailsService.getUserDetails();
          dispatch(setUserDetails(updatedDetails));
          toast.success("Saved your details to Master Template");
          router.push("/dashboard");

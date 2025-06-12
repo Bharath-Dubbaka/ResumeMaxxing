@@ -8,9 +8,9 @@ import { UserDetailsService } from "../../services/UserDetailsService";
 export const createAuthMiddleware = (store) => {
    onAuthStateChanged(auth, async (firebaseUser) => {
       if (firebaseUser) {
-         // test development only logs for token of user from firebase
-         // const token = await firebaseUser.getIdToken();
-         // console.log("Your Firebase Token:", token);
+         const token = await firebaseUser.getIdToken();
+         //test API call for development only logs for token of user from firebase
+         console.log("Your Firebase Token:", token);
 
          try {
             //test API call for development only logs for token of user from firebase
@@ -22,7 +22,6 @@ export const createAuthMiddleware = (store) => {
             // });
             // const data = await response.json();
             // console.log("API Response:", data);
-
             const userData = {
                email: firebaseUser.email || "",
                name: firebaseUser.displayName || "",
@@ -32,10 +31,11 @@ export const createAuthMiddleware = (store) => {
 
             store.dispatch(setUser(userData));
 
-            const quota = await QuotaService.getUserQuota(firebaseUser.uid);
-            const details = await UserDetailsService.getUserDetails(
-               firebaseUser.uid
-            );
+            // Fetch from Express backend
+            const [quota, details] = await Promise.all([
+               QuotaService.getUserQuota(),
+               UserDetailsService.getUserDetails(),
+            ]);
 
             store.dispatch(setUserQuota(quota));
             store.dispatch(setUserDetails(details));
@@ -45,10 +45,9 @@ export const createAuthMiddleware = (store) => {
       } else {
          store.dispatch(setUser(null));
       }
+
       store.dispatch(setLoading(false));
    });
 
-   return (next) => (action) => {
-      return next(action);
-   };
+   return (next) => (action) => next(action);
 };

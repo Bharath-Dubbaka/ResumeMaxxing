@@ -1,9 +1,3 @@
-// :::Single Source of Truth:::
-// All authentication logic is in one place
-// Easier to maintain and update
-// Consistent behavior across components
-// Shared authentication state using Redux
-
 import { auth } from "./firebase";
 import { GoogleAuthProvider, signInWithPopup } from "firebase/auth";
 import { QuotaService } from "./QuotaService";
@@ -18,22 +12,11 @@ class AuthService {
    ) {
       const provider = new GoogleAuthProvider();
       const result = await signInWithPopup(auth, provider);
-
-      // Get the ID token here
       const idToken = await result.user.getIdToken();
-      console.log("Firebase ID Token:", idToken); // <-- Send this to your backend
 
-      // Optional: Store or send to backend
-      localStorage.setItem("firebaseToken", idToken); // You can read this from Postman too
+      localStorage.setItem("firebaseToken", idToken);
 
-      // Send to backend (optional, for example)
-      await fetch("http://localhost:9999/", {
-         headers: {
-            Authorization: `Bearer ${idToken}`,
-         },
-      });
-
-      // Update user data
+      // Set Redux user info
       const userData = {
          email: result.user.email,
          name: result.user.displayName,
@@ -42,12 +25,13 @@ class AuthService {
       };
       dispatch(setUser(userData));
 
-      // Get and update quota
-      const quota = await QuotaService.getUserQuota(result.user.uid);
-      dispatch(setUserQuota(quota));
+      // Fetch userDetails and quota from Express backend
+      const [quota, details] = await Promise.all([
+         QuotaService.getUserQuota(),
+         UserDetailsService.getUserDetails(),
+      ]);
 
-      // Get and update user details
-      const details = await UserDetailsService.getUserDetails(result.user.uid);
+      dispatch(setUserQuota(quota));
       dispatch(setUserDetails(details));
 
       return { userData, details };
@@ -83,11 +67,7 @@ class AuthService {
             actions.setUserDetails
          );
 
-         if (details) {
-            router.push("/dashboard");
-         } else {
-            router.push("/userFormPage");
-         }
+         router.push(details ? "/dashboard" : "/userFormPage");
       } catch (error) {
          console.error("Auth flow error:", error);
          throw error;

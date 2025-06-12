@@ -22,20 +22,19 @@ export default function Home() {
    const dispatch = useDispatch();
    const { user } = useSelector((state) => state.auth);
 
-   
-   useEffect(() => {
-      if (user) {
-         const unsubscribe = QuotaService.listenToUserQuota(
-            user.uid,
-            (quota) => {
-               dispatch(setUserQuota(quota)); // Dispatch action to update quota in Redux store
-            }
-         );
+   // useEffect(() => {
+   //    if (user) {
+   //       const unsubscribe = QuotaService.listenToUserQuota(
+   //          user.uid,
+   //          (quota) => {
+   //             dispatch(setUserQuota(quota)); // Dispatch action to update quota in Redux store
+   //          }
+   //       );
 
-         // Cleanup the listener on unmount
-         return () => unsubscribe();
-      }
-   }, [user, dispatch]);
+   //       // Cleanup the listener on unmount
+   //       return () => unsubscribe();
+   //    }
+   // }, [user, dispatch]);
 
    const handleGetStarted = async () => {
       try {

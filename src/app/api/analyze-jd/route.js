@@ -14,13 +14,16 @@ export async function POST(request) {
          );
       }
 
-      // Check quota availability
-      const hasQuota = await QuotaService.checkQuota(user.uid, "parsing");
+      //checking if quota available or not
+      const quota = await QuotaService.getUserQuota();
+
+      const parsingUsed = quota?.parsing?.used ?? 0;
+      const parsingLimit = quota?.parsing?.limit ?? 0;
+
+      const hasQuota = parsingUsed < parsingLimit;
+
       if (!hasQuota) {
-         return Response.json(
-            { error: "Parsing quota exceeded. Please upgrade your plan." },
-            { status: 403 }
-         );
+         throw new Error("Parsing quota exceeded. Please upgrade your plan.");
       }
 
       const model = genAI.getGenerativeModel({ model: "gemini-pro" });
@@ -57,7 +60,7 @@ export async function POST(request) {
       }
 
       // Increment quota usage
-      await QuotaService.incrementUsage(user.uid, "parsing");
+      await QuotaService.incrementUsage("parsing");
 
       return Response.json(analysisResult);
    } catch (error) {

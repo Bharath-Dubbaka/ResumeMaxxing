@@ -9,22 +9,22 @@ const FirestoreSubscription = () => {
    const dispatch = useDispatch();
    const { user } = useSelector((state) => state.auth);
 
-   useEffect(() => {
-      let unsubscribe;
+   // useEffect(() => {
+   //    let unsubscribe;
 
-      if (user?.uid) {
-         unsubscribe = QuotaService.listenToUserQuota(user.uid, (quota) => {
-            console.log("Quota updated:", quota); // Debug log
-            dispatch(setUserQuota(quota));
-         });
-      }
+   //    if (user?.uid) {
+   //       unsubscribe = QuotaService.listenToUserQuota(user.uid, (quota) => {
+   //          console.log("Quota updated:", quota); // Debug log
+   //          dispatch(setUserQuota(quota));
+   //       });
+   //    }
 
-      return () => {
-         if (unsubscribe) {
-            unsubscribe();
-         }
-      };
-   }, [user, dispatch]);
+   //    return () => {
+   //       if (unsubscribe) {
+   //          unsubscribe();
+   //       }
+   //    };
+   // }, [user, dispatch]);
 
    return null; // This component doesn't render anything
 };
