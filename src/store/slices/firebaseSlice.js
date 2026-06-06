@@ -1,3 +1,5 @@
+//store/slices/firebaseSlice
+
 import { createSlice } from "@reduxjs/toolkit";
 
 const initialState = {
