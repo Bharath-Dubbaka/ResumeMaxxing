@@ -44,6 +44,16 @@ const UserForm = ({ onSave, onCancel, initialData, user, isEditing }) => {
          customSkills: [],
       };
    });
+// Add this useEffect right after:
+useEffect(() => {
+  if (initialData) {
+    setUserDetails({
+      ...initialData,
+      customSkills: initialData.customSkills || [],
+    });
+  }
+}, [initialData]); // re-syncs whenever Redux delivers the data
+
 
    const [openDropdown, setOpenDropdown] = useState(null);
    const dropdownRef = useRef(null);

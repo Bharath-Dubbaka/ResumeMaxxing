@@ -9,15 +9,7 @@ import {
 import { Spinner } from "../components/ui/spinner";
 import { useSelector, useDispatch } from "react-redux";
 import { QuotaService } from "../services/QuotaService";
-
-// ── SWITCHED TO GEMINI (OpenAI hit 429 quota limit) ──
-// To switch back to OpenAI in future:
-//   1. Uncomment the OpenAI import + instance below
-//   2. Comment out the genAI import + instance
-//   3. Swap generateResponsibilities and generateProfessionalSummary back to the OpenAI versions
-// import OpenAI from "openai";
-
-import { GoogleGenerativeAI } from "@google/generative-ai";
+import OpenAI from "openai";
 import ResumePreview from "./ResumePreview";
 import { UserDetailsService } from "../services/UserDetailsService";
 import { setUserDetails } from "../store/slices/firebaseSlice";
@@ -32,16 +24,20 @@ import {
   BorderStyle,
 } from "docx";
 import { toast, Toaster } from "sonner";
-
-// ── OpenAI instance (commented out - switch back if needed) ──
-// const openai = new OpenAI({
-//    apiKey: process.env.NEXT_PUBLIC_OPENAI_API_KEY,
-//    dangerouslyAllowBrowser: true,
-// });
-
+import { GoogleGenerativeAI } from "@google/generative-ai";
 const genAI = new GoogleGenerativeAI(
   process.env.NEXT_PUBLIC_GOOGLE_GEMINI_API_KEY,
 );
+const getModel = () =>
+  genAI.getGenerativeModel({
+    model: "gemini-2.5-flash",
+    generationConfig: { responseMimeType: "application/json" },
+  });
+
+const openai = new OpenAI({
+  apiKey: process.env.NEXT_PUBLIC_OPENAI_API_KEY,
+  dangerouslyAllowBrowser: true,
+});
 
 const calculateTotalExperience = (experiences) => {
   let totalMonths = 0;
@@ -101,10 +97,6 @@ const ResumeGenerator = () => {
   };
 
   const generateResponsibilities = async (experience) => {
-    console.log("Current experience:", experience.title);
-    console.log("Combined skills from Redux:", combinedSkills);
-
-    // Just deduplicate the skills array when mapping
     const relevantSkills = [
       ...new Set(
         combinedSkills
@@ -115,54 +107,25 @@ const ResumeGenerator = () => {
       ),
     ];
 
-    console.log("Relevant skills for", experience.title, ":", relevantSkills);
-
-    // Keep the original prompt logic
     const prompt =
       experience.responsibilityType === "skillBased"
         ? `Generate EXACTLY 8 detailed technical responsibilities that:
-          1. Use these technical skills: ${relevantSkills.join(", ")}
-          2. MUST NOT mention or reference the job title
-          3. Focus purely on technical implementation and achievements using these skills
-          4. Each responsibility should demonstrate hands-on work with these specific technologies
-          5. Do NOT add any skills or technologies that are not in the provided list
-          Return ONLY an array of 8 responsibilities in JSON format.`
+        1. Use these technical skills: ${relevantSkills.join(", ")}
+        2. MUST NOT mention or reference the job title
+        3. Focus purely on technical implementation and achievements using these skills
+        4. Each responsibility should demonstrate hands-on work with these specific technologies
+        5. Do NOT add any skills or technologies not in the provided list
+        Return ONLY a JSON object: { "responsibilities": [array of 8 strings] }`
         : `Generate EXACTLY 8 detailed responsibilities that:
-          1. Are specific to the role of ${experience.title}
-          2. MUST NOT mention any technical skills
-          3. Focus on business impact and role-specific achievements
-          4. Describe typical duties and accomplishments
-       Return ONLY an array of 8 responsibilities in JSON format.`;
+        1. Are specific to the role of ${experience.title}
+        2. MUST NOT mention any technical skills
+        3. Focus on business impact and role-specific achievements
+        4. Describe typical duties and accomplishments
+        Return ONLY a JSON object: { "responsibilities": [array of 8 strings] }`;
 
-    // ── SWITCHED TO GEMINI ──
-    // Old OpenAI approach (commented out — switch back if needed):
-    // const completion = await openai.chat.completions.create({
-    //    model: "gpt-3.5-turbo",
-    //    messages: [
-    //       {
-    //          role: "system",
-    //          content:
-    //             "You are a professional resume writer. Generate specific, detailed responsibilities in JSON format. Return ONLY the array of responsibilities, no additional text.",
-    //       },
-    //       {
-    //          role: "user",
-    //          content: prompt,
-    //       },
-    //    ],
-    //    temperature: 0.7,
-    //    max_tokens: 1000,
-    //    response_format: { type: "json_object" },
-    // });
-    // const response = JSON.parse(
-    //    completion.choices[0].message.content || "{}"
-    // );
-    // return response.responsibilities || [];
-
-    const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
+    const model = getModel();
     const result = await model.generateContent(prompt);
-    const responseText = result.response.text();
-    const cleanedJson = responseText.replace(/```json|```/g, "").trim();
-    const response = JSON.parse(cleanedJson);
+    const response = JSON.parse(result.response.text());
     return response.responsibilities || [];
   };
 
@@ -173,46 +136,17 @@ const ResumeGenerator = () => {
   ) => {
     const allSkills = getAllSkills();
 
-    console.log(technicalSkills, "technicalSkillsINSUMM");
-    console.log(latestRole, "latestRoleINSUMM");
-    console.log(totalExperience, "totalExperienceINSUMM");
     const prompt = `Generate a detailed professional summary that:
-      1. Highlights ${totalExperience} years of total experience
-      2. Incorporates key technical skills: ${allSkills.join(", ")}
-      3. Mentions current/latest role as ${latestRole}
-      4. Focuses on career progression and expertise
-      5. Is approximately 6-8 sentences long
-      Return ONLY the summary text in JSON format.`;
+    1. Highlights ${totalExperience} years of total experience
+    2. Incorporates key technical skills: ${allSkills.join(", ")}
+    3. Mentions current/latest role as ${latestRole}
+    4. Focuses on career progression and expertise
+    5. Is approximately 6-8 sentences long
+    Return ONLY a JSON object: { "summary": "the summary text here" }`;
 
-    // ── SWITCHED TO GEMINI ──
-    // Old OpenAI approach (commented out — switch back if needed):
-    // const completion = await openai.chat.completions.create({
-    //    model: "gpt-3.5-turbo",
-    //    messages: [
-    //       {
-    //          role: "system",
-    //          content:
-    //             "You are a professional resume writer. Generate a compelling professional summary in JSON format. Return ONLY the summary text.",
-    //       },
-    //       {
-    //          role: "user",
-    //          content: prompt,
-    //       },
-    //    ],
-    //    temperature: 0.7,
-    //    max_tokens: 500,
-    //    response_format: { type: "json_object" },
-    // });
-    // const response = JSON.parse(
-    //    completion.choices[0].message.content || "{}"
-    // );
-    // return response.summary || "";
-
-    const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
+    const model = getModel();
     const result = await model.generateContent(prompt);
-    const responseText = result.response.text();
-    const cleanedJson = responseText.replace(/```json|```/g, "").trim();
-    const response = JSON.parse(cleanedJson);
+    const response = JSON.parse(result.response.text());
     return response.summary || "";
   };
 
@@ -223,25 +157,27 @@ const ResumeGenerator = () => {
       return;
     }
 
-    //checking if quota available or not
-    const quota = await QuotaService.getUserQuota();
-    const generatesUsed = quota?.generates?.used ?? 0;
-    const generatesLimit = quota?.generates?.limit ?? 0;
-    const hasQuota = generatesUsed < generatesLimit;
+    const hasQuota = await QuotaService.checkQuota(user.uid, "generates");
     if (!hasQuota) {
       toast.error("Generate quota exceeded. Please upgrade your plan.");
       console.log("Generate quota exceeded. Please upgrade your plan.");
-      throw new Error("Generate quota exceeded. Please upgrade your plan.");
-    }
 
+      return;
+    }
     const allSkills = getAllSkills();
 
     setLoading(true);
     try {
       console.log("Using combined skills from Redux:", combinedSkills);
-      const generatedExperiences = await Promise.all(
-        userDetails.experience.map((exp) => generateResponsibilities(exp)),
-      );
+      // const generatedExperiences = await Promise.all(
+      //   userDetails.experience.map((exp) => generateResponsibilities(exp)),
+      // );
+
+      const generatedExperiences = [];
+      for (const exp of userDetails.experience) {
+        const responsibilities = await generateResponsibilities(exp);
+        generatedExperiences.push(responsibilities);
+      }
 
       // Get latest role for professional summary
       const latestRole = userDetails.experience[0]?.title || "Professional";
@@ -271,7 +207,7 @@ const ResumeGenerator = () => {
       setResumeContent(newResumeContent);
       setRefreshPreview((prev) => !prev);
 
-      await QuotaService.incrementUsage("generates");
+      await QuotaService.incrementUsage(user.uid, "generates");
     } catch (error) {
       console.error("Error generating resume:", error);
       console.log("Failed to generate resume. Please try again.");
@@ -319,7 +255,7 @@ const ResumeGenerator = () => {
       };
 
       // Save to Firestore
-      await UserDetailsService.saveUserDetails(updatedUserDetails);
+      await UserDetailsService.saveUserDetails(user.uid, updatedUserDetails);
 
       // Update Redux store with the correct action
       dispatch(setUserDetails(updatedUserDetails));
@@ -336,15 +272,11 @@ const ResumeGenerator = () => {
 
   const downloadAsWord = async (template) => {
     // Check quota before proceeding
-    const quota = await QuotaService.getUserQuota();
-    const downloadsUsed = quota?.downloads?.used ?? 0;
-    const downloadsLimit = quota?.downloads?.limit ?? 0;
-    const hasQuota = downloadsUsed < downloadsLimit;
+    const hasQuota = await QuotaService.checkQuota(user?.uid, "downloads");
     if (!hasQuota) {
-      toast.error("Download quota exceeded. Please upgrade your plan.");
-
       console.log("Download quota exceeded. Please upgrade your plan.");
-      throw new Error("Download quota exceeded. Please upgrade your plan.");
+      toast.error("Download quota exceeded. Please upgrade your plan.");
+      return;
     }
 
     try {
@@ -388,7 +320,7 @@ const ResumeGenerator = () => {
         window.URL.revokeObjectURL(url);
       });
 
-      await QuotaService.incrementUsage("downloads");
+      await QuotaService.incrementUsage(user.uid, "downloads");
 
       // Refresh the quota display
       //  await refreshUserQuota();

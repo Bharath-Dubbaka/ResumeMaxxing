@@ -16,12 +16,7 @@ import { setSkills } from "../store/slices/skillsSlice";
 import { setSkillsMapped } from "../store/slices/skillsSlice";
 import { MapIcon, Trash2, PlusCircle } from "lucide-react";
 import { toast, Toaster } from "sonner";
-
-// ── SWITCHED TO GEMINI (OpenAI hit 429 quota limit) ──
-// To switch back to OpenAI in future: uncomment the import below,
-// comment out genAI, and swap the analyzeJobDescription function back.
-// import OpenAI from "openai";
-
+import OpenAI from "openai";
 import { UserDetailsService } from "../services/UserDetailsService";
 import { setUserDetails } from "../store/slices/firebaseSlice";
 
@@ -29,11 +24,10 @@ const genAI = new GoogleGenerativeAI(
   process.env.NEXT_PUBLIC_GOOGLE_GEMINI_API_KEY,
 );
 
-// ── OpenAI instance (commented out - switch back if needed) ──
-// const openai = new OpenAI({
-//    apiKey: process.env.NEXT_PUBLIC_OPENAI_API_KEY,
-//    dangerouslyAllowBrowser: true,
-// });
+const openai = new OpenAI({
+  apiKey: process.env.NEXT_PUBLIC_OPENAI_API_KEY,
+  dangerouslyAllowBrowser: true,
+});
 
 export default function JobDescriptionAnalyzer() {
   const { user } = useSelector((state) => state.auth);
@@ -387,84 +381,117 @@ export default function JobDescriptionAnalyzer() {
     );
   };
 
-  //ANALYZE
+  //ANALYZE GPT MODEL
+  // const analyzeJobDescription = async () => {
+  //    setIsAnalyzing(true);
+  //    try {
+  //       if (!user?.uid) {
+  //          throw new Error("User not authenticated");
+  //       }
+
+  //       const hasQuota = await QuotaService.checkQuota(user.uid, "parsing");
+  //       if (!hasQuota) {
+  //          throw new Error(
+  //             "Parsing quota exceeded. Please upgrade your plan."
+  //          );
+  //       }
+
+  //       const API_KEY = process.env.NEXT_PUBLIC_GOOGLE_GEMINI_API_KEY;
+  //       const API_URL =
+  //          "https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent";
+
+  //       const prompt = `Analyze this job description as a professional resume writer. Return ONLY a JSON object in this exact format, no other text:
+  //          {
+  //             "technicalSkills": [array of strings],
+  //             "yearsOfExperience": number,
+  //             "roleDescriptions": [
+  //                {
+  //                   "title": string,
+  //                   "organization": string,
+  //                   "description": string
+  //                }
+  //             ]
+  //          }
+
+  //          Job Description: ${jobDescription}`;
+
+  //       const completion = await openai.chat.completions.create({
+  //          model: "gpt-3.5-turbo",
+  //          messages: [
+  //             {
+  //                role: "system",
+  //                content:
+  //                   "You are a professional resume writer. Analyze job descriptions and return information in JSON format. Return ONLY the JSON object, no additional text.",
+  //             },
+  //             {
+  //                role: "user",
+  //                content: prompt,
+  //             },
+  //          ],
+  //          temperature: 0.7,
+  //          max_tokens: 1000,
+  //          response_format: { type: "json_object" },
+  //       });
+
+  //       const analysisResult = JSON.parse(
+  //          completion.choices[0].message.content || "{}"
+  //       );
+  //       setAnalysis(analysisResult);
+  //       dispatch(setSkills(analysisResult.technicalSkills)); // Instead of dispatch(analysisResult.skills)
+  //       await QuotaService.incrementUsage(user.uid, "parsing");
+  //       console.log(analysisResult, "analysisResultfromANAlyser");
+  //       return analysisResult;
+  //    } catch (error) {
+  //       console.error("Analysis of JD error:", error);
+  //       console.log(error.message);
+  //       toast.error(error.message);
+  //    } finally {
+  //       setIsAnalyzing(false);
+  //    }
+  // };
+
   const analyzeJobDescription = async () => {
     setIsAnalyzing(true);
     try {
-      if (!user?.uid) {
-        throw new Error("User not authenticated");
-      }
+      if (!user?.uid) throw new Error("User not authenticated");
 
-      //checking if quota available or not
-      const quota = await QuotaService.getUserQuota();
-
-      const parsingUsed = quota?.parsing?.used ?? 0;
-      const parsingLimit = quota?.parsing?.limit ?? 0;
-
-      const hasQuota = parsingUsed < parsingLimit;
-
-      if (!hasQuota) {
-        toast.error("parsing quota exceeded. Please upgrade your plan.");
-
+      const hasQuota = await QuotaService.checkQuota(user.uid, "parsing");
+      if (!hasQuota)
         throw new Error("Parsing quota exceeded. Please upgrade your plan.");
-      }
 
-      // ── SWITCHED TO GEMINI ──
-      // Old OpenAI approach (commented out — switch back if needed):
-      // const API_KEY = process.env.NEXT_PUBLIC_GOOGLE_GEMINI_API_KEY;
-      // const API_URL =
-      //    "https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent";
-      //
-      // const completion = await openai.chat.completions.create({
-      //    model: "gpt-3.5-turbo",
-      //    messages: [
-      //       {
-      //          role: "system",
-      //          content:
-      //             "You are a professional resume writer. Analyze job descriptions and return information in JSON format. Return ONLY the JSON object, no additional text.",
-      //       },
-      //       {
-      //          role: "user",
-      //          content: prompt,
-      //       },
-      //    ],
-      //    temperature: 0.7,
-      //    max_tokens: 1000,
-      //    response_format: { type: "json_object" },
-      // });
-      // const analysisResult = JSON.parse(
-      //    completion.choices[0].message.content || "{}"
-      // );
+      const model = genAI.getGenerativeModel({
+        model: "gemini-2.5-flash",
+        generationConfig: {
+          responseMimeType: "application/json",
+        },
+      });
 
-      const prompt = `Analyze this job description as a professional resume writer. Return ONLY a JSON object in this exact format, no other text, no markdown, no backticks:
-{
-   "technicalSkills": [array of strings],
-   "yearsOfExperience": number,
-   "roleDescriptions": [
-      {
-         "title": string,
-         "organization": string,
-         "description": string
-      }
-   ]
-}
+      const prompt = `Analyze this job description as a professional resume writer. Return ONLY a JSON object in this exact format, no other text:
+    {
+      "technicalSkills": [array of strings],
+      "yearsOfExperience": number,
+      "roleDescriptions": [
+        {
+          "title": string,
+          "organization": string,
+          "description": string
+        }
+      ]
+    }
 
-Job Description: ${jobDescription}`;
+    Job Description: ${jobDescription}`;
 
-const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
       const result = await model.generateContent(prompt);
-      const responseText = result.response.text();
-      const cleanedJson = responseText.replace(/```json|```/g, "").trim();
-      const analysisResult = JSON.parse(cleanedJson);
+      const text = result.response.text();
+      const analysisResult = JSON.parse(text);
 
       setAnalysis(analysisResult);
-      dispatch(setSkills(analysisResult.technicalSkills)); // Instead of dispatch(analysisResult.skills)
-      await QuotaService.incrementUsage("parsing");
-      console.log(analysisResult, "analysisResultfromANAlyser");
+      dispatch(setSkills(analysisResult.technicalSkills));
+      await QuotaService.incrementUsage(user.uid, "parsing");
+
       return analysisResult;
     } catch (error) {
       console.error("Analysis of JD error:", error);
-      console.log(error.message);
       toast.error(error.message);
     } finally {
       setIsAnalyzing(false);
@@ -495,7 +522,7 @@ const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
       ...userDetails,
       customSkills: [...(userDetails.customSkills || []), newCustomSkill],
     };
-    await UserDetailsService.saveUserDetails(updatedUserDetails);
+    await UserDetailsService.saveUserDetails(user.uid, updatedUserDetails);
     dispatch(setUserDetails(updatedUserDetails));
   };
 
@@ -582,9 +609,31 @@ const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
       }));
     }
 
-    await UserDetailsService.saveUserDetails(updatedUserDetails);
+    await UserDetailsService.saveUserDetails(user.uid, updatedUserDetails);
     dispatch(setUserDetails(updatedUserDetails));
   };
+
+  // useEffect(() => {
+  //    if (openDropdown !== null && dropdownRef.current) {
+  //       const updatePosition = () => {
+  //          const button = document.querySelector(`[data-index="${openDropdown}"]`);
+  //          if (button) {
+  //             const rect = button.getBoundingClientRect();
+  //             dropdownRef.current.style.top = `${rect.bottom + 10}px`;
+  //             dropdownRef.current.style.left = `${rect.left}px`;
+  //          }
+  //       };
+
+  //       updatePosition();
+  //       window.addEventListener('scroll', updatePosition);
+  //       window.addEventListener('resize', updatePosition);
+
+  //       return () => {
+  //          window.removeEventListener('scroll', updatePosition);
+  //          window.removeEventListener('resize', updatePosition);
+  //       };
+  //    }
+  // }, [openDropdown]);
 
   return (
     <Card className="bg-white/60 shadow-lg border-slate-100 backdrop-blur-2xl rounded-xl">
@@ -596,6 +645,11 @@ const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
       <CardContent className="p-2 md:p-6 bg-transparent">
         <div className="space-y-4">
           {/* User Guide */}
+          {/* <p className="text-sm text-gray-600 bg-yellow-50 p-3 rounded-lg">
+                  Paste a job description below, and our tool will analyze the
+                  key requirements, such as experience, skills, and
+                  qualifications.
+               </p> */}
 
           <Textarea
             placeholder="Preferred 8+ years experience in at least one modern web front-end development. Strong proficiency in Typescript and JavaScript, HTML5, and CSS3.... etc"
@@ -603,6 +657,12 @@ const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
             value={jobDescription}
             onChange={(e) => setJobDescription(e.target.value)}
           />
+
+          {/* Helper Note */}
+          {/* <p className="text-xs text-gray-600">
+                  Tip: Ensure the job description is detailed for more accurate
+                  insights.
+               </p> */}
 
           <Button
             onClick={analyzeJobDescription}
@@ -626,6 +686,30 @@ const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
           </p>
           {analysis && (
             <div className="p-6 space-y-6 border border-slate-300 rounded-lg bg-white">
+              {/* <div className=" flex flex-col sm:flex sm:flex-row-reverse justify-between w-full ">
+                        <div className="min-w-full sm:min-w-[49%] border border-slate-200 p-4 rounded-lg bg-purple-50">
+                           <h5 className="flex font-semibold">
+                              Experience Required:{" "}
+                              <p className="text-gray-700">
+                                 {analysis.yearsOfExperience} years
+                              </p>
+                           </h5>
+                        </div>
+                        <div className="min-w-full sm:min-w-[49%] border border-slate-200 p-4 rounded-lg bg-purple-50">
+                           <h5 className="flex font-semibold">
+                              Your Total Experience:{" "}
+                              <p className="text-gray-700">
+                                 {userDetails?.experience
+                                    ? calculateTotalExperience(
+                                         userDetails.experience
+                                      )
+                                    : 0}{" "}
+                                 years
+                              </p>
+                           </h5>
+                        </div>
+                     </div> */}
+
               <div className="border-t border-slate-300">
                 <h3 className="text-xl font-semibold mb-4  mt-4">
                   Technical Skills:
@@ -689,6 +773,13 @@ const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
                           <div
                             ref={dropdownRef}
                             className="absolute z-[9999] bg-slate-800 text-white rounded-lg shadow-lg p-4 border border-slate-700 space-y-2"
+                            // style={{
+                            //    top: '100%',
+                            //    left: '0',
+                            //    marginTop: '8px',
+                            //    width: '100%',
+                            //    position: 'absolute'
+                            // }}
                           >
                             <h4 className="font-bold text-sm mb-2">
                               Map Skill to:
@@ -764,6 +855,21 @@ const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
                 </div>
               </div>
 
+              {/* <div>
+                        <h3 className="text-lg font-semibold mb-3">
+                           Soft Skills
+                        </h3>
+                        <div className="flex flex-wrap gap-2">
+                           {analysis.softSkills.map((skill, index) => (
+                              <span
+                                 key={index}
+                                 className="px-3 py-1 bg-green-100 text-green-800 rounded-full text-sm"
+                              >
+                                 {skill}
+                              </span>
+                           ))}
+                        </div>
+                     </div> */}
               <div>
                 {" "}
                 <button
@@ -774,6 +880,29 @@ const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
                   Add New Skill
                 </button>
               </div>
+
+              {/* {analysis.roleDescriptions?.length > 0 && (
+                        <div>
+                           <h3 className="text-lg font-semibold mb-3">
+                              Tailored Role Descriptions
+                           </h3>
+                           <div className="space-y-4">
+                              {analysis.roleDescriptions.map((role, index) => (
+                                 <div
+                                    key={index}
+                                    className="p-4 bg-gray-50 rounded-lg"
+                                 >
+                                    <h4 className="font-medium text-gray-900">
+                                       {role.title} at {role.organization}
+                                    </h4>
+                                    <p className="mt-2 text-gray-600">
+                                       {role.description}
+                                    </p>
+                                 </div>
+                              ))}
+                           </div>
+                        </div>
+                     )} */}
             </div>
           )}
         </div>

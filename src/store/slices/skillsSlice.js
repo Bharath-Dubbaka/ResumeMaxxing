@@ -1,3 +1,7 @@
+//store/slices/skillsSlice
+
+
+
 import { createSlice } from "@reduxjs/toolkit";
 
 const initialState = {
