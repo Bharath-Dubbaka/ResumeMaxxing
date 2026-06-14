@@ -1,5 +1,4 @@
-//src/components/ResumeDropzone.jsx
-
+//src/components/ResumeDropZone.jsx
 
 "use client";
 import { useState, useRef, useCallback } from "react";
@@ -158,7 +157,7 @@ function normaliseAndMap(parsed) {
   const allIndices = safe.experience.map((_, i) => i); // [0, 1, 2, ...]
   safe.customSkills = safe.customSkills.map((skillObj) => ({
     ...skillObj,
-    experienceMappings: allIndices.length > 0 ? [...allIndices] : []
+    experienceMappings: allIndices.length > 0 ? [...allIndices] : [],
   }));
 
   console.log("[ResumeDropZone] Final normalised details:", safe);
