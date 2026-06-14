@@ -1,31 +1,35 @@
-import { GoogleGenerativeAI } from "@google/generative-ai";
+// app/api/analyze-jd/route.js
+
+import { GoogleGenAI } from "@google/genai";
 import { QuotaService } from "../../../services/QuotaService";
 
-const genAI = new GoogleGenerativeAI(process.env.GOOGLE_GEMINI_API_KEY);
+const genAI = new GoogleGenAI({
+  apiKey: process.env.NEXT_PUBLIC_GOOGLE_GEMINI_API_KEY,
+});
 
 export async function POST(request) {
-   try {
-      const { jobDescription, user, workExperiences } = await request.json();
+  try {
+    const { jobDescription, user, workExperiences } = await request.json();
 
-      if (!user?.uid) {
-         return Response.json(
-            { error: "User not authenticated" },
-            { status: 401 }
-         );
-      }
+    if (!user?.uid) {
+      return Response.json(
+        { error: "User not authenticated" },
+        { status: 401 },
+      );
+    }
 
-      // Check quota availability
-      const hasQuota = await QuotaService.checkQuota(user.uid, "parsing");
-      if (!hasQuota) {
-         return Response.json(
-            { error: "Parsing quota exceeded. Please upgrade your plan." },
-            { status: 403 }
-         );
-      }
+    // Check quota availability
+    const hasQuota = await QuotaService.checkQuota(user.uid, "parsing");
+    if (!hasQuota) {
+      return Response.json(
+        { error: "Parsing quota exceeded. Please upgrade your plan." },
+        { status: 403 },
+      );
+    }
 
-      const model = genAI.getGenerativeModel({ model: "gemini-pro" });
+    const model = genAI.getGenerativeModel({ model: "gemini-pro" });
 
-      const prompt = `Analyze the following job description and work experiences in detail as you are a professional resume writer, including all the details and responsibilities and skills. Return only a JSON object with these exact keys:
+    const prompt = `Analyze the following job description and work experiences in detail as you are a professional resume writer, including all the details and responsibilities and skills. Return only a JSON object with these exact keys:
       {
          "technicalSkills": [array of strings],
          "yearsOfExperience": number,
@@ -45,26 +49,26 @@ export async function POST(request) {
    
       Return only the JSON object, no additional text or formatting.`;
 
-      const result = await model.generateContent(prompt);
-      const response = await result.response;
-      let analysisResult;
+    const result = await model.generateContent(prompt);
+    const response = await result.response;
+    let analysisResult;
 
-      try {
-         analysisResult = JSON.parse(response.text());
-      } catch (error) {
-         console.error("Error parsing Gemini response:", error);
-         throw new Error("Failed to parse analysis results");
-      }
+    try {
+      analysisResult = JSON.parse(response.text());
+    } catch (error) {
+      console.error("Error parsing Gemini response:", error);
+      throw new Error("Failed to parse analysis results");
+    }
 
-      // Increment quota usage
-      await QuotaService.incrementUsage(user.uid, "parsing");
+    // Increment quota usage
+    await QuotaService.incrementUsage(user.uid, "parsing");
 
-      return Response.json(analysisResult);
-   } catch (error) {
-      console.error("Error analyzing job description:", error);
-      return Response.json(
-         { error: "Failed to analyze job description" },
-         { status: 500 }
-      );
-   }
+    return Response.json(analysisResult);
+  } catch (error) {
+    console.error("Error analyzing job description:", error);
+    return Response.json(
+      { error: "Failed to analyze job description" },
+      { status: 500 },
+    );
+  }
 }

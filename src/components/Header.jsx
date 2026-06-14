@@ -1,3 +1,5 @@
+//src/components/Header.jsx
+
 "use client";
 import { useSelector, useDispatch } from "react-redux";
 import { logout } from "../store/slices/authSlice";
@@ -216,7 +218,7 @@ const Header = () => {
 
       // Add Dashboard and Master Resume links for logged-in users
       if (user && userQuota) {
-         return [...baseItems, "Dashboard", "Master Resume"];
+         return [...baseItems, "Master Resume"];
       }
 
       return baseItems;

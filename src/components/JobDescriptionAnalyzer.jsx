@@ -1,17 +1,20 @@
+//src/components/JobDescriptionAnalyzer.jsx
+
+
 "use client";
 import { useState, useEffect, useRef, useCallback } from "react";
 import { Button } from "../components/ui/button";
 import {
-   Card,
-   CardContent,
-   CardHeader,
-   CardTitle,
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
 } from "../components/ui/card";
 import { Spinner } from "../components/ui/spinner";
 import { Textarea } from "../components/ui/textarea";
 import { useSelector, useDispatch } from "react-redux";
 import { QuotaService } from "../services/QuotaService";
-import { GoogleGenerativeAI } from "@google/generative-ai";
+import { GoogleGenAI } from "@google/genai";
 import { setSkills } from "../store/slices/skillsSlice";
 import { setSkillsMapped } from "../store/slices/skillsSlice";
 import { MapIcon, Trash2, PlusCircle } from "lucide-react";
@@ -19,880 +22,865 @@ import { toast, Toaster } from "sonner";
 import OpenAI from "openai";
 import { UserDetailsService } from "../services/UserDetailsService";
 import { setUserDetails } from "../store/slices/firebaseSlice";
+import Groq from "groq-sdk";
 
-const genAI = new GoogleGenerativeAI(
-   process.env.NEXT_PUBLIC_GOOGLE_GEMINI_API_KEY
-);
-
+const genAI = new GoogleGenAI({
+  apiKey: process.env.NEXT_PUBLIC_GOOGLE_GEMINI_API_KEY,
+});
+const groq = new Groq({
+  apiKey: process.env.NEXT_PUBLIC_GROQ_API_KEY,
+  dangerouslyAllowBrowser: true,
+});
 const openai = new OpenAI({
-   apiKey: process.env.NEXT_PUBLIC_OPENAI_API_KEY,
-   dangerouslyAllowBrowser: true,
+  apiKey: process.env.NEXT_PUBLIC_OPENAI_API_KEY,
+  dangerouslyAllowBrowser: true,
 });
 
+// ─── Step Label ───────────────────────────────────────────────────────────────
+function StepLabel({ number, icon, title, badge }) {
+  return (
+    <div className="flex items-center justify-between mb-4">
+      <div className="flex items-center gap-2">
+        <span
+          className="flex items-center justify-center w-7 h-7 rounded-full text-xs font-bold"
+          style={{ background: "#e0e7ff", color: "#3730a3" }}
+        >
+          {icon || number}
+        </span>
+        <span className="text-sm font-semibold text-gray-800">{title}</span>
+      </div>
+      {badge && (
+        <span
+          className="text-xs font-medium px-2.5 py-1 rounded-full"
+          style={{ background: "#dcfce7", color: "#166534" }}
+        >
+          {badge}
+        </span>
+      )}
+    </div>
+  );
+}
+
 export default function JobDescriptionAnalyzer() {
-   const { user } = useSelector((state) => state.auth);
-   const { userDetails } = useSelector((state) => state.firebase);
-   const [jobDescription, setJobDescription] = useState("");
-   const [isAnalyzing, setIsAnalyzing] = useState(false);
-   const [analysis, setAnalysis] = useState(null);
-   const dispatch = useDispatch();
-   const [openDropdown, setOpenDropdown] = useState(null);
-   const [skillMappings, setSkillMappings] = useState([]);
-   const dropdownRef = useRef(null); // Add ref for dropdown
-   const [combinedSkills, setCombinedSkills] = useState([]);
-   // console.log("test")
+  const { user } = useSelector((state) => state.auth);
+  const { userDetails } = useSelector((state) => state.firebase);
+  const [jobDescription, setJobDescription] = useState("");
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [analysis, setAnalysis] = useState(null);
+  const dispatch = useDispatch();
+  const [openDropdown, setOpenDropdown] = useState(null);
+  const [skillMappings, setSkillMappings] = useState([]);
+  const dropdownRef = useRef(null);
+  const [combinedSkills, setCombinedSkills] = useState([]);
 
-   // Add this useEffect to clean up duplicates when the component mounts
-   useEffect(() => {
-      if (skillMappings.length > 0) {
-         removeDuplicateSkillMappings();
+  useEffect(() => {
+    if (skillMappings.length > 0) {
+      removeDuplicateSkillMappings();
+    }
+  }, []);
+
+  useEffect(() => {
+    function handleClickOutside(event) {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setOpenDropdown(null);
       }
-   }, []);
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
 
-   // Add click outside handler
-   useEffect(() => {
-      function handleClickOutside(event) {
-         if (
-            dropdownRef.current &&
-            !dropdownRef.current.contains(event.target)
-         ) {
-            setOpenDropdown(null);
-         }
-      }
-
-      document.addEventListener("mousedown", handleClickOutside);
-      return () =>
-         document.removeEventListener("mousedown", handleClickOutside);
-   }, []);
-
-   useEffect(() => {
-      if (analysis?.technicalSkills && userDetails) {
-         // Combine generated skills with custom skills
-         const allSkills = [
-            ...analysis.technicalSkills,
-            ...(userDetails.customSkills?.map((cs) => cs.skill) || []),
-         ];
-
-         setSkillMappings((prev) => {
-            const allExperienceTitles = userDetails.experience.map(
-               (exp) => exp.title
-            );
-
-            // Create mappings for all skills while preserving existing mappings
-            const updatedMappings = allSkills.map((skill) => {
-               const existingMapping = prev.find((m) => m.skill === skill);
-               // If it's a custom skill, use its existing mappings
-               const customSkill = userDetails.customSkills?.find(
-                  (cs) => cs.skill === skill
-               );
-
-               if (existingMapping) return existingMapping;
-               if (customSkill) return customSkill;
-
-               return {
-                  skill,
-                  experienceMappings: allExperienceTitles,
-               };
-            });
-
-            dispatch(setSkillsMapped(updatedMappings));
-            return updatedMappings;
-         });
-      }
-   }, [analysis?.technicalSkills, userDetails]);
-
-   // Move the initialization logic outside useEffect
-   const initializeCombinedSkills = () => {
-      const customSkillSet = new Set(
-         userDetails?.customSkills?.map((cs) => cs.skill) || []
-      );
-
-      // Separate generated and custom skills
-      const generated =
-         analysis?.technicalSkills
-            ?.filter((skill) => !customSkillSet.has(skill))
-            .map((skill) => ({
-               skill,
-               experienceMappings:
-                  skillMappings.find((m) => m.skill === skill)
-                     ?.experienceMappings || [],
-               type: "generated",
-            })) || [];
-
-      const custom =
-         userDetails?.customSkills?.map((skill) => ({
-            ...skill,
-            type: "custom",
-         })) || [];
-
-      return [...generated, ...custom];
-   };
-
-   useEffect(() => {
-      // Only run this effect if we have necessary data and skillMappings has changed
-      if (
-         (analysis?.technicalSkills || userDetails?.customSkills) &&
-         skillMappings.length > 0
-      ) {
-         const initialSkills = initializeCombinedSkills();
-
-         // Only update state if the skills have actually changed
-         if (JSON.stringify(initialSkills) !== JSON.stringify(combinedSkills)) {
-            setCombinedSkills(initialSkills);
-
-            // Dispatch to Redux store
-            dispatch({
-               type: "skills/setCombinedSkills",
-               payload: initialSkills,
-            });
-         }
-      }
-   }, [skillMappings, userDetails?.customSkills, analysis?.technicalSkills]);
-
-   const calculateTotalExperience = (experiences) => {
-      let totalMonths = 0;
-
-      experiences.forEach((exp) => {
-         if (exp.startDate && exp.endDate) {
-            const [startYear, startMonth] = exp.startDate
-               .split("-")
-               .map(Number);
-            const [endYear, endMonth] = exp.endDate.split("-").map(Number);
-
-            // Calculate the total months between start and end dates
-            const months = (endYear - startYear) * 12 + (endMonth - startMonth);
-            const validMonths = Math.max(0, months); // Ensure no negative months
-            totalMonths += validMonths;
-         }
-      });
-
-      // Convert total months to years and round to 1 decimal place
-      return (totalMonths / 12).toFixed(1);
-   };
-
-   const handleSkillMappingChange = (skill, expTitle, checked, isCustom) => {
-      setSkillMappings((prev) => {
-         if (isCustom) {
-            // Update custom skills in userDetails
-            const updatedCustom = userDetails.customSkills.map((cs) =>
-               cs.skill === skill
-                  ? {
-                       ...cs,
-                       experienceMappings: checked
-                          ? [...cs.experienceMappings, expTitle]
-                          : cs.experienceMappings.filter((t) => t !== expTitle),
-                    }
-                  : cs
-            );
-            dispatch(
-               setUserDetails({ ...userDetails, customSkills: updatedCustom })
-            );
-            return prev;
-         }
-         return prev.map((mapping) =>
-            mapping.skill === skill
-               ? {
-                    ...mapping,
-                    experienceMappings: checked
-                       ? [...new Set([...mapping.experienceMappings, expTitle])]
-                       : mapping.experienceMappings.filter(
-                            (t) => t !== expTitle
-                         ),
-                 }
-               : mapping
-         );
-      });
-   };
-
-   const handleDropdownToggle = (index) => {
-      setOpenDropdown(openDropdown === index ? null : index);
-   };
-
-   // Add this helper function to clean up duplicates in the skill mappings
-   const removeDuplicateSkillMappings = useCallback(() => {
-      setSkillMappings((prevMappings) => {
-         const uniqueSkills = {};
-         const uniqueMappings = [];
-
-         for (const mapping of prevMappings) {
-            const skill = mapping.skill;
-            if (!uniqueSkills[skill]) {
-               uniqueSkills[skill] = true;
-               uniqueMappings.push(mapping);
-            }
-         }
-
-         // Only update if there's an actual change
-         if (uniqueMappings.length !== prevMappings.length) {
-            return uniqueMappings;
-         }
-         return prevMappings;
-      });
-   }, []);
-
-   // Fix for the handleAddSkill function
-
-   // Complete rewrite of handleAddSkill
-   const handleAddSkill = () => {
-      console.log("Current combinedSkills:", combinedSkills);
-
-      const newSkill = "";
-
-      // Get all experience titles
-      const allExperienceTitles =
-         userDetails?.experience?.map((exp) => exp.title) || [];
-
-      // Create new skill object with all experiences mapped
-      const newSkillObj = {
-         skill: newSkill,
-         experienceMappings: allExperienceTitles,
-         type: "generated",
-      };
-
-      // Update analysis
-      const updatedTechnicalSkills = [
-         ...(analysis?.technicalSkills || []),
-         newSkill,
+  // useEffect(() => {
+  //   if (analysis?.technicalSkills && userDetails) {
+  //     const allSkills = [
+  //       ...analysis.technicalSkills,
+  //       ...(userDetails.customSkills?.map((cs) => cs.skill) || []),
+  //     ];
+  //     setSkillMappings((prev) => {
+  //       const allExperienceTitles = userDetails.experience.map(
+  //         (exp) => exp.title,
+  //       );
+  //       const updatedMappings = allSkills.map((skill) => {
+  //         const existingMapping = prev.find((m) => m.skill === skill);
+  //         const customSkill = userDetails.customSkills?.find(
+  //           (cs) => cs.skill === skill,
+  //         );
+  //         if (existingMapping) return existingMapping;
+  //         if (customSkill) return customSkill;
+  //         return {
+  //           skill,
+  //           experienceMappings: allExperienceTitles.map((_, i) => i),
+  //         };
+  //       });
+  //       dispatch(setSkillsMapped(updatedMappings));
+  //       return updatedMappings;
+  //     });
+  //   }
+  // }, [analysis?.technicalSkills, userDetails]);
+  useEffect(() => {
+    if (analysis?.technicalSkills && userDetails) {
+      const allSkills = [
+        ...analysis.technicalSkills,
+        ...(userDetails.customSkills?.map((cs) => cs.skill) || []),
       ];
-      setAnalysis((prev) => ({
-         ...prev,
-         technicalSkills: updatedTechnicalSkills,
-      }));
-
-      // Update combinedSkills
-      const updatedCombinedSkills = [...(combinedSkills || []), newSkillObj];
-      console.log("Updated combinedSkills:", updatedCombinedSkills);
-      setCombinedSkills(updatedCombinedSkills);
-
-      // Update skill mappings - ensure no duplicates
       setSkillMappings((prev) => {
-         // Check if a mapping for empty skill already exists
-         const emptySkillMapping = prev.find((m) => m.skill === "");
-         if (emptySkillMapping) return prev;
+        const allIndices = userDetails.experience.map((_, i) => i); // ← indices
 
-         // Add new mapping
-         const newMapping = {
-            skill: newSkill,
-            experienceMappings: allExperienceTitles,
-         };
-         return [...prev, newMapping];
+        const updatedMappings = allSkills.map((skill) => {
+          const existingMapping = prev.find((m) => m.skill === skill);
+          const customSkill = userDetails.customSkills?.find(
+            (cs) => cs.skill === skill,
+          );
+          if (existingMapping) return existingMapping;
+          if (customSkill) return customSkill;
+          // new JD-extracted skill → map to ALL experiences by default
+          return { skill, experienceMappings: [...allIndices] }; // ← was allExperienceTitles
+        });
+        dispatch(setSkillsMapped(updatedMappings));
+        return updatedMappings;
       });
+    }
+  }, [analysis?.technicalSkills, userDetails]);
 
-      // Update Redux store
-      dispatch({
-         type: "skills/setCombinedSkills",
-         payload: updatedCombinedSkills,
-      });
-      dispatch(setSkills(updatedTechnicalSkills));
-   };
+const initializeCombinedSkills = () => {
+  const customSkillSet = new Set(
+    userDetails?.customSkills?.map((cs) => cs.skill) || [],
+  );
+  const allIndices = userDetails?.experience?.map((_, i) => i) || []; // ← ADD THIS
 
-   // Complete rewrite of handleSkillChange
-   const handleSkillChange = (newSkill, index) => {
-      // Store the current skill name before changing it
-      const currentSkill = combinedSkills[index]?.skill;
+  const generated =
+    analysis?.technicalSkills
+      ?.filter((skill) => !customSkillSet.has(skill))
+      .map((skill) => ({
+        skill,
+        experienceMappings:
+          skillMappings.find((m) => m.skill === skill)?.experienceMappings ||
+          allIndices,  // ← now defined
+        type: "generated",
+      })) || [];
+  const custom =
+    userDetails?.customSkills?.map((skill) => ({
+      ...skill,
+      type: "custom",
+    })) || [];
+  return [...generated, ...custom];
+};
 
-      // Update combinedSkills first
-      setCombinedSkills((prev) => {
-         const updated = [...prev];
-         if (updated[index]) {
-            updated[index] = {
-               ...updated[index],
-               skill: newSkill,
-            };
-         }
-         return updated;
-      });
 
-      // Update analysis.technicalSkills
-      setAnalysis((prev) => {
-         if (!prev) return null;
-
-         const updatedSkills = [...prev.technicalSkills];
-         const technicalIndex = updatedSkills.indexOf(currentSkill);
-         if (technicalIndex !== -1) {
-            updatedSkills[technicalIndex] = newSkill;
-         }
-
-         return {
-            ...prev,
-            technicalSkills: updatedSkills,
-         };
-      });
-
-      // Update skillMappings - replace the old skill mapping with a new one
-      setSkillMappings((prev) => {
-         // Find the mapping for the current skill
-         const currentMapping = prev.find(
-            (mapping) => mapping.skill === currentSkill
-         );
-
-         // If no mapping exists, don't modify the array
-         if (!currentMapping) return prev;
-
-         // Filter out the old mapping and add updated one
-         return [
-            ...prev.filter((mapping) => mapping.skill !== currentSkill),
-            {
-               skill: newSkill,
-               experienceMappings: currentMapping.experienceMappings || [],
-            },
-         ];
-      });
-
-      // Update Redux store
-      dispatch(
-         setSkills((prevSkills) => {
-            return prevSkills.map((skill) =>
-               skill === currentSkill ? newSkill : skill
-            );
-         })
-      );
-   };
-
-   const handleRemoveSkill = (index) => {
-      const skillToRemove = combinedSkills[index]?.skill;
-      if (!skillToRemove && skillToRemove !== "") return;
-
-      // Remove from combinedSkills
-      setCombinedSkills((prev) => prev.filter((_, i) => i !== index));
-
-      // Remove from analysis.technicalSkills
-      setAnalysis((prev) => {
-         if (!prev) return null;
-         return {
-            ...prev,
-            technicalSkills: prev.technicalSkills.filter(
-               (skill) => skill !== skillToRemove
-            ),
-         };
-      });
-
-      // Remove from skillMappings
-      setSkillMappings((prev) =>
-         prev.filter((mapping) => mapping.skill !== skillToRemove)
-      );
-
-      // Update Redux store
-      dispatch({
-         type: "skills/setCombinedSkills",
-         payload: combinedSkills.filter((_, i) => i !== index),
-      });
-      dispatch(
-         setSkills(
-            analysis.technicalSkills.filter((skill) => skill !== skillToRemove)
-         )
-      );
-      dispatch(
-         setSkillsMapped(
-            skillMappings.filter((mapping) => mapping.skill !== skillToRemove)
-         )
-      );
-   };
-
-   //ANALYZE
-   const analyzeJobDescription = async () => {
-      setIsAnalyzing(true);
-      try {
-         if (!user?.uid) {
-            throw new Error("User not authenticated");
-         }
-
-         const hasQuota = await QuotaService.checkQuota(user.uid, "parsing");
-         if (!hasQuota) {
-            throw new Error(
-               "Parsing quota exceeded. Please upgrade your plan."
-            );
-         }
-
-         const API_KEY = process.env.NEXT_PUBLIC_GOOGLE_GEMINI_API_KEY;
-         const API_URL =
-            "https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent";
-
-         const prompt = `Analyze this job description as a professional resume writer. Return ONLY a JSON object in this exact format, no other text:
-            {
-               "technicalSkills": [array of strings],
-               "yearsOfExperience": number,
-               "roleDescriptions": [
-                  {
-                     "title": string,
-                     "organization": string,
-                     "description": string
-                  }
-               ]
-            }
-   
-            Job Description: ${jobDescription}`;
-
-         const completion = await openai.chat.completions.create({
-            model: "gpt-3.5-turbo",
-            messages: [
-               {
-                  role: "system",
-                  content:
-                     "You are a professional resume writer. Analyze job descriptions and return information in JSON format. Return ONLY the JSON object, no additional text.",
-               },
-               {
-                  role: "user",
-                  content: prompt,
-               },
-            ],
-            temperature: 0.7,
-            max_tokens: 1000,
-            response_format: { type: "json_object" },
-         });
-
-         const analysisResult = JSON.parse(
-            completion.choices[0].message.content || "{}"
-         );
-         setAnalysis(analysisResult);
-         dispatch(setSkills(analysisResult.technicalSkills)); // Instead of dispatch(analysisResult.skills)
-         await QuotaService.incrementUsage(user.uid, "parsing");
-         console.log(analysisResult, "analysisResultfromANAlyser");
-         return analysisResult;
-      } catch (error) {
-         console.error("Analysis of JD error:", error);
-         console.log(error.message);
-         toast.error(error.message);
-      } finally {
-         setIsAnalyzing(false);
+  useEffect(() => {
+    if (
+      (analysis?.technicalSkills || userDetails?.customSkills) &&
+      skillMappings.length > 0
+    ) {
+      const initialSkills = initializeCombinedSkills();
+      if (JSON.stringify(initialSkills) !== JSON.stringify(combinedSkills)) {
+        setCombinedSkills(initialSkills);
+        dispatch({ type: "skills/setCombinedSkills", payload: initialSkills });
       }
-   };
+    }
+  }, [skillMappings, userDetails?.customSkills, analysis?.technicalSkills]);
 
-   // Add this new handler
-   // Modify handleSaveToCustomSkills
-   const handleSaveToCustomSkills = async (skill) => {
-      // Get current mappings for the skill
-      const currentMappings =
-         skillMappings.find((m) => m.skill === skill)?.experienceMappings || [];
+  const calculateTotalExperience = (experiences) => {
+    let totalMonths = 0;
+    experiences.forEach((exp) => {
+      if (exp.startDate && exp.endDate) {
+        const [startYear, startMonth] = exp.startDate.split("-").map(Number);
+        const [endYear, endMonth] = exp.endDate.split("-").map(Number);
+        const months = (endYear - startYear) * 12 + (endMonth - startMonth);
+        totalMonths += Math.max(0, months);
+      }
+    });
+    return (totalMonths / 12).toFixed(1);
+  };
 
-      // Create new custom skill with current mappings
-      const newCustomSkill = {
-         skill,
-         experienceMappings: currentMappings,
-      };
+  const handleSkillMappingChange = (skill, expIndex, checked, isCustom) => {
+    setSkillMappings((prev) => {
+      if (isCustom) {
+        const updatedCustom = userDetails.customSkills.map((cs) =>
+          cs.skill === skill
+            ? {
+                ...cs,
+                experienceMappings: checked
+                  ? [...new Set([...cs.experienceMappings, expIndex])]
+                  : cs.experienceMappings.filter((m) => m !== expIndex),
+              }
+            : cs,
+        );
+        dispatch(
+          setUserDetails({ ...userDetails, customSkills: updatedCustom }),
+        );
+        return prev;
+      }
+      return prev.map((mapping) =>
+        mapping.skill === skill
+          ? {
+              ...mapping,
+              experienceMappings: checked
+                ? [...new Set([...mapping.experienceMappings, expIndex])]
+                : mapping.experienceMappings.filter((m) => m !== expIndex),
+            }
+          : mapping,
+      );
+    });
+  };
 
-      // Remove from generated skills
-      setAnalysis((prev) => ({
-         ...prev,
-         technicalSkills: prev.technicalSkills.filter((s) => s !== skill),
-      }));
+  const handleDropdownToggle = (index) => {
+    setOpenDropdown(openDropdown === index ? null : index);
+  };
 
-      // Update user details
-      const updatedUserDetails = {
-         ...userDetails,
-         customSkills: [...(userDetails.customSkills || []), newCustomSkill],
-      };
-      await UserDetailsService.saveUserDetails(user.uid, updatedUserDetails);
-      dispatch(setUserDetails(updatedUserDetails));
-   };
+  const removeDuplicateSkillMappings = useCallback(() => {
+    setSkillMappings((prevMappings) => {
+      const uniqueSkills = {};
+      const uniqueMappings = [];
+      for (const mapping of prevMappings) {
+        const skill = mapping.skill;
+        if (!uniqueSkills[skill]) {
+          uniqueSkills[skill] = true;
+          uniqueMappings.push(mapping);
+        }
+      }
+      if (uniqueMappings.length !== prevMappings.length) return uniqueMappings;
+      return prevMappings;
+    });
+  }, []);
 
-   // Move consolidateSkills outside useEffect
-   const consolidateSkills = useCallback(() => {
-      const generatedSkills = analysis?.technicalSkills || [];
-      const customSkills = userDetails?.customSkills || [];
+  const handleAddSkill = () => {
+    const newSkill = "";
+    const allExperienceTitles =
+      userDetails?.experience?.map((exp) => exp.title) || [];
+    const allIndices = userDetails?.experience?.map((_, i) => i) || []; // ← indices
 
-      // Combine all skills with their mappings
-      const consolidatedMappings = [
-         ...generatedSkills.map((skill) => ({
-            skill,
-            experienceMappings:
-               skillMappings.find((m) => m.skill === skill)
-                  ?.experienceMappings || [],
-         })),
-         ...customSkills,
+    const newSkillObj = {
+      skill: newSkill,
+      experienceMappings: allIndices,
+      type: "generated",
+    };
+    const updatedTechnicalSkills = [
+      ...(analysis?.technicalSkills || []),
+      newSkill,
+    ];
+    setAnalysis((prev) => ({
+      ...prev,
+      technicalSkills: updatedTechnicalSkills,
+    }));
+    const updatedCombinedSkills = [...(combinedSkills || []), newSkillObj];
+    setCombinedSkills(updatedCombinedSkills);
+    setSkillMappings((prev) => {
+      const emptySkillMapping = prev.find((m) => m.skill === "");
+      if (emptySkillMapping) return prev;
+      return [...prev, { skill: newSkill, experienceMappings: allIndices }];
+    });
+    dispatch({
+      type: "skills/setCombinedSkills",
+      payload: updatedCombinedSkills,
+    });
+    dispatch(setSkills(updatedTechnicalSkills));
+  };
+
+  const handleSkillChange = (newSkill, index) => {
+    const currentSkill = combinedSkills[index]?.skill;
+    setCombinedSkills((prev) => {
+      const updated = [...prev];
+      if (updated[index])
+        updated[index] = { ...updated[index], skill: newSkill };
+      return updated;
+    });
+    setAnalysis((prev) => {
+      if (!prev) return null;
+      const updatedSkills = [...prev.technicalSkills];
+      const technicalIndex = updatedSkills.indexOf(currentSkill);
+      if (technicalIndex !== -1) updatedSkills[technicalIndex] = newSkill;
+      return { ...prev, technicalSkills: updatedSkills };
+    });
+    setSkillMappings((prev) => {
+      const currentMapping = prev.find(
+        (mapping) => mapping.skill === currentSkill,
+      );
+      if (!currentMapping) return prev;
+      return [
+        ...prev.filter((mapping) => mapping.skill !== currentSkill),
+        {
+          skill: newSkill,
+          experienceMappings: currentMapping.experienceMappings || [],
+        },
       ];
+    });
+    dispatch(
+      setSkills((prevSkills) =>
+        prevSkills.map((skill) => (skill === currentSkill ? newSkill : skill)),
+      ),
+    );
+  };
 
-      dispatch(setSkillsMapped(consolidatedMappings));
-      dispatch(setSkills(consolidatedMappings.map((s) => s.skill)));
-   }, [
-      analysis?.technicalSkills,
-      userDetails?.customSkills,
-      skillMappings,
-      dispatch,
-   ]);
-
-   // Add useEffect to run consolidation when analysis or customSkills change
-   useEffect(() => {
-      // Only run when we have necessary data and avoid unnecessary updates
-      const hasSkills =
-         analysis?.technicalSkills?.length > 0 ||
-         userDetails?.customSkills?.length > 0;
-
-      if (hasSkills && !isAnalyzing) {
-         consolidateSkills();
-      }
-   }, [analysis?.technicalSkills, userDetails?.customSkills, isAnalyzing]);
-
-   // When user modifies mappings
-   const handleUpdateMapping = (skillName, expTitle, isChecked) => {
-      setCombinedSkills((prev) => {
-         const updated = prev.map((skill) => {
-            if (skill.skill === skillName) {
-               const newMappings = isChecked
-                  ? [
-                       ...new Set([
-                          ...(skill.experienceMappings || []),
-                          expTitle,
-                       ]),
-                    ]
-                  : (skill.experienceMappings || []).filter(
-                       (exp) => exp !== expTitle
-                    );
-
-               return {
-                  ...skill,
-                  experienceMappings: newMappings,
-               };
-            }
-            return skill;
-         });
-
-         // Dispatch a plain object action
-         dispatch({
-            type: "skills/setCombinedSkills",
-            payload: updated,
-         });
-
-         return updated;
-      });
-   };
-
-   const handleDeleteCustomSkill = async (skillToDelete) => {
-      // Remove from custom skills
-      const updatedUserDetails = {
-         ...userDetails,
-         customSkills: userDetails.customSkills.filter(
-            (skill) => skill.skill !== skillToDelete
-         ),
+  const handleRemoveSkill = (index) => {
+    const skillToRemove = combinedSkills[index]?.skill;
+    if (!skillToRemove && skillToRemove !== "") return;
+    setCombinedSkills((prev) => prev.filter((_, i) => i !== index));
+    setAnalysis((prev) => {
+      if (!prev) return null;
+      return {
+        ...prev,
+        technicalSkills: prev.technicalSkills.filter(
+          (skill) => skill !== skillToRemove,
+        ),
       };
+    });
+    setSkillMappings((prev) =>
+      prev.filter((mapping) => mapping.skill !== skillToRemove),
+    );
+    dispatch({
+      type: "skills/setCombinedSkills",
+      payload: combinedSkills.filter((_, i) => i !== index),
+    });
+    dispatch(
+      setSkills(
+        analysis.technicalSkills.filter((skill) => skill !== skillToRemove),
+      ),
+    );
+    dispatch(
+      setSkillsMapped(
+        skillMappings.filter((mapping) => mapping.skill !== skillToRemove),
+      ),
+    );
+  };
 
-      // Add back to generated skills if it exists in analysis
-      if (analysis?.technicalSkills.includes(skillToDelete)) {
-         setAnalysis((prev) => ({
-            ...prev,
-            technicalSkills: [...prev.technicalSkills, skillToDelete],
-         }));
-      }
+  const analyzeJobDescription = async () => {
+    setIsAnalyzing(true);
+    try {
+      if (!user?.uid) throw new Error("User not authenticated");
+      const hasQuota = await QuotaService.checkQuota(user.uid, "parsing");
+      if (!hasQuota)
+        throw new Error("Parsing quota exceeded. Please upgrade your plan.");
 
-      await UserDetailsService.saveUserDetails(user.uid, updatedUserDetails);
-      dispatch(setUserDetails(updatedUserDetails));
-   };
+      const prompt = `Analyze this job description as a professional resume writer. Return ONLY a JSON object in this exact format, no other text:
+    {
+      "technicalSkills": [array of strings],
+      "yearsOfExperience": number,
+      "roleDescriptions": [
+        {
+          "title": string,
+          "organization": string,
+          "description": string
+        }
+      ]
+    }
 
-   // useEffect(() => {
-   //    if (openDropdown !== null && dropdownRef.current) {
-   //       const updatePosition = () => {
-   //          const button = document.querySelector(`[data-index="${openDropdown}"]`);
-   //          if (button) {
-   //             const rect = button.getBoundingClientRect();
-   //             dropdownRef.current.style.top = `${rect.bottom + 10}px`;
-   //             dropdownRef.current.style.left = `${rect.left}px`;
-   //          }
-   //       };
+    Job Description: ${jobDescription}`;
 
-   //       updatePosition();
-   //       window.addEventListener('scroll', updatePosition);
-   //       window.addEventListener('resize', updatePosition);
+      const completion = await groq.chat.completions.create({
+        model: "llama-3.3-70b-versatile",
+        messages: [
+          {
+            role: "system",
+            content:
+              "You are a professional resume writer. Return ONLY valid JSON, no markdown, no backticks.",
+          },
+          { role: "user", content: prompt },
+        ],
+        temperature: 0.7,
+        max_tokens: 1000,
+        response_format: { type: "json_object" },
+      });
 
-   //       return () => {
-   //          window.removeEventListener('scroll', updatePosition);
-   //          window.removeEventListener('resize', updatePosition);
-   //       };
-   //    }
-   // }, [openDropdown]);
+      const analysisResult = JSON.parse(
+        completion.choices[0].message.content || "{}",
+      );
+      setAnalysis(analysisResult);
+      dispatch(setSkills(analysisResult.technicalSkills));
+      await QuotaService.incrementUsage(user.uid, "parsing");
+      return analysisResult;
+    } catch (error) {
+      console.error("Analysis of JD error:", error);
+      toast.error(error.message);
+    } finally {
+      setIsAnalyzing(false);
+    }
+  };
 
-   return (
-      <Card className="bg-white/60 shadow-lg border-slate-100 backdrop-blur-2xl rounded-xl">
-         <CardHeader className="border-b bg-white/40 backdrop-blur-xl px-6 py-4">
-            <CardTitle className="text-xl font-semibold text-gray-800">
-               Job Description Analyzer
-            </CardTitle>
-         </CardHeader>
-         <CardContent className="p-2 md:p-6 bg-transparent">
-            <div className="space-y-4">
-               {/* User Guide */}
-               {/* <p className="text-sm text-gray-600 bg-yellow-50 p-3 rounded-lg">
-                  Paste a job description below, and our tool will analyze the
-                  key requirements, such as experience, skills, and
-                  qualifications.
-               </p> */}
+  const handleSaveToCustomSkills = async (skill) => {
+    const currentMappings =
+      skillMappings.find((m) => m.skill === skill)?.experienceMappings || [];
+    const newCustomSkill = { skill, experienceMappings: currentMappings };
+    setAnalysis((prev) => ({
+      ...prev,
+      technicalSkills: prev.technicalSkills.filter((s) => s !== skill),
+    }));
+    const updatedUserDetails = {
+      ...userDetails,
+      customSkills: [...(userDetails.customSkills || []), newCustomSkill],
+    };
+    await UserDetailsService.saveUserDetails(user.uid, updatedUserDetails);
+    dispatch(setUserDetails(updatedUserDetails));
+  };
 
-               <Textarea
-                  placeholder="Preferred 8+ years experience in at least one modern web front-end development. Strong proficiency in Typescript and JavaScript, HTML5, and CSS3.... etc"
-                  className="min-h-[200px] resize-none p-4 font-sans text-base shadow-lg "
-                  value={jobDescription}
-                  onChange={(e) => setJobDescription(e.target.value)}
-               />
+  const consolidateSkills = useCallback(() => {
+    const generatedSkills = analysis?.technicalSkills || [];
+    const customSkills = userDetails?.customSkills || [];
+    const consolidatedMappings = [
+      ...generatedSkills.map((skill) => ({
+        skill,
+        experienceMappings:
+          skillMappings.find((m) => m.skill === skill)?.experienceMappings ||
+          [],
+      })),
+      ...customSkills,
+    ];
+    dispatch(setSkillsMapped(consolidatedMappings));
+    dispatch(setSkills(consolidatedMappings.map((s) => s.skill)));
+  }, [
+    analysis?.technicalSkills,
+    userDetails?.customSkills,
+    skillMappings,
+    dispatch,
+  ]);
 
-               {/* Helper Note */}
-               {/* <p className="text-xs text-gray-600">
-                  Tip: Ensure the job description is detailed for more accurate
-                  insights.
-               </p> */}
+  useEffect(() => {
+    const hasSkills =
+      analysis?.technicalSkills?.length > 0 ||
+      userDetails?.customSkills?.length > 0;
+    if (hasSkills && !isAnalyzing) consolidateSkills();
+  }, [analysis?.technicalSkills, userDetails?.customSkills, isAnalyzing]);
 
-               <Button
-                  onClick={analyzeJobDescription}
-                  className="w-full bg-gradient-to-r from-blue-500 to-indigo-500 hover:from-blue-600 hover:to-indigo-600 text-white rounded-lg"
-                  disabled={isAnalyzing || !jobDescription.trim()}
-               >
-                  {isAnalyzing ? (
-                     <>
-                        <Spinner className="w-4 h-4 border-2 mr-2" />
-                        Analyzing...
-                     </>
-                  ) : (
-                     "Analyze Job Description"
+  const handleUpdateMapping = (skillName, expTitle, isChecked) => {
+    setCombinedSkills((prev) => {
+      const updated = prev.map((skill) => {
+        if (skill.skill === skillName) {
+          const newMappings = isChecked
+            ? [...new Set([...(skill.experienceMappings || []), expTitle])]
+            : (skill.experienceMappings || []).filter(
+                (exp) => exp !== expTitle,
+              );
+          return { ...skill, experienceMappings: newMappings };
+        }
+        return skill;
+      });
+      dispatch({ type: "skills/setCombinedSkills", payload: updated });
+      return updated;
+    });
+  };
+
+  const handleDeleteCustomSkill = async (skillToDelete) => {
+    const updatedUserDetails = {
+      ...userDetails,
+      customSkills: userDetails.customSkills.filter(
+        (skill) => skill.skill !== skillToDelete,
+      ),
+    };
+    if (analysis?.technicalSkills.includes(skillToDelete)) {
+      setAnalysis((prev) => ({
+        ...prev,
+        technicalSkills: [...prev.technicalSkills, skillToDelete],
+      }));
+    }
+    await UserDetailsService.saveUserDetails(user.uid, updatedUserDetails);
+    dispatch(setUserDetails(updatedUserDetails));
+  };
+
+  // ─────────────────────────────────────────────────────────────────────────────
+  // RENDER
+  // ─────────────────────────────────────────────────────────────────────────────
+  return (
+    <>
+      <style>{`
+        /* ── JDA wrapper ── */
+        .jda-wrap {
+          font-family: Inter, system-ui, sans-serif;
+        }
+
+        /* ── Textarea ── */
+        .jda-textarea {
+          width: 100%;
+          min-height: 160px;
+          resize: vertical;
+          border-radius: 10px;
+          border: 1px solid #e2e8f0;
+          padding: 12px 14px;
+          font-size: 13px;
+          line-height: 1.6;
+          color: #1e293b;
+          background: #f8fafc;
+          transition: border-color 0.15s, box-shadow 0.15s;
+          font-family: inherit;
+        }
+        .jda-textarea:focus {
+          outline: none;
+          border-color: #6366f1;
+          box-shadow: 0 0 0 3px rgba(99,102,241,0.10);
+          background: #fff;
+        }
+        .jda-textarea::placeholder { color: #94a3b8; }
+
+        /* ── Analyze button ── */
+        .jda-btn {
+          width: 100%;
+          padding: 11px 0;
+          border-radius: 10px;
+          font-size: 13px;
+          font-weight: 700;
+          letter-spacing: 0.02em;
+          background: linear-gradient(135deg, #3b82f6 0%, #6366f1 100%);
+          color: #fff;
+          border: none;
+          cursor: pointer;
+          transition: opacity 0.15s;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: 8px;
+        }
+        .jda-btn:disabled { opacity: 0.6; cursor: not-allowed; }
+        .jda-btn:not(:disabled):hover { opacity: 0.92; }
+
+        /* ── Helper text ── */
+        .jda-hint {
+          font-size: 11px;
+          color: #94a3b8;
+          margin-top: 6px;
+        }
+
+        /* ── Skills section ── */
+        .jda-skills-header {
+          font-size: 11px;
+          font-weight: 700;
+          text-transform: uppercase;
+          letter-spacing: 0.06em;
+          color: #64748b;
+          padding-bottom: 10px;
+          border-bottom: 1px solid #e2e8f0;
+          margin-bottom: 14px;
+          margin-top: 18px;
+        }
+
+        /* ── Skills grid ── */
+        .jda-skills-grid {
+          display: grid;
+          grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+          gap: 8px;
+          margin-bottom: 16px;
+        }
+
+        /* ── Skill chip ── */
+        .jda-chip {
+          display: flex;
+          align-items: center;
+          gap: 4px;
+          border-radius: 10px;
+          padding: 6px 8px;
+          border: 1px solid;
+          position: relative;
+          transition: box-shadow 0.12s;
+        }
+        .jda-chip:hover { box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+        .jda-chip.generated {
+          background: #f5f3ff;
+          border-color: #c4b5fd;
+        }
+        .jda-chip.custom {
+          background: #f0fdf4;
+          border-color: #86efac;
+        }
+
+        /* ── Skill text input ── */
+        .jda-skill-input {
+          flex: 1;
+          min-width: 0;
+          font-size: 12px;
+          font-weight: 600;
+          color: #1e293b;
+          background: #fff;
+          border: 1px solid #e2e8f0;
+          border-radius: 6px;
+          padding: 4px 8px;
+          outline: none;
+          transition: border-color 0.12s;
+          height: 30px;
+        }
+        .jda-skill-input:focus { border-color: #6366f1; }
+        .jda-skill-input::placeholder { color: #94a3b8; font-weight: 400; }
+
+        /* ── Chip action buttons ── */
+        .jda-chip-btn {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          width: 26px;
+          height: 26px;
+          border-radius: 6px;
+          border: 1px solid;
+          background: #fff;
+          cursor: pointer;
+          flex-shrink: 0;
+          transition: background 0.12s;
+        }
+        .jda-chip-btn.save  { border-color: #86efac; color: #16a34a; }
+        .jda-chip-btn.save:hover { background: #f0fdf4; }
+        .jda-chip-btn.del   { border-color: #fca5a5; color: #ef4444; }
+        .jda-chip-btn.del:hover { background: #fef2f2; }
+        .jda-chip-btn.map   { border-color: #93c5fd; color: #3b82f6; }
+        .jda-chip-btn.map:hover, .jda-chip-btn.map.active { background: #eff6ff; }
+        .jda-chip-btn.map.active { color: #f97316; border-color: #f97316; }
+
+        /* ── Mapping dropdown ── */
+        .jda-dropdown {
+          position: absolute;
+          z-index: 9999;
+          background: #1e293b;
+          color: #f1f5f9;
+          border-radius: 10px;
+          padding: 12px;
+          box-shadow: 0 10px 28px rgba(0,0,0,0.22);
+          min-width: 210px;
+          top: calc(100% + 6px);
+          left: 0;
+          border: 1px solid #334155;
+        }
+        .jda-dropdown-title {
+          font-size: 10px;
+          font-weight: 700;
+          text-transform: uppercase;
+          letter-spacing: 0.06em;
+          color: #64748b;
+          margin-bottom: 8px;
+        }
+        .jda-dropdown-scroll {
+          max-height: 180px;
+          overflow-y: auto;
+        }
+        .jda-dropdown-item {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          padding: 5px 0;
+          font-size: 12px;
+        }
+        .jda-dropdown-item label { cursor: pointer; }
+
+        /* ── Add skill button ── */
+        .jda-add-btn {
+          display: inline-flex;
+          align-items: center;
+          gap: 6px;
+          padding: 8px 14px;
+          border-radius: 8px;
+          font-size: 12px;
+          font-weight: 700;
+          background: linear-gradient(135deg, #3b82f6, #6366f1);
+          color: #fff;
+          border: none;
+          cursor: pointer;
+          transition: opacity 0.15s;
+          margin-top: 4px;
+        }
+        .jda-add-btn:hover { opacity: 0.9; }
+
+        /* ── Type badge ── */
+        .jda-badge {
+          font-size: 9px;
+          font-weight: 700;
+          text-transform: uppercase;
+          letter-spacing: 0.06em;
+          padding: 2px 5px;
+          border-radius: 4px;
+          flex-shrink: 0;
+        }
+        .jda-badge.generated { background: #ede9fe; color: #7c3aed; }
+        .jda-badge.custom    { background: #dcfce7; color: #15803d; }
+      `}</style>
+
+      <div className="jda-wrap">
+        {/* ── Textarea ── */}
+        <textarea
+          className="jda-textarea"
+          placeholder="Paste job description here… e.g. 8+ years experience in modern frontend, strong TypeScript & React skills, AWS familiarity…"
+          value={jobDescription}
+          onChange={(e) => setJobDescription(e.target.value)}
+        />
+
+        {/* ── Analyze button ── */}
+        <button
+          className="jda-btn"
+          style={{ margin: "10px 0 4px" }}
+          onClick={analyzeJobDescription}
+          disabled={isAnalyzing || !jobDescription.trim()}
+        >
+          {isAnalyzing ? (
+            <>
+              <Spinner className="w-4 h-4 border-2" />
+              Analyzing…
+            </>
+          ) : (
+            "Analyze Job Description"
+          )}
+        </button>
+        <p className="jda-hint">
+          Extracts required skills, experience level, and role details from the
+          pasted JD.
+        </p>
+
+        {/* ── Skills panel (shown after analysis) ── */}
+        <p className="px-5 pt-5 pb-2">
+          <StepLabel
+            number="3"
+            icon="✨"
+            title="Step 3: Align Skills to Experiences"
+          />
+          <p className="text-xs text-gray-500 mb-3 -mt-1 ml-9">
+            Tool extracted a custom set of core technical competencies. Map
+            these skills to the roles in your profile. Bullet points for each
+            experience will prioritize mapped technologies.
+          </p>
+        </p>
+        {analysis && (
+          <div>
+            <p className="jda-skills-header">
+              Technical Skills &mdash; {combinedSkills.length} found
+            </p>
+
+            <div className="jda-skills-grid">
+              {combinedSkills.map((skillObj, index) => (
+                <div
+                  key={index}
+                  className={`jda-chip ${skillObj.type === "custom" ? "custom" : "generated"}`}
+                >
+                  {/* Type badge */}
+                  <span
+                    className={`jda-badge ${skillObj.type === "custom" ? "custom" : "generated"}`}
+                  >
+                    {skillObj.type === "custom" ? "saved" : "ai"}
+                  </span>
+
+                  {/* Editable skill name */}
+                  <input
+                    type="text"
+                    className="jda-skill-input"
+                    value={skillObj.skill}
+                    onChange={(e) => handleSkillChange(e.target.value, index)}
+                    placeholder="Skill name"
+                    title="Edit skill"
+                  />
+
+                  {/* Save to custom (only for generated) */}
+                  {skillObj.type === "generated" && (
+                    <button
+                      className="jda-chip-btn save"
+                      title="Save to custom skills"
+                      onClick={() => handleSaveToCustomSkills(skillObj.skill)}
+                    >
+                      <PlusCircle size={12} />
+                    </button>
                   )}
-               </Button>
 
-               {/* Explanation */}
-               <p className="text-xs text-gray-600">
-                  Clicking "Analyze" will extract key details from the job
-                  description, such as required experience and skills.
-               </p>
-               {analysis && (
-                  <div className="p-6 space-y-6 border border-slate-300 rounded-lg bg-white">
-                     {/* <div className=" flex flex-col sm:flex sm:flex-row-reverse justify-between w-full ">
-                        <div className="min-w-full sm:min-w-[49%] border border-slate-200 p-4 rounded-lg bg-purple-50">
-                           <h5 className="flex font-semibold">
-                              Experience Required:{" "}
-                              <p className="text-gray-700">
-                                 {analysis.yearsOfExperience} years
-                              </p>
-                           </h5>
-                        </div>
-                        <div className="min-w-full sm:min-w-[49%] border border-slate-200 p-4 rounded-lg bg-purple-50">
-                           <h5 className="flex font-semibold">
-                              Your Total Experience:{" "}
-                              <p className="text-gray-700">
-                                 {userDetails?.experience
-                                    ? calculateTotalExperience(
-                                         userDetails.experience
-                                      )
-                                    : 0}{" "}
-                                 years
-                              </p>
-                           </h5>
-                        </div>
-                     </div> */}
+                  {/* Delete */}
+                  <button
+                    className="jda-chip-btn del"
+                    title="Remove skill"
+                    onClick={() =>
+                      skillObj.type === "custom"
+                        ? handleDeleteCustomSkill(skillObj.skill)
+                        : handleRemoveSkill(index)
+                    }
+                  >
+                    <Trash2 size={12} />
+                  </button>
 
-                     <div className="border-t border-slate-300">
-                        <h3 className="text-xl font-semibold mb-4  mt-4">
-                           Technical Skills:
-                        </h3>
-                        <div className="flex flex-wrap gap-5 justify-start">
-                           {combinedSkills.map((skillObj, index) => (
-                              <div
-                                 key={index}
-                                 className={`w-[98%] lg:w-[23%] group relative border ${
-                                    skillObj.type === "custom"
-                                       ? "border-green-200 bg-green-100/70"
-                                       : "border-slate-200 bg-purple-100/70"
-                                 } py-2 px-3 rounded-xl`}
+                  {/* Map to experience */}
+                  <button
+                    data-index={index}
+                    className={`jda-chip-btn map${openDropdown === index ? " active" : ""}`}
+                    title="Map to experience"
+                    onClick={() => handleDropdownToggle(index)}
+                  >
+                    <MapIcon size={12} />
+                  </button>
+
+                  {/* Mapping dropdown */}
+                  {openDropdown === index && (
+                    <div ref={dropdownRef} className="jda-dropdown ">
+                      <p className="jda-dropdown-title">Map to experience</p>
+                      <div className="jda-dropdown-scroll">
+                        {userDetails.experience.map((exp, i) => {
+                          const isLocked = exp.responsibilityType === "none";
+                          const isTitleBased =
+                            exp.responsibilityType === "titleBased";
+                          const isDisabled = isTitleBased || isLocked;
+                          const inputId = `jda-mapping-${index}-${i}`;
+                          const isMapped =
+                            skillObj.type === "custom"
+                              ? userDetails.customSkills
+                                  .find((cs) => cs.skill === skillObj.skill)
+                                  ?.experienceMappings?.includes(i) // ← i (index)
+                              : skillMappings
+                                  .find((m) => m.skill === skillObj.skill)
+                                  ?.experienceMappings?.includes(i); // ← i (index)
+                          return (
+                            <div
+                              key={i}
+                              className="jda-dropdown-item"
+                              style={{ opacity: isDisabled ? 0.4 : 1 }}
+                            >
+                              <input
+                                id={inputId}
+                                type="checkbox"
+                                checked={isMapped || false}
+                                disabled={isDisabled}
+                                onChange={(e) =>
+                                  handleSkillMappingChange(
+                                    skillObj.skill,
+                                    i,
+                                    e.target.checked,
+                                    skillObj.type === "custom",
+                                  )
+                                }
+                              />
+                              <label
+                                htmlFor={inputId}
+                                style={{
+                                  cursor: isDisabled
+                                    ? "not-allowed"
+                                    : "pointer",
+                                }}
                               >
-                                 <div className="relative flex items-center gap-1">
-                                    <input
-                                       type="text"
-                                       value={skillObj.skill}
-                                       onChange={(e) =>
-                                          handleSkillChange(
-                                             e.target.value,
-                                             index
-                                          )
-                                       }
-                                       className="w-full px-3 py-2 text-sm bg-white text-black font-medium rounded-lg border border-slate-400 focus:border-blue-200 focus:ring-1 focus:ring-blue-300 outline-none transition-all duration-200 hover:bg-teal-50"
-                                       placeholder="Enter skill"
-                                       title="Edit Skill"
-                                    />
-                                    {skillObj.type === "generated" && (
-                                       <button
-                                          onClick={() =>
-                                             handleSaveToCustomSkills(
-                                                skillObj.skill
-                                             )
-                                          }
-                                          title="Save to Custom Skills"
-                                          className="p-2 bg-white text-green-400 rounded-lg border border-green-600 hover:bg-green-100 transition-all duration-200"
-                                       >
-                                          <PlusCircle size={16} />
-                                       </button>
-                                    )}
-                                    <button
-                                       onClick={() =>
-                                          skillObj.type === "custom"
-                                             ? handleDeleteCustomSkill(
-                                                  skillObj.skill
-                                               )
-                                             : handleRemoveSkill(index)
-                                       }
-                                       title="Remove Skill"
-                                       className="p-2 bg-white text-rose-400 rounded-lg border border-red-600 hover:bg-red-200 transition-all duration-200"
-                                    >
-                                       <Trash2 size={16} />
-                                    </button>
-                                    <button
-                                       data-index={index}
-                                       onClick={() =>
-                                          handleDropdownToggle(index)
-                                       }
-                                       title="Map Skill to Experience"
-                                       className={`p-2 bg-white text-blue-400 rounded-lg border border-blue-600 hover:bg-blue-100 transition-all duration-200 ${
-                                          openDropdown === index
-                                             ? "bg-blue-600 text-orange-400"
-                                             : ""
-                                       }`}
-                                    >
-                                       <MapIcon size={16} />
-                                    </button>
-                                    {openDropdown === index && (
-                                       <div
-                                          ref={dropdownRef}
-                                          className="absolute z-[9999] bg-slate-800 text-white rounded-lg shadow-lg p-4 border border-slate-700 space-y-2"
-                                          // style={{
-                                          //    top: '100%',
-                                          //    left: '0',
-                                          //    marginTop: '8px',
-                                          //    width: '100%',
-                                          //    position: 'absolute'
-                                          // }}
-                                       >
-                                          <h4 className="font-bold text-sm mb-2">
-                                             Map Skill to:
-                                          </h4>
-                                          <div className="space-y-2 max-h-[200px] overflow-y-auto">
-                                             {userDetails.experience.map(
-                                                (exp, i) => {
-                                                   const isTitleBased =
-                                                      exp.responsibilityType ===
-                                                      "titleBased";
-                                                   const inputId = `mapping-${index}-${i}`;
-
-                                                   return (
-                                                      <div
-                                                         key={i}
-                                                         className={`flex items-center gap-2 ${
-                                                            isTitleBased
-                                                               ? "opacity-50"
-                                                               : ""
-                                                         }`}
-                                                      >
-                                                         <input
-                                                            id={inputId} // 👈 give the input an ID
-                                                            type="checkbox"
-                                                            checked={
-                                                               skillObj.type ===
-                                                               "custom"
-                                                                  ? userDetails.customSkills
-                                                                       .find(
-                                                                          (
-                                                                             cs
-                                                                          ) =>
-                                                                             cs.skill ===
-                                                                             skillObj.skill
-                                                                       )
-                                                                       ?.experienceMappings?.includes(
-                                                                          exp.title
-                                                                       )
-                                                                  : skillMappings
-                                                                       .find(
-                                                                          (m) =>
-                                                                             m.skill ===
-                                                                             skillObj.skill
-                                                                       )
-                                                                       ?.experienceMappings?.includes(
-                                                                          exp.title
-                                                                       )
-                                                            }
-                                                            onChange={(e) =>
-                                                               handleSkillMappingChange(
-                                                                  skillObj.skill,
-                                                                  exp.title,
-                                                                  e.target
-                                                                     .checked,
-                                                                  skillObj.type ===
-                                                                     "custom"
-                                                               )
-                                                            }
-                                                         />
-                                                         <label
-                                                            htmlFor={inputId} // 👈 match it here
-                                                            className={`text-sm ${
-                                                               isTitleBased
-                                                                  ? "cursor-not-allowed"
-                                                                  : "cursor-pointer"
-                                                            }`}
-                                                         >
-                                                            {exp.title}
-                                                            {isTitleBased && (
-                                                               <span className="ml-1 text-slate-400">
-                                                                  (Title-based)
-                                                               </span>
-                                                            )}
-                                                         </label>
-                                                      </div>
-                                                   );
-                                                }
-                                             )}
-                                          </div>
-                                       </div>
-                                    )}
-                                 </div>
-                              </div>
-                           ))}
-                        </div>
-                     </div>
-
-                     {/* <div>
-                        <h3 className="text-lg font-semibold mb-3">
-                           Soft Skills
-                        </h3>
-                        <div className="flex flex-wrap gap-2">
-                           {analysis.softSkills.map((skill, index) => (
-                              <span
-                                 key={index}
-                                 className="px-3 py-1 bg-green-100 text-green-800 rounded-full text-sm"
-                              >
-                                 {skill}
-                              </span>
-                           ))}
-                        </div>
-                     </div> */}
-                     <div>
-                        {" "}
-                        <button
-                           onClick={handleAddSkill}
-                           className="flex items-center gap-2 mt-6 px-4 py-2 text-sm font-semibold bg-gradient-to-r from-blue-500 to-indigo-500 hover:from-blue-600 hover:to-indigo-600 text-white rounded-lg mb-4"
-                        >
-                           <PlusCircle size={16} />
-                           Add New Skill
-                        </button>
-                     </div>
-
-                     {/* {analysis.roleDescriptions?.length > 0 && (
-                        <div>
-                           <h3 className="text-lg font-semibold mb-3">
-                              Tailored Role Descriptions
-                           </h3>
-                           <div className="space-y-4">
-                              {analysis.roleDescriptions.map((role, index) => (
-                                 <div
-                                    key={index}
-                                    className="p-4 bg-gray-50 rounded-lg"
-                                 >
-                                    <h4 className="font-medium text-gray-900">
-                                       {role.title} at {role.organization}
-                                    </h4>
-                                    <p className="mt-2 text-gray-600">
-                                       {role.description}
-                                    </p>
-                                 </div>
-                              ))}
-                           </div>
-                        </div>
-                     )} */}
-                  </div>
-               )}
+                                {exp.title}
+                                {isLocked && (
+                                  <span
+                                    style={{
+                                      color: "#64748b",
+                                      marginLeft: 4,
+                                      fontSize: 11,
+                                    }}
+                                  >
+                                    (Locked)
+                                  </span>
+                                )}
+                                {isTitleBased && !isLocked && (
+                                  <span
+                                    style={{
+                                      color: "#64748b",
+                                      marginLeft: 4,
+                                      fontSize: 11,
+                                    }}
+                                  >
+                                    (Title-based)
+                                  </span>
+                                )}
+                              </label>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              ))}
             </div>
-         </CardContent>
-      </Card>
-   );
+
+            {/* Add new skill */}
+            <button className="jda-add-btn" onClick={handleAddSkill}>
+              <PlusCircle size={13} />
+              Add Skill
+            </button>
+          </div>
+        )}
+      </div>
+    </>
+  );
 }

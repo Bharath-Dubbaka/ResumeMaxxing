@@ -1,3 +1,4 @@
+//src/components/ResumePreview.jsx
 import React, { useState, useEffect } from "react";
 import { Download, Edit, Trash2 } from "lucide-react";
 import { Button } from "./ui/button";
@@ -159,11 +160,30 @@ const ResumePreview = ({
 
   return (
     <div className="mt-8">
-      <TemplateSelector
-        selectedTemplate={selectedTemplate}
-        onTemplateChange={setSelectedTemplate}
-      />
-
+      <div className="mt-4 flex justify-between gap-4 sticky bottom-0 py-4 bg-white/80 backdrop-blur-xl border-b shadow-lg">
+        <div>
+          {" "}
+          <TemplateSelector
+            selectedTemplate={selectedTemplate}
+            onTemplateChange={setSelectedTemplate}
+          />
+        </div>
+        <div>
+          <Button
+            onClick={() => setIsEditing(!isEditing)}
+            className="mr-2 bg-red-500"
+          >
+            {isEditing ? "Save Changes" : "Edit Resume"}
+          </Button>
+          <Button
+            onClick={() => downloadAsWord(selectedTemplate)}
+            disabled={loading}
+            className=" bg-teal-800"
+          >
+            Download as Word
+          </Button>
+        </div>
+      </div>
       <div className="bg-white rounded-lg shadow-lg">
         <PreviewComponent
           resumeData={resumeData}
@@ -177,7 +197,7 @@ const ResumePreview = ({
         />
       </div>
 
-      <div className="mt-4 flex justify-end gap-4 sticky bottom-0 py-4 bg-white/80 backdrop-blur-xl border-t shadow-lg">
+      {/* <div className="mt-4 flex justify-end gap-4 sticky bottom-0 py-4 bg-white/80 backdrop-blur-xl border-t shadow-lg">
         <Button onClick={() => setIsEditing(!isEditing)} className="mr-2 bg-red-500">
           {isEditing ? "Save Changes" : "Edit Resume"}
         </Button>
@@ -188,7 +208,7 @@ const ResumePreview = ({
         >
           Download as Word
         </Button>
-      </div>
+      </div> */}
     </div>
   );
 };
