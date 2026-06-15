@@ -300,7 +300,7 @@ function DashboardContent() {
           {/* ── LEFT COLUMN — Master Profile Display ── */}
           <div id="step-1" className="space-y-0">
             <div
-              className="rounded-2xl overflow-hidden shadow-sm border"
+              className="rounded-2xl shadow-sm border"
               style={{
                 background: "rgba(255,255,255,0.85)",
                 borderColor: "rgba(203,213,225,0.6)",
@@ -661,21 +661,29 @@ function DashboardContent() {
                             }}
                           >
                             {/* Skill name — debounced direct save on blur */}
-                            <SkillInput
-                              value={s.skill}
-                              onSave={(newVal) => {
-                                const updated = userDetails.customSkills.map(
-                                  (sk, idx) =>
-                                    idx === i ? { ...sk, skill: newVal } : sk,
-                                );
-                                handleDirectSave({
-                                  ...userDetails,
-                                  customSkills: updated,
-                                });
-                              }}
-                            />
+                            <span
+                              className="ro-tooltip"
+                              data-tooltip="Click to rename this skill"
+                            >
+                              <SkillInput
+                                value={s.skill}
+                                onSave={(newVal) => {
+                                  const updated = userDetails.customSkills.map(
+                                    (sk, idx) =>
+                                      idx === i ? { ...sk, skill: newVal } : sk,
+                                  );
+                                  handleDirectSave({
+                                    ...userDetails,
+                                    customSkills: updated,
+                                  });
+                                }}
+                              />
+                            </span>
+
                             {/* Map button */}
                             <button
+                              className="ro-tooltip"
+                              data-tooltip="Map this skill to specific work experiences"
                               onClick={() =>
                                 setCompactDropdown(
                                   compactDropdown === i ? null : i,
@@ -698,6 +706,8 @@ function DashboardContent() {
 
                             {/* Delete — direct save */}
                             <button
+                              className="ro-tooltip"
+                              data-tooltip="Remove this skill"
                               onClick={() => {
                                 const updated = userDetails.customSkills.filter(
                                   (_, idx) => idx !== i,
@@ -1031,10 +1041,22 @@ function DashboardContent() {
                                 }}
                               >
                                 {[
-                                  { type: "skillBased", label: "Skills" },
-                                  { type: "titleBased", label: "Title" },
-                                  { type: "none", label: "🔒" },
-                                ].map(({ type, label }) => (
+                                  {
+                                    type: "skillBased",
+                                    label: "Skills",
+                                    tip: "Generate bullets based on mapped skills",
+                                  },
+                                  {
+                                    type: "titleBased",
+                                    label: "Title",
+                                    tip: "Generate bullets based on job title",
+                                  },
+                                  {
+                                    type: "none",
+                                    label: "🔒",
+                                    tip: "Lock — no AI bullets for this role",
+                                  },
+                                ].map(({ type, label, tip }) => (
                                   <button
                                     key={type}
                                     // onClick={() => {
@@ -1051,6 +1073,8 @@ function DashboardContent() {
                                     //     experience: newExp,
                                     //   });
                                     // }}
+                                    className="ro-tooltip"
+                                    data-tooltip={tip}
                                     onClick={() => {
                                       const newExp = userDetails.experience.map(
                                         (e, idx) =>
@@ -1235,7 +1259,7 @@ function DashboardContent() {
             {/* Step 3: Align Skills → Resume Generator */}
 
             <div
-              className="rounded-2xl overflow-hidden shadow-sm border relative"
+              className="rounded-2xl shadow-sm border relative"
               style={{
                 background: "rgba(255,255,255,0.85)",
                 borderColor: "rgba(203,213,225,0.6)",

@@ -1,6 +1,5 @@
 //src/components/JobDescriptionAnalyzer.jsx
 
-
 "use client";
 import { useState, useEffect, useRef, useCallback } from "react";
 import { Button } from "../components/ui/button";
@@ -141,30 +140,29 @@ export default function JobDescriptionAnalyzer() {
     }
   }, [analysis?.technicalSkills, userDetails]);
 
-const initializeCombinedSkills = () => {
-  const customSkillSet = new Set(
-    userDetails?.customSkills?.map((cs) => cs.skill) || [],
-  );
-  const allIndices = userDetails?.experience?.map((_, i) => i) || []; // ← ADD THIS
+  const initializeCombinedSkills = () => {
+    const customSkillSet = new Set(
+      userDetails?.customSkills?.map((cs) => cs.skill) || [],
+    );
+    const allIndices = userDetails?.experience?.map((_, i) => i) || []; // ← ADD THIS
 
-  const generated =
-    analysis?.technicalSkills
-      ?.filter((skill) => !customSkillSet.has(skill))
-      .map((skill) => ({
-        skill,
-        experienceMappings:
-          skillMappings.find((m) => m.skill === skill)?.experienceMappings ||
-          allIndices,  // ← now defined
-        type: "generated",
+    const generated =
+      analysis?.technicalSkills
+        ?.filter((skill) => !customSkillSet.has(skill))
+        .map((skill) => ({
+          skill,
+          experienceMappings:
+            skillMappings.find((m) => m.skill === skill)?.experienceMappings ||
+            allIndices, // ← now defined
+          type: "generated",
+        })) || [];
+    const custom =
+      userDetails?.customSkills?.map((skill) => ({
+        ...skill,
+        type: "custom",
       })) || [];
-  const custom =
-    userDetails?.customSkills?.map((skill) => ({
-      ...skill,
-      type: "custom",
-    })) || [];
-  return [...generated, ...custom];
-};
-
+    return [...generated, ...custom];
+  };
 
   useEffect(() => {
     if (
@@ -684,6 +682,39 @@ const initializeCombinedSkills = () => {
         }
         .jda-badge.generated { background: #ede9fe; color: #7c3aed; }
         .jda-badge.custom    { background: #dcfce7; color: #15803d; }
+
+
+        .ro-tooltip {
+  position: relative;
+}
+.ro-tooltip:hover::after {
+  content: attr(data-tooltip);
+  position: absolute;
+  bottom: calc(100% + 6px);
+  left: 50%;
+  transform: translateX(-50%);
+  background: #1e293b;
+  color: #f1f5f9;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 5px 9px;
+  border-radius: 6px;
+  white-space: nowrap;
+  z-index: 100;
+  pointer-events: none;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+}
+.ro-tooltip:hover::before {
+  content: "";
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  border: 5px solid transparent;
+  border-top-color: #1e293b;
+  z-index: 100;
+  pointer-events: none;
+}
       `}</style>
 
       <div className="jda-wrap">
@@ -751,7 +782,8 @@ const initializeCombinedSkills = () => {
                   {/* Editable skill name */}
                   <input
                     type="text"
-                    className="jda-skill-input"
+                    className="jda-skill-input ro-tooltip"
+                    data-tooltip="Click to rename this skill"
                     value={skillObj.skill}
                     onChange={(e) => handleSkillChange(e.target.value, index)}
                     placeholder="Skill name"
@@ -761,7 +793,8 @@ const initializeCombinedSkills = () => {
                   {/* Save to custom (only for generated) */}
                   {skillObj.type === "generated" && (
                     <button
-                      className="jda-chip-btn save"
+                      className="jda-chip-btn save ro-tooltip"
+                      data-tooltip="Save this AI-suggested skill to your profile"
                       title="Save to custom skills"
                       onClick={() => handleSaveToCustomSkills(skillObj.skill)}
                     >
@@ -771,7 +804,8 @@ const initializeCombinedSkills = () => {
 
                   {/* Delete */}
                   <button
-                    className="jda-chip-btn del"
+                    className="jda-chip-btn del ro-tooltip"
+                    data-tooltip="Remove this skill"
                     title="Remove skill"
                     onClick={() =>
                       skillObj.type === "custom"
@@ -785,7 +819,8 @@ const initializeCombinedSkills = () => {
                   {/* Map to experience */}
                   <button
                     data-index={index}
-                    className={`jda-chip-btn map${openDropdown === index ? " active" : ""}`}
+                    className={`jda-chip-btn map ro-tooltip${openDropdown === index ? " active" : ""}`}
+                    data-tooltip="Map this skill to specific work experiences"
                     title="Map to experience"
                     onClick={() => handleDropdownToggle(index)}
                   >
