@@ -27,11 +27,11 @@ class AuthService {
       localStorage.setItem("firebaseToken", idToken); // You can read this from Postman too
 
       // Send to backend (optional, for example)
-      await fetch("http://localhost:9999/", {
-         headers: {
-            Authorization: `Bearer ${idToken}`,
-         },
-      });
+      // await fetch("http://localhost:9999/", {
+      //    headers: {
+      //       Authorization: `Bearer ${idToken}`,
+      //    },
+      // });
 
       // Update user data
       const userData = {

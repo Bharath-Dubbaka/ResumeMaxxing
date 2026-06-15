@@ -13,6 +13,9 @@ import { setUserDetails } from "../store/slices/firebaseSlice";
 import { toast, Toaster } from "sonner";
 import MiniPreview from "./MiniPreview";
 import ResumeDropZone from "./ResumeDropZone";
+import AuthService from "../services/AuthService";
+import { setUser } from "../store/slices/authSlice";
+import { setUserQuota } from "../store/slices/firebaseSlice";
 
 // ─── Hero Banner ──────────────────────────────────────────────────────────────
 function HeroBanner() {
@@ -134,24 +137,33 @@ function DashboardContent() {
   const [activeView, setActiveView] = useState("builder"); // 'builder' | 'preview'
   const [showEditModal, setShowEditModal] = useState(false);
   const [liveDetails, setLiveDetails] = useState(null);
-  const [compactEdits, setCompactEdits] = useState(null);
+  // const [compactEdits, setCompactEdits] = useState(null);
   const [compactDropdown, setCompactDropdown] = useState(null);
   const [inlineSaving, setInlineSaving] = useState(false);
+  const [showLoginModal, setShowLoginModal] = useState(false);
+  const [isLoggingIn, setIsLoggingIn] = useState(false);
+
+  // ── Step gating ──
+  const isProfileComplete = Boolean(
+    // userDetails?.fullName?.trim() &&
+    // userDetails?.email?.trim() &&
+    userDetails?.experience?.length > 0,
+  );
 
   // helper — always read from buffer if it exists, else Redux
-  const displayDetails = compactEdits || userDetails;
-  useEffect(() => {
-    if (!loading) {
-      if (!user) {
-        router.push("/");
-        return;
-      }
-      // if (!userDetails && !isEditing && router.pathname !== "/userFormPage") {
-      //   router.push("/userFormPage");
-      //   return;
-      // }
-    }
-  }, [loading, user, userDetails, router, isEditing]);
+  // const displayDetails = compactEdits || userDetails;
+  // useEffect(() => {
+  //   if (!loading) {
+  //     if (!user) {
+  //       router.push("/");
+  //       return;
+  //     }
+  //     // if (!userDetails && !isEditing && router.pathname !== "/userFormPage") {
+  //     //   router.push("/userFormPage");
+  //     //   return;
+  //     // }
+  //   }
+  // }, [loading, user, userDetails, router, isEditing]);
 
   // ADD after the compactDropdown state:
   useEffect(() => {
@@ -179,25 +191,43 @@ function DashboardContent() {
       setIsSaving(false);
     }
   };
-
-  const handleParsedResume = (parsedDetails) => {
-    // Merges parsed resume into the compactEdits buffer.
-    // Nothing is saved to Firestore until the user clicks "Save Changes".
+  const handleParsedResume = async (parsedDetails) => {
     console.log("[Dashboard] Resume parsed — raw result:", parsedDetails);
-    console.log("[Dashboard] experience:", parsedDetails.experience);
-    console.log("[Dashboard] skills:", parsedDetails.customSkills);
-    console.log("[Dashboard] education:", parsedDetails.education);
 
-    // Push straight into Redux so the entire existing UI updates immediately.
-    // Nothing hits Firestore until the user clicks "Save Changes".
-    dispatch(setUserDetails(parsedDetails));
+    if (!user) return;
 
-    // Also stage as compactEdits so the Save Changes button appears.
-    setCompactEdits(parsedDetails);
-    toast.success("Resume imported — review and SAVE before proceeding.", {
-      duration: 9000,
-    });
+    try {
+      await UserDetailsService.saveUserDetails(user.uid, parsedDetails);
+      dispatch(setUserDetails(parsedDetails));
+      toast.success("Resume imported and saved to your Master Profile!", {
+        duration: 5000,
+      });
+    } catch (err) {
+      console.error("Error saving imported resume:", err);
+      dispatch(setUserDetails(parsedDetails)); // still show it in the UI
+      toast.error(
+        "Resume imported but couldn't auto-save. Please open Edit Full Profile and save manually.",
+      );
+    }
   };
+  // const handleParsedResume = (parsedDetails) => {
+  //   // Merges parsed resume into the compactEdits buffer.
+  //   // Nothing is saved to Firestore until the user clicks "Save Changes".
+  //   console.log("[Dashboard] Resume parsed — raw result:", parsedDetails);
+  //   console.log("[Dashboard] experience:", parsedDetails.experience);
+  //   console.log("[Dashboard] skills:", parsedDetails.customSkills);
+  //   console.log("[Dashboard] education:", parsedDetails.education);
+
+  //   // Push straight into Redux so the entire existing UI updates immediately.
+  //   // Nothing hits Firestore until the user clicks "Save Changes".
+  //   dispatch(setUserDetails(parsedDetails));
+
+  //   // Also stage as compactEdits so the Save Changes button appears.
+  //   setCompactEdits(parsedDetails);
+  //   toast.success("Resume imported — review and SAVE before proceeding.", {
+  //     duration: 9000,
+  //   });
+  // };
 
   const handleDirectSave = async (updatedDetails) => {
     try {
@@ -210,11 +240,29 @@ function DashboardContent() {
       toast.error("Failed to save. Please try again.");
     }
   };
+  const handleLogin = async () => {
+    try {
+      setIsLoggingIn(true);
+      await AuthService.signInWithGoogle(
+        dispatch,
+        setUser,
+        setUserQuota,
+        setUserDetails,
+      );
+      setShowLoginModal(false);
+      toast.success("Logged in! Let's build your profile.");
+    } catch (error) {
+      console.error("Login error:", error);
+      toast.error("Login failed. Please try again.");
+    } finally {
+      setIsLoggingIn(false);
+    }
+  };
 
   if (loading || isSaving) {
     return (
       <div
-        className="min-h-screen flex items-center justify-center"
+        className="min-h-[400px] flex items-center justify-center"
         style={{
           background:
             "linear-gradient(135deg, #eef2ff 0%, #f5f3ff 50%, #fdf4ff 100%)",
@@ -230,11 +278,12 @@ function DashboardContent() {
     );
   }
 
-  if (!user) return null;
+  // if (!user) return null;
 
   return (
     <div
       className="min-h-screen"
+      id="resume-builder"
       style={{
         background:
           "linear-gradient(135deg, #f0f4ff 0%, #f8f4ff 50%, #fff0fb 100%)",
@@ -245,7 +294,6 @@ function DashboardContent() {
       <div className="max-w-[1400px] mx-auto px-4 md:px-8 pt-6 pb-16">
         {/* ── Hero ── */}
         <HeroBanner />
-
         {/* ── Two-column workspace ── */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-2 items-start">
           {/* ── LEFT COLUMN — Step 1: Master Profile ── */}
@@ -257,8 +305,22 @@ function DashboardContent() {
                 background: "rgba(255,255,255,0.85)",
                 borderColor: "rgba(203,213,225,0.6)",
                 backdropFilter: "blur(12px)",
+                position: "relative",
               }}
             >
+              {!user && (
+                <div
+                  onClick={() => setShowLoginModal(true)}
+                  title="Log in to build your profile"
+                  style={{
+                    position: "absolute",
+                    inset: 0,
+                    zIndex: 20,
+                    cursor: "pointer",
+                    background: "transparent",
+                  }}
+                />
+              )}
               {/* Header */}
               <div className="px-5 pt-5 pb-0">
                 <StepLabel
@@ -277,6 +339,27 @@ function DashboardContent() {
 
               {/* Read-only profile display */}
               <div className="px-5 pb-5 space-y-5">
+                <button
+                  onClick={() => setShowEditModal(true)}
+                  style={{
+                    width: "100%",
+                    padding: "10px 0",
+                    borderRadius: 10,
+                    fontSize: 13,
+                    fontWeight: 700,
+                    background: "linear-gradient(135deg, #6366f1, #8b5cf6)",
+                    color: "#fff",
+                    border: "none",
+                    cursor: "pointer",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    gap: 6,
+                  }}
+                >
+                  ✏️ Edit Full Profile
+                </button>
+
                 {/* Contact */}
                 {userDetails ? (
                   <>
@@ -308,11 +391,11 @@ function DashboardContent() {
                           marginBottom: 2,
                         }}
                       >
-                        {userDetails.fullName || user.name || "—"}
+                        {userDetails?.fullName || user?.name || "—"}
                       </p>
                       <p style={{ fontSize: 12, color: "#64748b" }}>
-                        {userDetails.email || user.email || "—"}
-                        {userDetails.phone ? ` · ${userDetails.phone}` : ""}
+                        {userDetails?.email || user?.email || "—"}
+                        {userDetails?.phone ? ` · ${userDetails?.phone}` : ""}
                       </p>
                     </div>
 
@@ -795,16 +878,16 @@ function DashboardContent() {
                     </div>
 
                     {/* ── Action buttons ── */}
-                    <div
+                    {/* <div
                       style={{
                         display: "flex",
                         gap: 8,
                         padding: "10px",
                         borderRadius: 10,
                       }}
-                    >
-                      {/* Save compact edits */}
-                      {compactEdits && (
+                    > */}
+                    {/* Save compact edits */}
+                    {/* {compactEdits && (
                         <button
                           onClick={async () => {
                             await handleSaveDetails(compactEdits);
@@ -830,8 +913,8 @@ function DashboardContent() {
                         >
                           💾 Save Changes
                         </button>
-                      )}
-                      {compactEdits && (
+                      )} */}
+                    {/* {compactEdits && (
                         <button
                           onClick={() => {
                             setCompactEdits(null);
@@ -850,9 +933,9 @@ function DashboardContent() {
                         >
                           ✕
                         </button>
-                      )}
-                      {/* Edit full profile */}
-                      <button
+                      )} */}
+                    {/* Edit full profile */}
+                    {/* <button
                         onClick={() => setShowEditModal(true)}
                         style={{
                           flex: 1,
@@ -872,8 +955,8 @@ function DashboardContent() {
                         }}
                       >
                         ✏️ Edit Full Profile
-                      </button>
-                    </div>
+                      </button> */}
+                    {/* </div> */}
 
                     {/* Experience */}
                     {userDetails.experience?.length > 0 && (
@@ -1092,7 +1175,7 @@ function DashboardContent() {
                     )}
 
                     {/* Edit button */}
-                    <button
+                    {/* <button
                       onClick={() => setShowEditModal(true)}
                       style={{
                         width: "100%",
@@ -1111,7 +1194,7 @@ function DashboardContent() {
                       }}
                     >
                       ✏️ Edit Profile
-                    </button>
+                    </button> */}
                   </>
                 ) : (
                   /* Empty state */
@@ -1152,7 +1235,7 @@ function DashboardContent() {
             {/* Step 3: Align Skills → Resume Generator */}
 
             <div
-              className="rounded-2xl overflow-hidden shadow-sm border"
+              className="rounded-2xl overflow-hidden shadow-sm border relative"
               style={{
                 background: "rgba(255,255,255,0.85)",
                 borderColor: "rgba(203,213,225,0.6)",
@@ -1170,24 +1253,127 @@ function DashboardContent() {
                   target job description to match against.
                 </p>
               </div>
-              <div className="px-4 pb-5">
+              <div
+                className="px-4 pb-5"
+                style={
+                  !isProfileComplete
+                    ? { pointerEvents: "none", opacity: 0.4 }
+                    : undefined
+                }
+              >
                 <JobDescriptionAnalyzer />
               </div>
+
+              {!isProfileComplete && (
+                <div
+                  style={{
+                    position: "absolute",
+                    inset: 0,
+                    background: "rgba(255,255,255,0.55)",
+                    backdropFilter: "blur(2px)",
+                    display: "flex",
+                    flexDirection: "column",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    gap: 8,
+                    textAlign: "center",
+                    padding: 24,
+                    zIndex: 10,
+                  }}
+                >
+                  <span style={{ fontSize: 28 }}>🔒</span>
+                  <p
+                    style={{ fontSize: 13, fontWeight: 700, color: "#475569" }}
+                  >
+                    Complete Step 1 first
+                  </p>
+                  <p style={{ fontSize: 12, color: "#94a3b8", maxWidth: 260 }}>
+                    Add your name, email, and at least one work experience to
+                    your Master Profile to unlock this step.
+                  </p>
+                  <button
+                    onClick={() => setShowEditModal(true)}
+                    style={{
+                      marginTop: 6,
+                      padding: "8px 18px",
+                      borderRadius: 10,
+                      fontSize: 12,
+                      fontWeight: 700,
+                      background: "linear-gradient(135deg, #6366f1, #8b5cf6)",
+                      color: "#fff",
+                      border: "none",
+                      cursor: "pointer",
+                    }}
+                  >
+                    Go to Step 1
+                  </button>
+                </div>
+              )}
             </div>
           </div>
         </div>
         {/* Step: 4 - Resume Generator */}
         <div
-          className="rounded-2xl overflow-hidden shadow-sm border"
+          className="rounded-2xl overflow-hidden shadow-sm border relative"
           style={{
             background: "rgba(255,255,255,0.85)",
             borderColor: "rgba(203,213,225,0.6)",
             backdropFilter: "blur(12px)",
           }}
         >
-          <div className="px-4 pb-5">
+          <div
+            className="px-4 pb-5"
+            style={
+              !isProfileComplete
+                ? { pointerEvents: "none", opacity: 0.4 }
+                : undefined
+            }
+          >
             <ResumeGenerator />
           </div>
+
+          {!isProfileComplete && (
+            <div
+              style={{
+                position: "absolute",
+                inset: 0,
+                background: "rgba(255,255,255,0.55)",
+                backdropFilter: "blur(2px)",
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+                justifyContent: "center",
+                gap: 8,
+                textAlign: "center",
+                padding: 24,
+                zIndex: 10,
+              }}
+            >
+              <span style={{ fontSize: 28 }}>🔒</span>
+              <p style={{ fontSize: 13, fontWeight: 700, color: "#475569" }}>
+                Complete Step 1 first
+              </p>
+              <p style={{ fontSize: 12, color: "#94a3b8", maxWidth: 260 }}>
+                Your Master Profile must be set up before generating a resume.
+              </p>
+              <button
+                onClick={() => setShowEditModal(true)}
+                style={{
+                  marginTop: 6,
+                  padding: "8px 18px",
+                  borderRadius: 10,
+                  fontSize: 12,
+                  fontWeight: 700,
+                  background: "linear-gradient(135deg, #6366f1, #8b5cf6)",
+                  color: "#fff",
+                  border: "none",
+                  cursor: "pointer",
+                }}
+              >
+                Go to Step 1
+              </button>
+            </div>
+          )}
         </div>
         {/* ── Edit Profile Modal / UserForm ── */}
         {/* ── Edit Profile Modal / UserForm ── */}
@@ -1299,6 +1485,98 @@ function DashboardContent() {
           />
         </div> */}
               </div>
+            </div>
+          </>
+        )}
+        {/* Login modal */}
+        {showLoginModal && (
+          <>
+            <div
+              onClick={() => setShowLoginModal(false)}
+              style={{
+                position: "fixed",
+                inset: 0,
+                background: "rgba(15,23,42,0.6)",
+                backdropFilter: "blur(4px)",
+                zIndex: 60,
+              }}
+            />
+            <div
+              style={{
+                position: "fixed",
+                top: "50%",
+                left: "50%",
+                transform: "translate(-50%, -50%)",
+                width: "min(380px, 90vw)",
+                background: "#fff",
+                borderRadius: 20,
+                boxShadow: "0 24px 64px rgba(0,0,0,0.25)",
+                zIndex: 61,
+                padding: "28px 24px",
+                textAlign: "center",
+              }}
+            >
+              <p style={{ fontSize: 32, marginBottom: 8 }}>🔐</p>
+              <p
+                style={{
+                  fontSize: 16,
+                  fontWeight: 700,
+                  color: "#1e293b",
+                  marginBottom: 6,
+                }}
+              >
+                Sign in to build your resume
+              </p>
+              <p style={{ fontSize: 13, color: "#64748b", marginBottom: 20 }}>
+                Create your free master profile and start tailoring resumes to
+                any job description.
+              </p>
+              <button
+                onClick={handleLogin}
+                disabled={isLoggingIn}
+                style={{
+                  width: "100%",
+                  padding: "11px 0",
+                  borderRadius: 10,
+                  fontSize: 13,
+                  fontWeight: 700,
+                  background: "linear-gradient(135deg, #6366f1, #8b5cf6)",
+                  color: "#fff",
+                  border: "none",
+                  cursor: isLoggingIn ? "not-allowed" : "pointer",
+                  opacity: isLoggingIn ? 0.7 : 1,
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  gap: 8,
+                  marginBottom: 8,
+                }}
+              >
+                {isLoggingIn ? (
+                  <>
+                    <Spinner className="w-4 h-4 border-2" />
+                    Signing in…
+                  </>
+                ) : (
+                  "Continue with Google"
+                )}
+              </button>
+              <button
+                onClick={() => setShowLoginModal(false)}
+                style={{
+                  width: "100%",
+                  padding: "9px 0",
+                  borderRadius: 10,
+                  fontSize: 13,
+                  fontWeight: 600,
+                  background: "#f1f5f9",
+                  color: "#64748b",
+                  border: "none",
+                  cursor: "pointer",
+                }}
+              >
+                Maybe later
+              </button>
             </div>
           </>
         )}
