@@ -16,6 +16,19 @@ import AuthService from "../services/AuthService";
 import Whyus from "../components/ui/Whyus";
 import DashboardPage from "./dashboard/page";
 import Newlayout from "../components/Newlayout";
+import {
+  Sparkles,
+  Video,
+  ArrowRight,
+  CheckCircle,
+  Shield,
+  Menu,
+  X,
+  Laptop,
+  User,
+  BrainCircuit,
+  Github,
+} from "lucide-react";
 
 export default function Home() {
   const router = useRouter();
@@ -67,141 +80,170 @@ export default function Home() {
   }
 
   return (
-    <div className="">
-      <div>
-        {/* Hero Section */}
-        <div className="min-h-screen relative z-10 text-center space-y-8 pt-32 lg:pt-48 bg-gradient-to-br from-pink-100/70  to-yellow-50/80   animate-gradient-xy animate-gradient-xy">
-          <div className="min-h-36 sm:min-h-max">
-            <TypeWriting />
-          </div>
-          <p className="text-slate-800  font-light text-xl md:text-2xl max-w-4xl mx-auto px-4">
-            <span className="underline text-2xl md:text-3xl">
-              Built for busy job seekers — upload your master resume once, and
-              customize it for every job in a few clicks
-            </span>
-          </p>
-          <div className="space-x-2 flex justify-center align-middle items-center">
-            <div className="sm:w-1/2 md:w-1/3 lg:w-1/4  rounded-full bg-gradient-to-r from-teal-500 via-orange-600 to-purple-500 p-[2px] animate-shine">
-              {" "}
-              <button
-                size="lg"
-                className="w-full px-6 py-4 text-lg font-semibold text-white shadow-xl rounded-full bg-gradient-to-r from-purple-700 via-pink-800 to-purple-700 p-[2px] animate-shine transition-all duration-300"
-                onClick={handleGetStarted}
-              >
-                Get Started
-              </button>
-              {/* <Button size="lg" variant="outline" className="hidden">
-                     View Examples
-                  </Button> */}
+    <div className="min-h-screen bg-[#fafbfc] text-slate-800 selection:bg-indigo-100 selection:text-indigo-900 font-sans">
+      {/* Premium Sticky Navigation Bar */}
+      <header className="sticky top-0 z-40 bg-white/80 backdrop-blur-md border-b border-slate-100 px-6 sm:px-12 py-4">
+        <div className="max-w-7xl mx-auto flex justify-between items-center">
+          <div className="flex items-center gap-2">
+            <div className="w-8 h-8 rounded-xl bg-slate-950 flex items-center justify-center text-white font-display font-bold">
+              R
             </div>
+            <span className="font-display font-medium text-slate-900 tracking-tight text-base sm:text-lg">
+              ResumeTailor
+            </span>
+            <span className="text-[10px] bg-indigo-50 text-indigo-600 font-mono font-black rounded-full px-2 py-0.5">
+              AI-V3
+            </span>
           </div>
-          {/* Features Section */}
-          {/* <div className="grid md:grid-cols-3 gap-8 pt-10 pb-20 mb-10 px-4 md:px-20 ">
-                  <FeatureCard
-                     title="AI-Powered Writing"
-                     description="Our AI analyzes your experience and generates professional descriptions that highlight your achievements."
-                  />
-                  <FeatureCard
-                     title="ATS-Friendly Templates"
-                     description="Professionally designed templates that are optimized for Applicant Tracking Systems."
-                  />
-                  <FeatureCard
-                     title="Real-Time Editing"
-                     description="Edit and preview your resume in real-time with our intuitive interface."
-                  />
-               </div> */}
-          <div>
-            {/* <div className="text-center mb-2 pt-8">
-                     <h2 className="text-4xl font-bold text-center mb-2 underline">
-                        How this works !
-                     </h2>
-                     <p className="text-xl text-gray-600 mb-4">
-                        Our streamlined four-step process transforms your resume
-                        creation
-                     </p>
-                     <p className="text-gray-500 max-w-[80%] mx-auto">
-                        <span className="font-bold">
-                           {" "}
-                           Centralized Master Profile
-                        </span>
-                        ,
-                        <span className="hidden sm:inline">
-                           securely storing your professional details and
-                           reusable skills, eliminating repetitive entries.{" "}
-                        </span>
-                        <span className="font-bold">
-                           Smart Job Description Analysis
-                        </span>{" "}
-                        <span className="hidden sm:inline">
-                           uses AI to extract key requirements and match them to
-                           profile, ensuring your resume is tailored to each
-                           opportunity.
-                        </span>
-                        <span className="font-bold">
-                           AI-Optimized Resume Generation
-                        </span>{" "}
-                        <span className="hidden sm:inline">
-                           automatically creates targeted summaries and dynamic
-                           responsibilities, saving you hours of manual work.{" "}
-                        </span>
-                        <span className="font-bold">
-                           Finally, Professional Export & Templates{" "}
-                        </span>
-                        <span className="hidden sm:inline">
-                           provide ATS-friendly formats, allowing you to present
-                           a polished, impactful resume every time."
-                        </span>
-                     </p>
-                  </div> */}
-            <section className="flex flex-col lg:flex-row  justify-between  px-4 py-8 lg:px-16 lg:pb-24 rounded-lg ">
-              {/* Video Embed */}
-              <div className="w-full lg:w-3/5 aspect-video mb-6 md:mb-0 shadow-2xl">
-                <iframe
-                  className="w-full h-full rounded-md"
-                  src="https://www.youtube.com/embed/zRR9SISA7sw?&vq=hd1080&modestbranding=1&rel=0&autoplay=1&mute=1"
-                  title="How to Build Your AI Resume"
-                  frameBorder="0"
-                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-                  allowFullScreen
-                  // Optional: Add these for mobile optimization
-                  playsInline
-                  muted={1}
-                ></iframe>
-              </div>
 
-              {/* Content Section */}
-              <div className="w-full pt-4 lg:pt-0 lg:w-2/5 flex flex-col items-start lg:pl-6 text-start">
-                <h2 className="text-2xl md:text-2xl font-bold text-gray-800 mb-6">
-                  {/* See what our AI resume builder can do ???  */}
-                  Update your resume according to Job description in Minutes
-                </h2>
-                <p className="text-gray-600 text-lg mb-4 flex">
-                  <p>🔸</p>
-                  Tired of updating resume for each and every Job Description
-                  ??? let our AI do that in just Minutes for FREE !!!
-                </p>
-                <p className="text-gray-600 text-lg flex">
-                  <p>🔸</p>
-                  Artificial intelligence has made it possible for us to
-                  automate the process of creating and tailoring a resume to the
-                  job description in just minutes, making it nearly effortless
-                  and faster than before..
-                </p>
-              </div>
-            </section>
+          <nav className="hidden md:flex items-center gap-6 text-sm font-medium">
+            <a
+              href="#problems-section"
+              className="text-slate-500 hover:text-slate-900 transition-colors"
+            >
+              Problems
+            </a>
+            <a
+              href="#how-it-works"
+              className="text-slate-500 hover:text-slate-900 transition-colors"
+            >
+              How it works
+            </a>
+            <a
+              href="#why-us"
+              className="text-slate-500 hover:text-slate-900 transition-colors"
+            >
+              Advantages
+            </a>
+            <a
+              href="#resume-builder"
+              className="text-slate-500 hover:text-slate-900 transition-colors"
+            >
+              Workspace
+            </a>
+          </nav>
+
+          <div className="flex items-center gap-4">
+            {/* Display Active Quota Meter */}
+            {/* <div className="hidden sm:flex items-center gap-2 bg-slate-50 border border-slate-200/50 rounded-full px-3 py-1 text-xs font-mono">
+              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+              <span className="text-slate-500">Free Quota:</span>
+              <strong className="text-slate-900">{quota} remaining</strong>
+            </div> */}
+
+            <button
+              onClick={handleGetStarted}
+              className="px-4 py-2 rounded-full bg-slate-900 hover:bg-indigo-600 font-semibold text-white text-xs sm:text-sm shadow-sm transition-all duration-300"
+            >
+              Get Started
+            </button>
           </div>
         </div>
+      </header>
 
-        <Newlayout />
-        {/* <DashboardPage/> */}
-        {/* <VideoSection /> */}
-        {/* <HowItWorks /> */}
-        <Whyus />
-        {/* <ProblemsWeSolve /> */}
-        {/* <StickyScrollRevealDemo /> */}
+      {/* Hero Section */}
+      <section className="relative z-10 pt-20 pb-16 text-center max-w-5xl mx-auto px-6 space-y-6">
+        {/* Dynamic TypeWriter Title Banner */}
+        <div className="min-h-36 sm:min-h-max flex justify-center items-center">
+          <TypeWriting />
+        </div>
 
-        <HowWeSolve />
-      </div>
+        <p className="text-slate-600 font-sans text-sm sm:text-base md:text-lg max-w-2xl mx-auto leading-relaxed">
+          Built for busy job seekers — upload your master resume once, and
+          customize it for every job description in a few clicks.
+        </p>
+
+        {/* Floating gradient CTA link */}
+        <div className="flex justify-center pt-2">
+          <div className="rounded-full bg-gradient-to-r from-emerald-400 via-indigo-500 to-purple-500 p-[1.5px] shadow-lg shadow-indigo-100 hover:shadow-indigo-200 transition-all">
+            <button
+              onClick={handleGetStarted}
+              className="text-white hover:text-slate-900 bg-slate-950 hover:bg-white font-semibold text-xs sm:text-sm rounded-full px-6 py-3.5 transition-all flex items-center gap-2"
+            >
+              <span>Instant Setup & Start Building</span>
+              <ArrowRight className="w-4 h-4 shrink-0" />
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <Newlayout />
+
+      {/* Video Demonstration Embedded Showcase */}
+      <section className="py-12 px-6 sm:px-12 lg:px-24">
+        <div className="max-w-5xl mx-auto bg-white border border-slate-200/80 rounded-2xl shadow-md p-4 sm:p-6 lg:p-8 flex flex-col lg:flex-row justify-between items-center gap-8">
+          {/* Custom HD Video Embed Frame */}
+          <div className="w-full lg:w-3/5 aspect-video overflow-hidden rounded-xl shadow-lg border border-slate-100 hover:scale-[1.01] transition-transform duration-300 relative bg-slate-950">
+            <iframe
+              className="absolute inset-0 w-full h-full"
+              src="https://www.youtube.com/embed/zRR9SISA7sw?&vq=hd1080&modestbranding=1&rel=0&autoplay=0&mute=1"
+              title="How to Build Your AI Resume"
+              frameBorder="0"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+              allowFullScreen
+              playsInline
+            />
+          </div>
+
+          {/* Context Explainer text panel */}
+          <div className="w-full lg:w-2/5 text-start space-y-4">
+            <div className="inline-flex items-center gap-2 bg-indigo-50 text-indigo-700 text-xs font-semibold px-2.5 py-1 rounded-full">
+              <Video className="w-3.5 h-3.5 shrink-0" />
+              <span>Interactive Walkthrough</span>
+            </div>
+
+            <h3 className="text-xl sm:text-2xl font-sans font-bold text-slate-900 leading-tight">
+              Synchronize your value proposition with the target role, instantly
+            </h3>
+
+            <ul className="space-y-3 pt-2">
+              <li className="flex gap-2.5 text-xs sm:text-sm text-slate-600 align-top">
+                <span className="text-indigo-500 text-base leading-none">
+                  🔸
+                </span>
+                <span>
+                  Tired of updates? Let our AI restructure and tailor bullet
+                  points in under 30 seconds for free.
+                </span>
+              </li>
+              <li className="flex gap-2.5 text-xs sm:text-sm text-slate-600 align-top">
+                <span className="text-indigo-500 text-base leading-none">
+                  🔸
+                </span>
+                <span>
+                  Powered by Gemini 3.5 Flash, it understands hiring criteria
+                  and automatically emphasizes relevant skills organically.
+                </span>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </section>
+
+      {/* <DashboardPage/> */}
+      {/* <VideoSection /> */}
+      {/* <HowItWorks /> */}
+      <Whyus />
+      {/* <ProblemsWeSolve /> */}
+      {/* <StickyScrollRevealDemo /> */}
+
+      <HowWeSolve />
+      {/* Shared Footer Panel */}
+      <footer className="py-12 border-t border-slate-100 bg-white px-6 sm:px-12 text-center text-slate-400 text-xs font-mono space-y-3">
+        <div className="flex justify-center items-center gap-3">
+          <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+          {/* <span className="text-slate-600 font-bold">
+            Secure Cloud Sandbox Node Active
+          </span> */}
+        </div>
+        <p className="max-w-md mx-auto leading-normal">
+          This customized tool integrates standard parsed resume guidelines.
+          Upload records safely for optimal interview matching.
+        </p>
+        <p className="text-[10px] text-slate-300">
+          © {new Date().getFullYear()} ResumeTailor Inc. All rights reserved.
+        </p>
+      </footer>
     </div>
   );
 }

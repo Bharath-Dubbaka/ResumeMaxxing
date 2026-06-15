@@ -218,7 +218,7 @@ const Header = () => {
 
       // Add Dashboard and Master Resume links for logged-in users
       if (user && userQuota) {
-         return [...baseItems, "Master Resume"];
+         return [...baseItems];
       }
 
       return baseItems;
@@ -495,7 +495,7 @@ const Header = () => {
                            </div>
 
                            {/* Quick Links Section */}
-                           <div className="px-4 py-3 border-b border-indigo-100">
+                           {/* <div className="px-4 py-3 border-b border-indigo-100">
                               <p className="text-sm font-medium text-indigo-900 mb-2">
                                  Quick Links
                               </p>
@@ -515,7 +515,7 @@ const Header = () => {
                                     Master Resume
                                  </Link>
                               </div>
-                           </div>
+                           </div> */}
 
                            {/* Premium Section */}
                            <div className="px-4 py-3 border-b border-indigo-100">
@@ -603,7 +603,7 @@ const Header = () => {
                               </div>
                            </div>
 
-                           <button
+                           {/* <button
                               onClick={() => {
                                  router.push("/userFormPage?edit=true");
                                  setIsDropdownOpen(false);
@@ -630,7 +630,7 @@ const Header = () => {
                                  />
                               </svg>
                               Edit Details/Master Copy
-                           </button>
+                           </button> */}
 
                            <button
                               onClick={() => {

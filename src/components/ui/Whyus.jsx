@@ -1,111 +1,80 @@
-import {
-   Save,
-   BrainCircuit,
-   Network,
-   ListChecks,
-   FileText,
-   LayoutTemplate,
-   Edit3,
-   GitBranch,
-   FileBox,
-} from "lucide-react";
+import { motion } from "motion/react";
+import { Zap, ShieldCheck, HeartHandshake, Award } from "lucide-react";
 
 export default function Whyus() {
-   const features = [
-      {
-         title: "Master Resume Storage",
-         description:
-            "Central hub for all your professional details & versions",
-         icon: <Save className="w-10 h-16 text-emerald-600" />,
-      },
-      {
-         title: "AI Job Analysis",
-         description: "Smart parsing of job descriptions & requirements",
-         icon: <BrainCircuit className="w-10 h-16 text-blue-600" />,
-      },
-      {
-         title: "Skill Mapping",
-         description: "Visual linking of skills to specific experiences",
-         icon: <Network className="w-10 h-16 text-purple-600" />,
-      },
-      {
-         title: "Custom Responsibilities",
-         description: "Save & reuse tailored position descriptions",
-         icon: <ListChecks className="w-10 h-16 text-amber-600" />,
-      },
+  const points = [
+    {
+      icon: Zap,
+      title: "Real-time AI Customization",
+      desc: "Our model customizes bullet points synchronously, delivering ATS-aligned phrasing in less than 30 seconds.",
+    },
+    {
+      icon: Award,
+      title: "Proven ATS Compatibility",
+      desc: "Our formats are engineered to parse perfectly on modern ATS filters including Workday, Lever, and Greenhouse.",
+    },
+    {
+      icon: ShieldCheck,
+      title: "100% Secure & Private",
+      desc: "Your data is parsed privately server-side, never persistent in databases without approval, and never sold.",
+    },
+    {
+      icon: HeartHandshake,
+      title: "No Hidden Costs",
+      desc: "Tailor your resumes for free without premium subscription popups forcing payment just as you click export.",
+    },
+  ];
 
-      {
-         title: "Template Selection",
-         description: "Multiple industry-specific professional designs",
-         icon: <LayoutTemplate className="w-10 h-16 text-pink-600" />,
-      },
-      {
-         title: "ATS-Optimized Formats",
-         description:
-            "Recruiter-approved structures that pass tracking systems",
-         icon: <FileText className="w-10 h-16 text-green-600" />,
-      },
-      {
-         title: "Live Edit Mode",
-         description: "Real-time editing with instant preview",
-         icon: <Edit3 className="w-10 h-16 text-red-600" />,
-      },
-      {
-         title: "Version Tracking",
-         description: "Manage multiple tailored resume versions",
-         icon: <GitBranch className="w-10 h-16 text-indigo-600" />,
-      },
-      {
-         title: "Word/PDF Export",
-         description: "Flawless formatting in preferred formats",
-         icon: <FileBox className="w-10 h-16 text-cyan-600" />,
-      },
-      {
-         title: "Experience Comparison",
-         description: "AI-powered gap analysis for target roles",
-         icon: <ListChecks className="w-10 h-16 text-orange-600" />,
-      },
-   ];
+  return (
+    <section
+      id="why-us"
+      className="py-16 bg-gradient-to-b from-white to-slate-50 px-6 sm:px-12 lg:px-24"
+    >
+      <div className="max-w-5xl mx-auto">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-8 mb-12">
+          <div className="max-w-lg">
+            <span className="text-xs font-mono font-bold tracking-widest text-emerald-600 bg-emerald-50 px-3 py-1 rounded-full uppercase">
+              The App Advantage
+            </span>
+            <h2 className="text-3xl font-sans font-bold text-slate-950 tracking-tight mt-3">
+              Designed for impact, engineered for callbacks
+            </h2>
+          </div>
+          <p className="text-slate-500 font-sans text-sm md:text-base max-w-md">
+            Say goodbye to generalized templates. Present a tailor-made value
+            proposition to every single hiring manager, for every role.
+          </p>
+        </div>
 
-   return (
-      <section className="py-16 px-6 sm:px-6 lg:px-28 bg-gradient-to-br from-yellow-50/90  to-pink-100/80 animate-gradient-xy">
-         <div className="max-w-7xl mx-auto">
-            <div className="text-center mb-6">
-               <h2 className="text-4xl font-bold text-center mb-2 underline">
-                  Why Choose Our Resume Builder?
-               </h2>
-               <p className="text-xl text-gray-600 mb-4">
-                  Key Differentiators That Make Us Unique
-               </p>
-               <p className="text-gray-500 max-w-2xl mx-auto">
-                  Transform your job search with AI-powered precision,
-                  industry-proven templates, and smart automation that puts you
-                  ahead of the competition.
-               </p>
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-               {features.map((feature, index) => (
-                  <div
-                     key={index}
-                     className="bg-white p-4 rounded-lg shadow-xl hover:shadow-md duration-300 hover:-translate-y-1.5 transition-transform  dotted-pattern"
-                  >
-                     <div className="flex items-start gap-3 py-1 my-2">
-                        <span className="p-2 rounded-lg bg-gradient-to-br from-blue-300/40 to-pink-300/40 animate-gradient-xy">
-                           {feature.icon}
-                        </span>
-                        <div>
-                           <h3 className="text-lg font-semibold mb-2">
-                              {feature.title}
-                           </h3>
-                           <p className="text-gray-600 text-sm">
-                              {feature.description}
-                           </p>
-                        </div>
-                     </div>
-                  </div>
-               ))}
-            </div>
-         </div>
-      </section>
-   );
+        <div className="grid sm:grid-cols-2 gap-6">
+          {points.map((pt, i) => {
+            const IconComponent = pt.icon;
+            return (
+              <motion.div
+                key={i}
+                initial={{ opacity: 0, x: i % 2 === 0 ? -16 : 16 }}
+                whileInView={{ opacity: 1, x: 0 }}
+                viewport={{ once: true, margin: "-20px" }}
+                transition={{ duration: 0.5, delay: i * 0.05 }}
+                className="bg-white border border-slate-200/80 p-5 rounded-2xl flex gap-4 hover:border-slate-300 transition-colors"
+                id={`whyus-item-${i}`}
+              >
+                <div className="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0">
+                  <IconComponent className="w-5 h-5" id={`why-icon-${i}`} />
+                </div>
+                <div>
+                  <h3 className="text-sm sm:text-base font-sans font-semibold text-slate-900">
+                    {pt.title}
+                  </h3>
+                  <p className="text-slate-500 font-sans text-xs sm:text-sm mt-1 leading-relaxed">
+                    {pt.desc}
+                  </p>
+                </div>
+              </motion.div>
+            );
+          })}
+        </div>
+      </div>
+    </section>
+  );
 }

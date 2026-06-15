@@ -1,115 +1,92 @@
-import React from "react";
-import {
-   Cpu,
-   ClipboardCheck,
-   Settings,
-   Layout,
-   File,
-   Edit3,
-} from "lucide-react";
+import { motion } from "motion/react";
+import { User, Cpu, Sparkles, FileText } from "lucide-react";
 
-const HowWeSolve = () => {
-   return (
-      <section className="py-20 bg-white rounded-lg bg-gradient-to-br from-teal-100/50  to-yellow-50/60 animate-gradient-xy">
-         <div className="text-center mb-6">
-            <h2 className="text-4xl font-bold text-center mb-2 underline">
-               How We Solve These Problems
-            </h2>
-            <p className="text-xl text-gray-600 mb-4">
-               We simplify your job search with a centralized, AI-powered resume
-               platform{" "}
-            </p>
-            <p className="text-gray-500 max-w-[80%] mx-auto">
-               Start with a master resume, leverage AI to analyze job
-               descriptions and generate custom responsibilities, and create
-               ATS-friendly, market-preferred resumes effortlessly. Our
-               intuitive editor and downloadable formats empower you to
-               fine-tune your resume, saving time and maximizing your chances of
-               success.
-            </p>
-         </div>
-         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-6xl mx-auto px-4">
-            <div className="flex flex-col items-center bg-white p-6 rounded-lg shadow-md hover:shadow-xl transition-shadow duration-300  dotted-pattern">
-               <ClipboardCheck className="h-10 w-10 text-green-600 mb-4" />
-               <h3 className="text-lg font-semibold mb-2 text-center">
-                  Start with a Master Resume
-               </h3>
-               <p className="text-gray-600 text-center ">
-                  Keep everything in one place! Enter your contact info,
-                  education, work experience, and custom responsibilities just
-                  once. ResumeOnFly becomes your central hub for AI-generated
-                  and reusable content, tailored to your needs.
-               </p>
-            </div>
-            <div className="flex flex-col items-center bg-white p-6 rounded-lg shadow-md hover:shadow-xl transition-shadow duration-300  dotted-pattern">
-               <Cpu className="h-10 w-10 text-blue-500 mb-4" />
-               <h3 className="text-lg font-semibold mb-2 text-center">
-                  AI-Powered Job Description Analysis
-                  <span className="ml-2 bg-gradient-to-br from-orange-400 via-blue-800 to-pink-500 text-white px-2 py-1 rounded-md text-sm font-medium">
-                     NEW FEATURE
-                  </span>
-               </h3>
-               <p className="text-gray-600 text-center">
-                  Paste a job description, and let our AI work its magic! It
-                  analyzes key skills and generate role-specific
-                  responsibilities that can customize and map those skills to
-                  specific work experiences, This feature takes your resume game
-                  to the next level.
-               </p>
-            </div>
-            <div className="flex flex-col items-center bg-white p-6 rounded-lg shadow-md hover:shadow-xl transition-shadow duration-300  dotted-pattern">
-               <Settings className="h-10 w-10 text-orange-500 mb-4" />
-               <h3 className="text-lg font-semibold mb-2 text-center">
-                  Generate and Save Custom Responsibilities
-                  <span className="ml-2 bg-gradient-to-br from-orange-400 via-blue-800 to-pink-500 text-white px-2 py-1 rounded-md text-sm font-medium">
-                     NEW FEATURE
-                  </span>
-               </h3>
-               <p className="text-gray-600 text-center">
-                  Tired of repeating “responsible for X” over and over? Save
-                  AI-generated responsibilities or tweak them to reuse for any
-                  job or industry. ResumeOnFly works for you, making resume
-                  customization faster and smarter.
-               </p>
-            </div>
-            <div className="flex flex-col items-center bg-white p-6 rounded-lg shadow-md hover:shadow-xl transition-shadow duration-300  dotted-pattern">
-               <File className="h-10 w-10 text-purple-600 mb-4" />
-               <h3 className="text-lg font-semibold mb-2 text-center">
-                  Generate ATS-Friendly Resumes
-               </h3>
-               <p className="text-gray-600 text-center">
-                  Built with recruiter-approved, ATS-compatible formats. With
-                  AI-analyzed keywords from job descriptions, your resume is
-                  optimized for better visibility, making you stand out in
-                  recruiter queries and ATS storage.
-               </p>
-            </div>
-            <div className="flex flex-col items-center bg-white p-6 rounded-lg shadow-md hover:shadow-xl transition-shadow duration-300  dotted-pattern">
-               <Layout className="h-10 w-10 text-yellow-600 mb-4" />
-               <h3 className="text-lg font-semibold mb-2 text-center">
-                  “Market-Preferred” Resume Structure
-               </h3>
-               <p className="text-gray-600 text-center">
-                  With decades of professional recruitment experience, we’ve
-                  cracked the code for what recruiters and agencies
-                  want—ensuring your resume has the right structure, format, and
-                  style.
-               </p>
-            </div>
-            <div className="flex flex-col items-center bg-white p-6 rounded-lg shadow-md hover:shadow-xl transition-shadow duration-300  dotted-pattern">
-               <Edit3 className="h-10 w-10 text-red-500 mb-4" />
-               <h3 className="text-lg font-semibold mb-2 text-center">
-                  Edit Without Hassle
-               </h3>
-               <p className="text-gray-600 text-center">
-                  Fine-tune your resume effortlessly using our editor mode. Make
-                  quick updates and download your resume in Word or PDF format
-                  for a professional finish.
-               </p>
-            </div>
-         </div>
-      </section>
-   );
-};
+export default function HowWeSolve() {
+  const steps = [
+    {
+      num: "01",
+      icon: User,
+      title: "Master Profile Setup",
+      description:
+        "Upload or input your master resume once. This stores all of your comprehensive work histories, redundant metrics, and exhaustive tech stack securely in a central hub.",
+    },
+    {
+      num: "02",
+      icon: Cpu,
+      title: "Smart JD Analysis",
+      description:
+        "Paste any target job description. The AI instantly extracts primary technical tools, core responsibilities, and leadership skills preferred by the employer.",
+    },
+    {
+      num: "03",
+      icon: Sparkles,
+      title: "AI tailoring Engine",
+      description:
+        "Our AI matches your profile with the job requirements, dynamically rephrasing statements, prioritizing elements, and elevating relevant keywords without altering facts.",
+    },
+    {
+      num: "04",
+      icon: FileText,
+      title: "Professional Export",
+      description:
+        "Get pristine, ATS-friendly markdown text or clean standard formats styled for immediate submission, and watch your callback rates climb.",
+    },
+  ];
 
-export default HowWeSolve;
+  return (
+    <section
+      id="how-it-works"
+      className="py-16 bg-white px-6 sm:px-12 lg:px-24"
+    >
+      <div className="max-w-5xl mx-auto">
+        <div className="text-center max-w-2xl mx-auto mb-12">
+          <span className="text-xs font-mono font-bold tracking-widest text-indigo-600 bg-indigo-50 px-3 py-1 rounded-full uppercase">
+            The Solution Flow
+          </span>
+          <h2 className="text-3xl font-sans font-bold text-slate-950 tracking-tight mt-3">
+            Tailor-made resumes in four clean steps
+          </h2>
+          <p className="text-slate-500 font-sans text-sm sm:text-base mt-2">
+            Automating the painstaking process of tailoring your professional
+            summary, core competencies, and career experiences.
+          </p>
+        </div>
+
+        <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
+          {steps.map((step, i) => {
+            const IconComponent = step.icon;
+            return (
+              <motion.div
+                key={step.num}
+                initial={{ opacity: 0, y: 16 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, margin: "-20px" }}
+                transition={{ duration: 0.5, delay: i * 0.08 }}
+                className="relative bg-slate-50 border border-slate-200/60 p-5 rounded-2xl group hover:bg-slate-900 hover:border-slate-900 hover:text-white transition-all duration-300"
+              >
+                <div className="flex justify-between items-start">
+                  <div className="w-10 h-10 rounded-xl bg-indigo-50 flex items-center justify-center text-indigo-600 group-hover:bg-indigo-950 group-hover:text-indigo-400 transition-colors">
+                    <IconComponent
+                      className="w-5 h-5"
+                      id={`icon-solve-${step.num}`}
+                    />
+                  </div>
+                  <span className="text-2xl font-mono font-black text-slate-300 group-hover:text-slate-700 transition-colors leading-none">
+                    {step.num}
+                  </span>
+                </div>
+
+                <h3 className="text-base font-sans font-semibold text-slate-900 group-hover:text-white mt-6 transition-colors">
+                  {step.title}
+                </h3>
+                <p className="text-slate-500 font-sans text-xs sm:text-sm mt-2 leading-relaxed group-hover:text-slate-300 transition-colors">
+                  {step.description}
+                </p>
+              </motion.div>
+            );
+          })}
+        </div>
+      </div>
+    </section>
+  );
+}

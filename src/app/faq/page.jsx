@@ -1,101 +1,142 @@
 "use client";
-import { useState } from "react";
+import React, { useState } from "react";
+import { ChevronDown, HelpCircle, ArrowRight } from "lucide-react";
+import { motion, AnimatePresence } from "motion/react";
 
 export default function FAQ() {
-   const faqs = [
-      {
-         question: "What is ResumeOnFly?",
-         answer: `ResumeOnFly is an AI-powered resume-building tool designed to help job seekers create tailored, professional resumes for specific job descriptions. It simplifies the resume creation process, increases success rates, and saves you time by eliminating guesswork.`,
-      },
-      {
-         question: "How does ResumeOnFly save time?",
-         answer: `Our AI handles the heavy lifting by analyzing job descriptions, identifying relevant keywords, and generating job-specific resumes in minutes. You no longer need to spend hours customizing your resume for each application.`,
-      },
-      {
-         question: "Can ResumeOnFly improve my chances of landing interviews?",
-         answer: `Yes! Tailored resumes are proven to boost callback rates from recruiters. By using ResumeOnFly to create customized documents that align with the job description and ATS requirements, you maximize your chances of standing out.`,
-      },
-      {
-         question:
-            "Why should I create a customized resume for every job application?",
-         answer: `Every job description is unique. A customized resume highlights the skills, experience, and keywords specific to the role, increasing your chances of passing ATS scans and catching the recruiter’s attention.`,
-      },
-      {
-         question:
-            "What are the benefits of using ResumeOnFly for multiple job applications?",
-         answer: `Job seekers often struggle to craft unique resumes for multiple job applications. ResumeOnFly simplifies this process by enabling you to generate tailored resumes quickly and efficiently for each position.`,
-      },
-      {
-         question: "Does ResumeOnFly guarantee a perfect resume?",
-         answer: `While ResumeOnFly provides powerful tools to create an impressive resume, it’s essential to review the final output for grammatical issues, spelling mistakes, and flow. The AI assists you, but your personal touch ensures the resume reflects your personality and achievements.`,
-      },
-      {
-         question: "Is my resume ATS compatible?",
-         answer: `Yes, ResumeOnFly ensures your resume is optimized for Applicant Tracking Systems (ATS). Our AI ensures the formatting and keywords meet modern ATS requirements, increasing the likelihood of your resume being shortlisted.`,
-      },
-      {
-         question: "Can I add my personal touch to the resume?",
-         answer: `Absolutely! ResumeOnFly is designed to assist, not replace, your input. You can edit and customize the final output to ensure it represents your unique skills, achievements, and personality.`,
-      },
-      {
-         question: "How does ResumeOnFly help with keywords?",
-         answer: `ResumeOnFly identifies critical keywords from the job description and incorporates them into your resume. This increases your chances of passing ATS scans and aligning with recruiter expectations. However, it’s essential to review and ensure the keywords truly reflect your expertise.`,
-      },
-      {
-         question: "How does ResumeOnFly handle multiple job descriptions?",
-         answer: `With ResumeOnFly, you can effortlessly switch between job descriptions and generate unique resumes tailored to each role. This ensures your application is always relevant and impactful.`,
-      },
-      {
-         question: "How does ResumeOnFly ensure a polished resume?",
-         answer: `Our tool provides a professional resume preview with properly formatted sections, including contact information, technical skills, work experience, and more. You can download your resume as a Word document and make any final tweaks before submitting it.`,
-      },
-      {
-         question:
-            "What should I keep in mind when using AI-powered resume tools?",
-         answer: `While ResumeOnFly is powerful, it’s essential to review the final resume for errors and consistency, ensure it reflects your real skills and experiences, and quantify your achievements where possible to make a stronger impact.`,
-      },
-   ];
+  const faqs = [
+    {
+      question: "What is ResumeOnFly / ResumeTailor?",
+      answer:
+        "ResumeOnFly is an AI-powered resume-building tool designed to help job seekers create tailored, professional resumes for specific job descriptions. It simplifies the resume creation process, increases success rates, and saves you time by eliminating guesswork.",
+    },
+    {
+      question: "How does the AI tailoring save time?",
+      answer:
+        "Our AI handles the heavy lifting by analyzing job descriptions, identifying key missing technical terms or soft competencies, and drafting tailored bullet-points. You don't have to rewrite your experience manually from scratch for every single application.",
+    },
+    {
+      question: "Will this improve my chances of passing ATS scans?",
+      answer:
+        "Yes. By strategically aligning the custom bullet points inside your summary and experience fields to match the exact requirements of the target description, you significantly raise your algorithmic ATS matching compatibility score.",
+    },
+    {
+      question: "Is my personal work history kept secure and private?",
+      answer:
+        "Absolutely. We secure your credentials on-the-fly and process rewrite pipelines server-side. Your raw history is never indexed by public search tools or shared with unapproved third-party agencies.",
+    },
+    {
+      question: "Do I have direct access to edit the tailored result?",
+      answer:
+        "Yes, you can edit either the Master resume or the tailored results directly inside our realiable text editors with a double-view interface anytime before copying or exporting.",
+    },
+    {
+      question: "How does the pricing credit quota work?",
+      answer:
+        "Each account starts with high-speed sandbox trial credits. Upgrading to our Premium Tier gives you 100 deep-analysis credits, faster pipeline generation speeds, and support for high-impact customized suggestions.",
+    },
+  ];
 
-   return (
-      <div className="py-28 px-4 sm:px-6 lg:px-8 bg-gradient-to-br from-yellow-50/95 via-pink-50 to-blue-200/60 animate-gradient-xy">
-         <div className="max-w-4xl mx-auto">
-            <h2 className="text-4xl font-bold text-center mb-12 underline">
-               Frequently Asked Questions
-            </h2>
-            <div className="space-y-6">
-               {faqs.map((faq, index) => (
-                  <Accordion
-                     key={index}
-                     question={faq.question}
-                     answer={faq.answer}
-                  />
-               ))}
-            </div>
-         </div>
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 16 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: -16 }}
+      transition={{ duration: 0.5 }}
+      className="py-16 px-4 sm:px-6 lg:px-12 bg-[#fafbfc] min-h-[70vh] flex flex-col justify-center"
+    >
+      <div className="max-w-3xl mx-auto w-full">
+        {/* FAQ Header */}
+        <div className="text-center mb-12">
+          <span className="text-xs font-mono font-bold tracking-widest text-indigo-600 bg-indigo-50 px-3 py-1 rounded-full uppercase">
+            Support Wiki
+          </span>
+          <h2 className="text-3xl sm:text-4xl font-sans font-bold text-slate-900 tracking-tight mt-3">
+            Frequently Asked Questions
+          </h2>
+          <p className="text-slate-500 font-sans text-sm sm:text-base mt-2">
+            Everything you need to know about preparing high-converting,
+            ATS-friendly customized resumes.
+          </p>
+        </div>
+
+        {/* FAQs Accordion Grid */}
+        <div className="space-y-3.5">
+          {faqs.map((faq, index) => (
+            <AccordionItem
+              key={index}
+              index={index}
+              question={faq.question}
+              answer={faq.answer}
+            />
+          ))}
+        </div>
+
+        {/* Support helper CTA */}
+        <div className="mt-12 p-6 rounded-2xl bg-slate-50 border border-slate-200/60 text-center space-y-3">
+          <h4 className="text-sm font-bold text-slate-900">
+            Still have unanswered questions?
+          </h4>
+          <p className="text-xs text-slate-500 max-w-md mx-auto">
+            Our helper division is always ready to assist you. Contact us
+            directly for active workspace assistance.
+          </p>
+          <a
+            href="mailto:support@cvtosalary.com"
+            className="inline-flex items-center gap-1.5 text-xs text-indigo-600 font-bold hover:text-indigo-700 transition-colors"
+          >
+            <span>Ask Support Team</span>
+            <ArrowRight className="w-3.5 h-3.5" />
+          </a>
+        </div>
       </div>
-   );
+    </motion.div>
+  );
 }
 
-function Accordion({ question, answer }) {
-   const [isOpen, setIsOpen] = useState(false);
+function AccordionItem({ question, answer, index }) {
+  const [isOpen, setIsOpen] = useState(false);
 
-   return (
+  return (
+    <div
+      onClick={() => setIsOpen(!isOpen)}
+      className={`border rounded-2xl transition-all duration-200 overflow-hidden cursor-pointer ${
+        isOpen
+          ? "border-slate-350 bg-white shadow-sm"
+          : "border-slate-200/80 bg-white hover:border-slate-300"
+      }`}
+    >
       <div
-         className="border border-gray-300 rounded-lg overflow-hidden shadow-sm"
-         onClick={() => setIsOpen(!isOpen)}
+        className="p-5 flex justify-between items-center select-none"
+        role="button"
+        tabIndex={0}
       >
-         <div
-            className="bg-white p-4 flex justify-between items-center cursor-pointer"
-            role="button"
-         >
-            <h3 className="text-lg font-medium">{question}</h3>
-            <span className="text-gray-500">{isOpen ? "-" : "+"}</span>
-         </div>
-         {isOpen && (
-            <div className="bg-gray-50 p-4 border-t border-gray-300">
-               <p className="text-gray-700">{answer}</p>
-            </div>
-         )}
+        <span className="font-sans font-semibold text-slate-950 text-sm sm:text-base">
+          {question}
+        </span>
+        <div
+          className={`p-1 rounded-lg bg-slate-50 text-slate-500 transition-transform duration-300 ${isOpen ? "rotate-180 text-slate-800" : ""}`}
+        >
+          <ChevronDown className="w-4 h-4" />
+        </div>
       </div>
-   );
+
+      <AnimatePresence initial={false}>
+        {isOpen && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: "auto", opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.25, ease: "easeInOut" }}
+          >
+            <div className="px-5 pb-5 pt-1 border-t border-slate-100 bg-[#fafbfc]">
+              <p className="text-slate-600 font-sans text-xs sm:text-sm leading-relaxed whitespace-pre-line">
+                {answer}
+              </p>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
 }
