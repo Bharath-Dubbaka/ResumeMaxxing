@@ -256,7 +256,7 @@ const Footer = () => {
             </p>
             <div className="footer-badge">
               <span className="footer-badge-dot" />
-              AI-Powered
+              ResumeOnFly
             </div>
           </div>
         </div>

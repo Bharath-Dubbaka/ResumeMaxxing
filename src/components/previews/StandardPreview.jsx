@@ -63,6 +63,13 @@ export default function StandardPreview({
               className="w-full border rounded p-2 focus:border-orange-500 focus:outline-none"
               rows={4}
             />
+          ) : resumeData.summaryMode === "regenerate" ? (
+            <p className="text-sm bg-green-100 rounded p-2 border border-green-200">
+              {resumeData.professionalSummary}
+              {/* <span className="ml-2 text-xs bg-emerald-600 text-white px-2 py-1 rounded align-middle">
+                New
+              </span> */}
+            </p>
           ) : resumeData.summaryParts?.appended ? (
             <p className="text-sm">
               {resumeData.summaryParts.base}{" "}
@@ -90,6 +97,20 @@ export default function StandardPreview({
               className="w-full border rounded p-2 focus:border-orange-500 focus:outline-none"
               rows={2}
             />
+          ) : resumeData.appendedSkills?.length > 0 ? (
+            <p className="text-sm">
+              {resumeData.technicalSkills.split(", ").map((skill, i, arr) => {
+                const isNew = resumeData.appendedSkills.includes(skill);
+                return (
+                  <span key={i}>
+                    <span className={isNew ? "bg-green-100 rounded px-1" : ""}>
+                      {skill}
+                    </span>
+                    {i < arr.length - 1 ? ", " : ""}
+                  </span>
+                );
+              })}
+            </p>
           ) : (
             <p className="text-sm">{resumeData.technicalSkills}</p>
           )}
@@ -199,9 +220,9 @@ export default function StandardPreview({
                         className={`text-sm mb-1 group flex items-start gap-2 ${
                           isEditing ? "list-none" : "list-disc"
                         } ${
-                          !savedResponsibilities[`${expIndex}-${resp}`]
-                            ? "bg-green-100"
-                            : ""
+                          savedResponsibilities[`${expIndex}-${resp}`]
+                            ? ""
+                            : "bg-green-100"
                         } hover:bg-gray-200`}
                       >
                         {isEditing ? (

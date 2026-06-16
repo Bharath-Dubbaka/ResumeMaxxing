@@ -141,7 +141,7 @@ const Header = () => {
                   // Refresh quota data and redirect
                   const quota = await QuotaService.getUserQuota(user.uid);
                   dispatch(setUserQuota(quota));
-                  router.push("/dashboard");
+                  // router.push("/dashboard");
                   return;
                }
 
@@ -191,7 +191,7 @@ const Header = () => {
                   window.localStorage.removeItem("razorpay_payment_id");
                   const quota = await QuotaService.getUserQuota(user.uid);
                   dispatch(setUserQuota(quota));
-                  router.push("/dashboard");
+                  // router.push("/dashboard");
                } else {
                   console.log("Payment not verified yet", data);
                }

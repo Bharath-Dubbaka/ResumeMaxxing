@@ -1133,7 +1133,7 @@ function DashboardContent() {
                     )}
 
                     {/* Education */}
-                    {userDetails.education?.length > 0 && (
+                    {/* {userDetails.education?.length > 0 && (
                       <div>
                         <p
                           style={{
@@ -1196,7 +1196,7 @@ function DashboardContent() {
                           ))}
                         </div>
                       </div>
-                    )}
+                    )} */}
 
                     {/* Edit button */}
                     {/* <button

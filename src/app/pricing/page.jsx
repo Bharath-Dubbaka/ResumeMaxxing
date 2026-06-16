@@ -60,9 +60,9 @@ const Pricing = () => {
       setIsLoading(true);
       if (user) {
         if (userDetails) {
-          router.push("/dashboard");
+          router.push("/");
         } else {
-          router.push("/userFormPage");
+          router.push("/");
         }
         return;
       }
@@ -81,9 +81,9 @@ const Pricing = () => {
       const details = await UserDetailsService.getUserDetails(result.user.uid);
       dispatch(setUserDetails(details));
       if (details) {
-        router.push("/dashboard");
+        router.push("/");
       } else {
-        router.push("/userFormPage");
+        router.push("/");
       }
     } catch (error) {
       console.error("Login error:", error);
@@ -154,7 +154,7 @@ const Pricing = () => {
             // Refresh quota data and redirect
             const quota = await QuotaService.getUserQuota(user.uid);
             dispatch(setUserQuota(quota));
-            router.push("/dashboard");
+            router.push("/");
             return;
           }
 
@@ -196,7 +196,7 @@ const Pricing = () => {
             window.localStorage.removeItem("razorpay_payment_id");
             const quota = await QuotaService.getUserQuota(user.uid);
             dispatch(setUserQuota(quota));
-            router.push("/dashboard");
+            router.push("/");
           } else {
             console.log("Payment not verified yet", data);
           }
@@ -296,7 +296,7 @@ const Pricing = () => {
                     {price}
                   </span>
                   <span className="text-xs text-slate-400 font-mono">
-                    /one-time
+                    /Month
                   </span>
                 </div>
                 <div className="flex items-center gap-2 mt-1.5">

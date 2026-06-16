@@ -69,9 +69,9 @@ class AuthService {
       try {
          if (user) {
             if (userDetails) {
-               router.push("/dashboard");
+               router.push("/");
             } else {
-               router.push("/userFormPage");
+               router.push("/");
             }
             return;
          }
@@ -83,11 +83,11 @@ class AuthService {
             actions.setUserDetails
          );
 
-         if (details) {
-            router.push("/dashboard");
-         } else {
-            router.push("/userFormPage");
-         }
+         // if (details) {
+         //    router.push("/");
+         // } else {
+         //    router.push("/userFormPage");
+         // }
       } catch (error) {
          console.error("Auth flow error:", error);
          throw error;

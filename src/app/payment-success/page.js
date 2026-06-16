@@ -120,12 +120,12 @@ export default function PaymentSuccessPage() {
 
                   setMessage("Payment successful! Redirecting to dashboard...");
                   setTimeout(() => {
-                     router.push("/dashboard");
+                     router.push("/");
                   }, 2000);
                } catch (updateError) {
                   console.error("Error updating user data:", updateError);
                   setMessage("Subscription activated! Redirecting...");
-                  setTimeout(() => router.push("/dashboard"), 2000);
+                  setTimeout(() => router.push("/"), 2000);
                }
             } else {
                console.error("Payment verification failed:", data.error);

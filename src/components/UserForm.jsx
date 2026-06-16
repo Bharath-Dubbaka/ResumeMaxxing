@@ -1,6 +1,5 @@
 //src/components/UserForm.jsx
 
-
 "use client";
 import { useState, useRef, useEffect } from "react";
 import DatePicker from "react-datepicker";
@@ -25,6 +24,7 @@ import {
 import { Spinner } from "../components/ui/spinner";
 import { toast, Toaster } from "sonner";
 import MiniPreview from "./MiniPreview";
+import { createPortal } from "react-dom";
 
 // ─── Tab definitions ──────────────────────────────────────────────────────────
 const TABS = [
@@ -41,6 +41,50 @@ function SectionPanel({ children }) {
   return <div className="raf-panel">{children}</div>;
 }
 
+function PortalDropdown({ anchorRef, children, onClose }) {
+  const [pos, setPos] = useState({ top: 0, left: 0 });
+
+  useEffect(() => {
+    if (anchorRef.current) {
+      const rect = anchorRef.current.getBoundingClientRect();
+      setPos({
+        top: rect.bottom + window.scrollY + 6,
+        left: rect.left + window.scrollX,
+      });
+    }
+  }, [anchorRef]);
+
+  useEffect(() => {
+    function handleClick(e) {
+      if (!e.target.closest("[data-portal-dropdown]")) onClose();
+    }
+    document.addEventListener("mousedown", handleClick);
+    return () => document.removeEventListener("mousedown", handleClick);
+  }, [onClose]);
+
+  return createPortal(
+    <div
+      data-portal-dropdown=""
+      style={{
+        position: "absolute",
+        top: pos.top,
+        left: pos.left,
+        zIndex: 99999,
+        background: "#1e293b",
+        color: "#f1f5f9",
+        borderRadius: 10,
+        padding: 12,
+        boxShadow: "0 8px 24px rgba(0,0,0,0.22)",
+        minWidth: 210,
+        border: "1px solid #334155",
+      }}
+    >
+      {children}
+    </div>,
+    document.body,
+  );
+}
+
 const UserForm = ({
   onSave,
   onCancel,
@@ -53,6 +97,7 @@ const UserForm = ({
   const [activeTab, setActiveTab] = useState("contact");
   const [expandedExp, setExpandedExp] = useState(null);
   const expCardRefs = useRef({});
+  const mapBtnRefs = useRef({});
 
   const [userDetails, setUserDetails] = useState(() => {
     if (initialData) {
@@ -80,17 +125,17 @@ const UserForm = ({
   }, [initialData]);
 
   const [openDropdown, setOpenDropdown] = useState(null);
-  const dropdownRef = useRef(null);
+  // const dropdownRef = useRef(null);
 
-  useEffect(() => {
-    function handleClickOutside(event) {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
-        setOpenDropdown(null);
-      }
-    }
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
+  // useEffect(() => {
+  //   function handleClickOutside(event) {
+  //     if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+  //       setOpenDropdown(null);
+  //     }
+  //   }
+  //   document.addEventListener("mousedown", handleClickOutside);
+  //   return () => document.removeEventListener("mousedown", handleClickOutside);
+  // }, []);
 
   const isValidDate = (dateString) => {
     if (!dateString) return false;
@@ -991,6 +1036,7 @@ const UserForm = ({
                       {/* Map button */}
                       <button
                         type="button"
+                        ref={(el) => (mapBtnRefs.current[index] = el)}
                         className={`raf-map-btn${openDropdown === index ? " active" : ""}`}
                         title="Map to experience"
                         onClick={() =>
@@ -1011,10 +1057,25 @@ const UserForm = ({
                       </button>
 
                       {/* Mapping dropdown */}
+                      {/* Portal dropdown — replaces old inline dropdown */}
                       {openDropdown === index && (
-                        <div ref={dropdownRef} className="raf-dropdown">
-                          <h4>Map to experience</h4>
-                          <div className="raf-dropdown-scroll">
+                        <PortalDropdown
+                          anchorRef={{ current: mapBtnRefs.current[index] }}
+                          onClose={() => setOpenDropdown(null)}
+                        >
+                          <h4
+                            style={{
+                              fontSize: 10,
+                              fontWeight: 700,
+                              textTransform: "uppercase",
+                              letterSpacing: "0.06em",
+                              color: "#64748b",
+                              marginBottom: 8,
+                            }}
+                          >
+                            Map to experience
+                          </h4>
+                          <div style={{ maxHeight: 180, overflowY: "auto" }}>
                             {userDetails.experience?.map((exp, ei) => {
                               const isLocked =
                                 exp.responsibilityType === "none";
@@ -1023,12 +1084,18 @@ const UserForm = ({
                               const isDisabled = isTitleBased || isLocked;
                               const checkboxId = `raf-map-${index}-${ei}`;
                               const isMapped =
-                                skillItem.experienceMappings?.includes(ei); // ← ei not exp.title
+                                skillItem.experienceMappings?.includes(ei);
                               return (
                                 <div
                                   key={ei}
-                                  className="raf-dropdown-item"
-                                  style={{ opacity: isDisabled ? 0.4 : 1 }}
+                                  style={{
+                                    display: "flex",
+                                    alignItems: "center",
+                                    gap: 8,
+                                    padding: "4px 0",
+                                    fontSize: 12,
+                                    opacity: isDisabled ? 0.4 : 1,
+                                  }}
                                 >
                                   <input
                                     id={checkboxId}
@@ -1041,7 +1108,7 @@ const UserForm = ({
                                         ei,
                                         e.target.checked,
                                       )
-                                    } // ← ei
+                                    }
                                   />
                                   <label
                                     htmlFor={checkboxId}
@@ -1058,7 +1125,6 @@ const UserForm = ({
                                         style={{
                                           color: "#64748b",
                                           marginLeft: 4,
-                                          fontSize: 11,
                                         }}
                                       >
                                         (Locked)
@@ -1069,7 +1135,6 @@ const UserForm = ({
                                         style={{
                                           color: "#64748b",
                                           marginLeft: 4,
-                                          fontSize: 11,
                                         }}
                                       >
                                         (Title-based)
@@ -1080,7 +1145,7 @@ const UserForm = ({
                               );
                             })}
                           </div>
-                        </div>
+                        </PortalDropdown>
                       )}
                     </div>
                   ))}

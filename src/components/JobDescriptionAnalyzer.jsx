@@ -794,7 +794,7 @@ export default function JobDescriptionAnalyzer() {
                   {skillObj.type === "generated" && (
                     <button
                       className="jda-chip-btn save ro-tooltip"
-                      data-tooltip="Save this AI-suggested skill to your profile"
+                      data-tooltip="Save this to your Master profile"
                       title="Save to custom skills"
                       onClick={() => handleSaveToCustomSkills(skillObj.skill)}
                     >

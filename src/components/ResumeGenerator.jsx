@@ -454,6 +454,11 @@ Return ONLY JSON: { "appended": "sentence one. sentence two." }`;
       }
 
       console.log("[ResumeGen] Final summary:", finalSummary);
+      //track which skills were newly extracted from the JD vs already in the master profile
+      const masterSkillSet = new Set(
+        userDetails.customSkills?.map((s) => s.skill) || [],
+      );
+      const appendedSkills = allSkills.filter((s) => !masterSkillSet.has(s));
 
       // Create the complete resume content
       const newResumeContent = {
@@ -462,7 +467,9 @@ Return ONLY JSON: { "appended": "sentence one. sentence two." }`;
         // professionalSummary: generatedSummary,  // ❌ old
         professionalSummary: finalSummary, // ✅ new
         summaryParts: summaryParts,
+        summaryMode: mode,
         technicalSkills: allSkills.join(", "),
+        appendedSkills: appendedSkills,
         professionalExperience: userDetails.experience.map((exp, index) => ({
           ...exp,
           responsibilities: [
