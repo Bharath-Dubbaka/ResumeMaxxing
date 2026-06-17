@@ -114,12 +114,121 @@ const ResumeGenerator = () => {
     : 0;
 
   // Function to get all unique skills
-  const getAllSkills = () => {
-    const mappedSkills = combinedSkills?.map((mapping) => mapping.skill) || [];
-    const customSkills = userDetails?.customSkills?.map((cs) => cs.skill) || [];
 
-    // Combine and deduplicate all skills
-    return [...new Set([...mappedSkills, ...customSkills])];
+  // The new version returns both a flat list AND a grouped structure for the template.
+
+  // Flat list of all unique skill names (used for summary generation, unchanged)
+  const getAllSkills = () => {
+    // All skill names across both sources, deduped
+    const masterNames = userDetails?.customSkills?.map((cs) => cs.skill) || [];
+    const jdNames = (combinedSkills || [])
+      .filter((s) => s.type === "generated" || s._fromJD)
+      .map((s) => s.skill);
+    return [...new Set([...masterNames, ...jdNames])];
+  };
+
+  // Returns only the JD-extracted skills that are NOT already in master profile
+  const getJDOnlySkills = () => {
+    const masterSet = new Set(
+      userDetails?.customSkills?.map((s) => s.skill) || [],
+    );
+    return (combinedSkills || [])
+      .filter(
+        (s) => (s.type === "generated" || s._fromJD) && !masterSet.has(s.skill),
+      )
+      .map((s) => s.skill);
+  };
+
+  // NEW — grouped skills string for the resume technical skills line
+  // Returns: "Languages: Java, Python | Frameworks: React, Spring Boot | Cloud: AWS, GCP"
+  // Falls back to flat comma list if no categories are set
+  const getGroupedSkillsString = () => {
+    // Just convert the grouped template structure to the pipe string
+    // This ensures both use the same source of truth
+    const grouped = getSkillsGroupedForTemplate();
+    if (grouped.length === 0) return getAllSkills().join(", ");
+    return grouped
+      .map((g) => `${g.category}: ${g.skills.join(", ")}`)
+      .join("  |  ");
+
+    // Build groups from master skills first (preserves user's category order)
+    const groups = {};
+    const order = [];
+
+    for (const s of customSkills) {
+      const key = s.category || "Other";
+      if (!groups[key]) {
+        groups[key] = [];
+        order.push(key);
+      }
+      if (s.skill) groups[key].push(s.skill);
+    }
+
+    // Append JD-only skills — match to existing categories if possible,
+    // otherwise put under their own category from combinedSkills
+    const masterSet = new Set(customSkills.map((s) => s.skill));
+    for (const jdSkill of combinedSkills || []) {
+      if (jdSkill.type !== "generated" && !jdSkill._fromJD) continue;
+      if (masterSet.has(jdSkill.skill)) continue; // already in master, already added
+      if (!jdSkill.skill) continue;
+
+      const cat = jdSkill.category || "From Job Description";
+      if (!groups[cat]) {
+        groups[cat] = [];
+        order.push(cat);
+      }
+      groups[cat].push(jdSkill.skill);
+    }
+
+    // If no categories at all, fall back to flat list
+    const hasCategorized = customSkills.some(
+      (s) => s.category && s.category !== "Other",
+    );
+    if (!hasCategorized && jdOnlySkills.length === 0) {
+      return getAllSkills().join(", ");
+    }
+
+    return order
+      .filter((cat) => groups[cat]?.length > 0)
+      .map((cat) => `${cat}: ${groups[cat].join(", ")}`)
+      .join("  |  ");
+  };
+
+  // In  template files, iterate over the groups instead of splitting by comma.
+  // For now the pipe-separated string is simpler and compatible with existing templates.
+  const getSkillsGroupedForTemplate = () => {
+    const customSkills = userDetails?.customSkills || [];
+    const groups = {};
+    const order = [];
+
+    // First: master skills with their categories
+    for (const s of customSkills) {
+      const key = s.category || "Other";
+      if (!groups[key]) {
+        groups[key] = [];
+        order.push(key);
+      }
+      if (s.skill) groups[key].push(s.skill);
+    }
+
+    // Second: JD-only skills using their categorized category from combinedSkills
+    const masterSet = new Set(customSkills.map((s) => s.skill));
+    for (const jdSkill of combinedSkills || []) {
+      // only generated/JD skills not already in master
+      if (jdSkill.type !== "generated" && !jdSkill._fromJD) continue;
+      if (masterSet.has(jdSkill.skill)) continue;
+      if (!jdSkill.skill) continue;
+      const cat = jdSkill.category || "Technical Skills";
+      if (!groups[cat]) {
+        groups[cat] = [];
+        order.push(cat);
+      }
+      groups[cat].push(jdSkill.skill);
+    }
+
+    return order
+      .filter((cat) => groups[cat]?.length > 0)
+      .map((cat) => ({ category: cat, skills: groups[cat] }));
   };
 
   const generateResponsibilities = async (experience) => {
@@ -458,7 +567,7 @@ Return ONLY JSON: { "appended": "sentence one. sentence two." }`;
       const masterSkillSet = new Set(
         userDetails.customSkills?.map((s) => s.skill) || [],
       );
-      const appendedSkills = allSkills.filter((s) => !masterSkillSet.has(s));
+      const appendedSkills = getJDOnlySkills();
 
       // Create the complete resume content
       const newResumeContent = {
@@ -468,8 +577,9 @@ Return ONLY JSON: { "appended": "sentence one. sentence two." }`;
         professionalSummary: finalSummary, // ✅ new
         summaryParts: summaryParts,
         summaryMode: mode,
-        technicalSkills: allSkills.join(", "),
-        appendedSkills: appendedSkills,
+        technicalSkills: getGroupedSkillsString(), // The Word templates receive the pre-formatted string and render it as-is.
+        technicalSkillsGrouped: getSkillsGroupedForTemplate(), // Word template to render each category on its own line
+        appendedSkills: appendedSkills, // ← correctly non-empty when JD skills exist
         professionalExperience: userDetails.experience.map((exp, index) => ({
           ...exp,
           responsibilities: [

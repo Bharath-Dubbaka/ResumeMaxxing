@@ -83,32 +83,116 @@ export default function HybridPreview({
         </div>
         {/* Technical Skills */}
         <div>
-          <h2 className="text-xl text-['Arial'] font-bold border-b-2 mb-2">
+          <h2 className="text-xl font-bold border-b-2 mb-2">
             Technical Skills
           </h2>
           {isEditing ? (
             <textarea
               value={resumeData.technicalSkills || ""}
               onChange={(e) => handleEdit("technicalSkills", e.target.value)}
-              className="w-full border rounded p-2"
-              rows={2}
+              className="w-full border rounded p-2 focus:border-orange-500 focus:outline-none"
+              rows={3}
             />
-          ) : resumeData.appendedSkills?.length > 0 ? (
-            <p className="text-sm">
-              {resumeData.technicalSkills.split(", ").map((skill, i, arr) => {
-                const isNew = resumeData.appendedSkills.includes(skill);
-                return (
-                  <span key={i}>
-                    <span className={isNew ? "bg-green-100 rounded px-1" : ""}>
-                      {skill}
-                    </span>
-                    {i < arr.length - 1 ? ", " : ""}
-                  </span>
-                );
-              })}
-            </p>
           ) : (
-            <p className="text-sm">{resumeData.technicalSkills}</p>
+            (() => {
+              const raw = resumeData.technicalSkills || "";
+              const appendedSet = new Set(resumeData.appendedSkills || []);
+
+              // Detect grouped format: "Languages: Java, Python  |  Frameworks: React"
+              const isGrouped = raw.includes(":") && raw.includes("|");
+
+              if (isGrouped) {
+                // Split on pipe separator, render each "Category: skills" on its own line
+                const groups = raw
+                  .split("|")
+                  .map((g) => g.trim())
+                  .filter(Boolean);
+                return (
+                  <div className="text-sm space-y-1">
+                    {groups.map((group, gi) => {
+                      const colonIdx = group.indexOf(":");
+                      if (colonIdx === -1) return <p key={gi}>{group}</p>;
+                      const cat = group.slice(0, colonIdx).trim();
+                      const skillsPart = group.slice(colonIdx + 1).trim();
+                      const skills = skillsPart
+                        .split(",")
+                        .map((s) => s.trim())
+                        .filter(Boolean);
+                      return (
+                        <p key={gi}>
+                          <span className="font-semibold">{cat}:</span>{" "}
+                          {skills.map((skill, si) => {
+                            const isNew = appendedSet.has(skill);
+                            return (
+                              <span key={si}>
+                                <span
+                                  style={
+                                    isNew
+                                      ? {
+                                          background:
+                                            "rgba(16, 185, 129, 0.15)",
+                                          borderRadius: 4,
+                                          padding: "1px 3px",
+                                          borderBottom: "2px solid #10b981",
+                                        }
+                                      : undefined
+                                  }
+                                >
+                                  {skill}
+                                </span>
+                                {si < skills.length - 1 ? ", " : ""}
+                              </span>
+                            );
+                          })}
+                          {skills.some((s) => appendedSet.has(s)) && (
+                            <span className="text-xs bg-emerald-600 text-white px-1.5 py-0.5 rounded align-middle ml-2">
+New                            </span>
+                          )}
+                        </p>
+                      );
+                    })}
+                  </div>
+                );
+              }
+
+              // Flat format (no categories) — original behaviour
+              if (appendedSet.size > 0) {
+                const skills = raw
+                  .split(",")
+                  .map((s) => s.trim())
+                  .filter(Boolean);
+                return (
+                  <p className="text-sm">
+                    {skills.map((skill, i) => {
+                      const isNew = appendedSet.has(skill);
+                      return (
+                        <span key={i}>
+                          <span
+                            style={
+                              isNew
+                                ? {
+                                    background: "rgba(16, 185, 129, 0.15)",
+                                    borderRadius: 4,
+                                    padding: "1px 3px",
+                                    borderBottom: "2px solid #10b981",
+                                  }
+                                : undefined
+                            }
+                          >
+                            {skill}
+                          </span>
+                          {i < skills.length - 1 ? ", " : ""}
+                        </span>
+                      );
+                    })}
+                    <span className="text-xs bg-emerald-600 text-white px-1.5 py-0.5 rounded align-middle ml-2">
+New                    </span>
+                  </p>
+                );
+              }
+
+              return <p className="text-sm">{raw}</p>;
+            })()
           )}
         </div>
         {/* Professional Experience */}

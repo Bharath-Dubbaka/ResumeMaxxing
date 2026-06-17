@@ -1012,156 +1012,313 @@ const UserForm = ({
             )}
             {/* ══════════════════════════════════════════
               TAB 4 — MASTER SKILLS (Custom Skills)
+              Store flatIdx in the group entries, remove globalIdx counter.
           ══════════════════════════════════════════ */}
+
             {activeTab === "customSkills" && (
               <SectionPanel>
                 <p className="raf-section-heading">Master Skills</p>
-                <div className="raf-skills-grid">
-                  {userDetails?.customSkills?.map((skillItem, index) => (
-                    <div
-                      key={index}
-                      className="raf-skill-chip"
-                      style={{ position: "relative" }}
-                    >
-                      <input
-                        type="text"
-                        className="raf-skill-input"
-                        value={skillItem.skill}
-                        onChange={(e) =>
-                          handleCustomSkillChange(index, e.target.value)
-                        }
-                        placeholder="Skill name"
-                        title="Edit Skill"
-                      />
-                      {/* Map button */}
-                      <button
-                        type="button"
-                        ref={(el) => (mapBtnRefs.current[index] = el)}
-                        className={`raf-map-btn${openDropdown === index ? " active" : ""}`}
-                        title="Map to experience"
-                        onClick={() =>
-                          setOpenDropdown(openDropdown === index ? null : index)
-                        }
-                      >
-                        <MapIcon size={12} />
-                      </button>
-                      {/* Remove button */}
-                      <button
-                        type="button"
-                        className="raf-remove-btn"
-                        style={{ width: 26, height: 26 }}
-                        title="Remove"
-                        onClick={() => handleRemoveCustomSkill(index)}
-                      >
-                        <Trash2 size={12} />
-                      </button>
+                <p
+                  style={{
+                    fontSize: 12,
+                    color: "#64748b",
+                    marginBottom: 16,
+                    lineHeight: 1.5,
+                  }}
+                >
+                  Skills are grouped by category. Click a category name to
+                  rename it. Use the map icon to link a skill to specific roles.
+                </p>
 
-                      {/* Mapping dropdown */}
-                      {/* Portal dropdown — replaces old inline dropdown */}
-                      {openDropdown === index && (
-                        <PortalDropdown
-                          anchorRef={{ current: mapBtnRefs.current[index] }}
-                          onClose={() => setOpenDropdown(null)}
+                {(() => {
+                  const allSkills = userDetails?.customSkills || [];
+
+                  const groups = {};
+                  const order = [];
+                  allSkills.forEach((s, flatIdx) => {
+                    const key = s.category || "Other";
+                    if (!groups[key]) {
+                      groups[key] = [];
+                      order.push(key);
+                    }
+                    groups[key].push({ skill: s, flatIdx });
+                  });
+
+                  return order.map((categoryName) => {
+                    const categoryEntries = groups[categoryName];
+
+                    return (
+                      <div
+                        key={categoryName}
+                        style={{
+                          background: "#f8fafc",
+                          border: "1px solid #e2e8f0",
+                          borderRadius: 12,
+                          padding: "14px 16px",
+                          marginBottom: 12,
+                        }}
+                      >
+                        {/* Category header */}
+                        <div
+                          style={{
+                            display: "flex",
+                            alignItems: "center",
+                            gap: 8,
+                            marginBottom: 10,
+                          }}
                         >
-                          <h4
+                          <input
+                            type="text"
+                            value={categoryName}
+                            onChange={(e) => {
+                              const newCat = e.target.value;
+                              setUserDetails((prev) => ({
+                                ...prev,
+                                customSkills: prev.customSkills.map((s) =>
+                                  s.category === categoryName
+                                    ? { ...s, category: newCat }
+                                    : s,
+                                ),
+                              }));
+                            }}
                             style={{
-                              fontSize: 10,
+                              flex: 1,
+                              fontSize: 11,
                               fontWeight: 700,
                               textTransform: "uppercase",
                               letterSpacing: "0.06em",
-                              color: "#64748b",
-                              marginBottom: 8,
+                              color: "#3730a3",
+                              background: "transparent",
+                              border: "none",
+                              outline: "none",
+                              borderBottom: "1px dashed #c7d2fe",
+                              padding: "2px 0",
+                            }}
+                            title="Click to rename this category"
+                          />
+                          <button
+                            type="button"
+                            className="raf-remove-btn"
+                            style={{ width: 24, height: 24 }}
+                            title="Remove this category and all its skills"
+                            onClick={() => {
+                              setUserDetails((prev) => ({
+                                ...prev,
+                                customSkills: prev.customSkills.filter(
+                                  (s) => s.category !== categoryName,
+                                ),
+                              }));
                             }}
                           >
-                            Map to experience
-                          </h4>
-                          <div style={{ maxHeight: 180, overflowY: "auto" }}>
-                            {userDetails.experience?.map((exp, ei) => {
-                              const isLocked =
-                                exp.responsibilityType === "none";
-                              const isTitleBased =
-                                exp.responsibilityType === "titleBased";
-                              const isDisabled = isTitleBased || isLocked;
-                              const checkboxId = `raf-map-${index}-${ei}`;
-                              const isMapped =
-                                skillItem.experienceMappings?.includes(ei);
-                              return (
-                                <div
-                                  key={ei}
-                                  style={{
-                                    display: "flex",
-                                    alignItems: "center",
-                                    gap: 8,
-                                    padding: "4px 0",
-                                    fontSize: 12,
-                                    opacity: isDisabled ? 0.4 : 1,
-                                  }}
+                            <Trash2 size={11} />
+                          </button>
+                        </div>
+
+                        {/* Skills */}
+                        <div className="raf-skills-grid">
+                          {categoryEntries.map(
+                            ({ skill: skillItem, flatIdx: i }) => (
+                              <div
+                                key={i}
+                                className="raf-skill-chip"
+                                style={{ position: "relative" }}
+                              >
+                                <input
+                                  type="text"
+                                  className="raf-skill-input"
+                                  value={skillItem.skill}
+                                  onChange={(e) =>
+                                    handleCustomSkillChange(i, e.target.value)
+                                  }
+                                  placeholder="Skill name"
+                                  title="Edit Skill"
+                                />
+                                <button
+                                  type="button"
+                                  ref={(el) => (mapBtnRefs.current[i] = el)}
+                                  className={`raf-map-btn${openDropdown === i ? " active" : ""}`}
+                                  title="Map to experience"
+                                  onClick={() =>
+                                    setOpenDropdown(
+                                      openDropdown === i ? null : i,
+                                    )
+                                  }
                                 >
-                                  <input
-                                    id={checkboxId}
-                                    type="checkbox"
-                                    checked={isMapped || false}
-                                    disabled={isDisabled}
-                                    onChange={(e) =>
-                                      handleSkillMappingChange(
-                                        index,
-                                        ei,
-                                        e.target.checked,
-                                      )
-                                    }
-                                  />
-                                  <label
-                                    htmlFor={checkboxId}
-                                    style={{
-                                      cursor: isDisabled
-                                        ? "not-allowed"
-                                        : "pointer",
-                                      fontSize: 12,
+                                  <MapIcon size={12} />
+                                </button>
+                                <button
+                                  type="button"
+                                  className="raf-remove-btn"
+                                  style={{ width: 26, height: 26 }}
+                                  title="Remove"
+                                  onClick={() => handleRemoveCustomSkill(i)}
+                                >
+                                  <Trash2 size={12} />
+                                </button>
+
+                                {openDropdown === i && (
+                                  <PortalDropdown
+                                    anchorRef={{
+                                      current: mapBtnRefs.current[i],
                                     }}
+                                    onClose={() => setOpenDropdown(null)}
                                   >
-                                    {exp.title}
-                                    {isLocked && (
-                                      <span
-                                        style={{
-                                          color: "#64748b",
-                                          marginLeft: 4,
-                                        }}
-                                      >
-                                        (Locked)
-                                      </span>
-                                    )}
-                                    {isTitleBased && !isLocked && (
-                                      <span
-                                        style={{
-                                          color: "#64748b",
-                                          marginLeft: 4,
-                                        }}
-                                      >
-                                        (Title-based)
-                                      </span>
-                                    )}
-                                  </label>
-                                </div>
-                              );
-                            })}
-                          </div>
-                        </PortalDropdown>
-                      )}
-                    </div>
-                  ))}
-                </div>
+                                    <h4
+                                      style={{
+                                        fontSize: 10,
+                                        fontWeight: 700,
+                                        textTransform: "uppercase",
+                                        letterSpacing: "0.06em",
+                                        color: "#64748b",
+                                        marginBottom: 8,
+                                      }}
+                                    >
+                                      Map to experience
+                                    </h4>
+                                    <div
+                                      style={{
+                                        maxHeight: 180,
+                                        overflowY: "auto",
+                                      }}
+                                    >
+                                      {userDetails.experience?.map(
+                                        (exp, ei) => {
+                                          const isLocked =
+                                            exp.responsibilityType === "none";
+                                          const isTitleBased =
+                                            exp.responsibilityType ===
+                                            "titleBased";
+                                          const isDisabled =
+                                            isTitleBased || isLocked;
+                                          const checkboxId = `raf-map-${i}-${ei}`;
+                                          const isMapped =
+                                            skillItem.experienceMappings?.includes(
+                                              ei,
+                                            );
+                                          return (
+                                            <div
+                                              key={ei}
+                                              style={{
+                                                display: "flex",
+                                                alignItems: "center",
+                                                gap: 8,
+                                                padding: "4px 0",
+                                                fontSize: 12,
+                                                opacity: isDisabled ? 0.4 : 1,
+                                              }}
+                                            >
+                                              <input
+                                                id={checkboxId}
+                                                type="checkbox"
+                                                checked={isMapped || false}
+                                                disabled={isDisabled}
+                                                onChange={(e) =>
+                                                  handleSkillMappingChange(
+                                                    i,
+                                                    ei,
+                                                    e.target.checked,
+                                                  )
+                                                }
+                                              />
+                                              <label
+                                                htmlFor={checkboxId}
+                                                style={{
+                                                  cursor: isDisabled
+                                                    ? "not-allowed"
+                                                    : "pointer",
+                                                  fontSize: 12,
+                                                }}
+                                              >
+                                                {exp.title}
+                                                {isLocked && (
+                                                  <span
+                                                    style={{
+                                                      color: "#64748b",
+                                                      marginLeft: 4,
+                                                    }}
+                                                  >
+                                                    (Locked)
+                                                  </span>
+                                                )}
+                                                {isTitleBased && !isLocked && (
+                                                  <span
+                                                    style={{
+                                                      color: "#64748b",
+                                                      marginLeft: 4,
+                                                    }}
+                                                  >
+                                                    (Title-based)
+                                                  </span>
+                                                )}
+                                              </label>
+                                            </div>
+                                          );
+                                        },
+                                      )}
+                                    </div>
+                                  </PortalDropdown>
+                                )}
+                              </div>
+                            ),
+                          )}
+                        </div>
+
+                        <button
+                          type="button"
+                          className="raf-add-btn"
+                          style={{
+                            marginTop: 10,
+                            fontSize: 11,
+                            padding: "6px 12px",
+                          }}
+                          onClick={() => {
+                            setUserDetails((prev) => ({
+                              ...prev,
+                              customSkills: [
+                                ...prev.customSkills,
+                                {
+                                  skill: "",
+                                  category: categoryName,
+                                  experienceMappings:
+                                    prev.experience?.map((_, i) => i) || [],
+                                },
+                              ],
+                            }));
+                          }}
+                        >
+                          <PlusCircle size={12} />
+                          Add skill
+                        </button>
+                      </div>
+                    );
+                  });
+                })()}
 
                 <button
                   type="button"
                   className="raf-add-btn"
-                  style={{ marginTop: 12 }}
-                  onClick={handleAddCustomSkill}
+                  style={{ marginTop: 4 }}
+                  onClick={() => {
+                    setUserDetails((prev) => ({
+                      ...prev,
+                      customSkills: [
+                        ...prev.customSkills,
+                        {
+                          skill: "",
+                          category: "New Category",
+                          experienceMappings:
+                            prev.experience?.map((_, i) => i) || [],
+                        },
+                      ],
+                    }));
+                  }}
                 >
                   <PlusCircle size={14} />
-                  Add Skill
+                  Add Category
                 </button>
               </SectionPanel>
             )}
+
             {/* ══════════════════════════════════════════
               TAB 5 — ACADEMICS (Education + Certs + Projects)
           ══════════════════════════════════════════ */}

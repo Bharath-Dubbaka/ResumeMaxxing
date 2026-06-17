@@ -47,7 +47,7 @@ async function extractTextFromDOCX(file) {
 // ─── Groq resume parser ───────────────────────────────────────────────────────
 async function parseResumeWithGroq(rawText) {
   const prompt = `You are a resume parser. Extract all information from the resume text below and return ONLY a valid JSON object matching this exact schema. No markdown, no backticks, no explanation.
-
+ 
 Schema:
 {
   "fullName": "string",
@@ -92,22 +92,27 @@ Schema:
       "link": "string"
     }
   ],
-  "customSkills": [
+  "skillCategories": [
     {
-      "skill": "string",
-      "experienceMappings": []
+      "category": "string (exact heading from resume e.g. Languages, Frameworks and Libraries, Cloud and Big Data)",
+      "skills": ["string"]
     }
   ]
 }
-
-Rules:
-- Extract skills from a dedicated skills section if present, otherwise infer from experience descriptions
+ 
+CRITICAL SKILL EXTRACTION RULES:
+- If the resume has a dedicated Skills section with category headings (e.g. "Languages: Java, Python" or "Cloud and Big Data: AWS, GCP"), extract those EXACT headings as category names and group the skills under them. Preserve the user's own category labels exactly as written.
+- If skills are listed flat (bullets or comma list with no headings), infer sensible category names based on skill type (e.g. group programming languages under "Languages", cloud tools under "Cloud and Infrastructure", etc.)
+- If no skills section exists at all, infer skills from experience descriptions and group them into sensible categories
+- Each skill string should be just the skill name, no extra punctuation
+- Do NOT add an experienceMappings field - that is handled separately
+ 
+Other rules:
 - For dates use YYYY-MM format. If only year is given use YYYY-01. If date is unknown use empty string
 - customResponsibilities: extract bullet points or responsibility lines for each role
-- experienceMappings must always be an empty array — do not fill it
 - If a field is not found, use empty string or empty array as appropriate
 - Return only the JSON object, nothing else
-
+ 
 Resume text:
 ${rawText.slice(0, 12000)}`;
 
@@ -133,7 +138,27 @@ ${rawText.slice(0, 12000)}`;
   return parsed;
 }
 
-// ─── Post-process: guarantee all fields exist + auto-map skills ───────────────
+// ─── Utility: group flat customSkills array by category ───────────────────────
+// Used by rendering components: NewLayout compact view, UserForm, ResumeGenerator
+export function groupSkillsByCategory(customSkills = []) {
+  const groups = {};
+  const order = []; // preserve insertion order
+  for (const s of customSkills) {
+    const key = s.category || "Other";
+    if (!groups[key]) {
+      groups[key] = [];
+      order.push(key);
+    }
+    groups[key].push(s);
+  }
+  return { groups, order };
+}
+
+// ─── Post-process: guarantee all fields + flatten skillCategories → customSkills ─
+// Groq returns:  skillCategories: [{ category: "Languages", skills: ["Java","Python"] }]
+// We store as:   customSkills:    [{ skill: "Java", category: "Languages", experienceMappings: [0,1] }]
+// Adding `category` to each skill object is the ONLY schema change.
+// All existing code that reads customSkills still works — category is just an extra field.
 function normaliseAndMap(parsed) {
   // Guarantee every top-level field exists so the compact view never
   // reads undefined and silently shows nothing
@@ -147,7 +172,7 @@ function normaliseAndMap(parsed) {
       ? parsed.certifications
       : [],
     projects: Array.isArray(parsed.projects) ? parsed.projects : [],
-    customSkills: Array.isArray(parsed.customSkills) ? parsed.customSkills : [],
+    customSkills: [],
     savedSummary: parsed.summary || parsed.savedSummary || "", // ← capture it
     summaryMode: parsed.summaryMode || "append", // ← default to "append" on import
   };
@@ -155,10 +180,31 @@ function normaliseAndMap(parsed) {
   // Auto-map every skill to every experience title (safe default)
   // const experienceTitles = safe.experience.map((e) => e.title).filter(Boolean);
   const allIndices = safe.experience.map((_, i) => i); // [0, 1, 2, ...]
-  safe.customSkills = safe.customSkills.map((skillObj) => ({
-    ...skillObj,
-    experienceMappings: allIndices.length > 0 ? [...allIndices] : [],
-  }));
+  if (
+    Array.isArray(parsed.skillCategories) &&
+    parsed.skillCategories.length > 0
+  ) {
+    // New categorised shape from parser
+    safe.customSkills = parsed.skillCategories.flatMap(({ category, skills }) =>
+      (skills || [])
+        .filter((s) => typeof s === "string" && s.trim())
+        .map((skill) => ({
+          skill: skill.trim(),
+          category: (category || "Other").trim(),
+          experienceMappings: allIndices.length > 0 ? [...allIndices] : [],
+        })),
+    );
+  } else if (
+    Array.isArray(parsed.customSkills) &&
+    parsed.customSkills.length > 0
+  ) {
+    // Fallback: old flat shape (profiles saved before this change)
+    safe.customSkills = parsed.customSkills.map((skillObj) => ({
+      skill: typeof skillObj === "string" ? skillObj : skillObj.skill || "",
+      category: skillObj.category || "Other",
+      experienceMappings: allIndices.length > 0 ? [...allIndices] : [],
+    }));
+  }
 
   console.log("[ResumeDropZone] Final normalised details:", safe);
   return safe;
@@ -189,23 +235,21 @@ export default function ResumeDropZone({
   };
 
   // ─── Core pipeline ─────────────────────────────────────────────────────────
+
   const processFile = useCallback(
     async (file) => {
       if (!file) return;
-
       const isPDF =
         file.type === "application/pdf" || file.name.endsWith(".pdf");
       const isDOCX =
         file.type ===
           "application/vnd.openxmlformats-officedocument.wordprocessingml.document" ||
         file.name.endsWith(".docx");
-
       if (!isPDF && !isDOCX) {
         setStep("error");
         setErrorMsg("Only PDF or DOCX files are supported.");
         return;
       }
-
       try {
         // Step 1 — extract raw text
         setStep("read");
@@ -234,13 +278,10 @@ export default function ResumeDropZone({
         // Step 3 — normalise + map
         setStep("map");
         const finalDetails = normaliseAndMap(parsed);
-
         setStep("done");
         await new Promise((r) => setTimeout(r, 600));
-
         onParsed(finalDetails);
         resetState();
-        setExpanded(false);
       } catch (err) {
         console.error("[ResumeDropZone] error:", err);
         setStep("error");
@@ -280,7 +321,6 @@ export default function ResumeDropZone({
         : currentIdx === -1
           ? 0
           : Math.round(((currentIdx + 1) / STEPS.length) * 90);
-
     return (
       <div style={{ width: "100%", marginTop: 14 }}>
         <div
@@ -426,7 +466,6 @@ export default function ResumeDropZone({
           {isLoading && <ProgressBar />}
           {step === "error" && <ErrorBanner stopProp />}
         </div>
-
         {!isLoading && (
           <p
             style={{
@@ -454,7 +493,6 @@ export default function ResumeDropZone({
             </button>
           </p>
         )}
-
         <input
           ref={inputRef}
           type="file"
@@ -537,7 +575,6 @@ export default function ResumeDropZone({
 
       {/* Error */}
       {step === "error" && <ErrorBanner />}
-
       <input
         ref={inputRef}
         type="file"

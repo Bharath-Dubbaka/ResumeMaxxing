@@ -1,3 +1,4 @@
+//compoenents/previews/StandardPreview.jsx
 import React, { useState, useEffect } from "react";
 import { Trash2, Trash2Icon } from "lucide-react";
 import { Button } from "../ui/button";
@@ -86,33 +87,121 @@ export default function StandardPreview({
         </div>
 
         {/* Technical Skills */}
+
         <div>
           <h2 className="text-xl font-bold border-b-2 mb-2">
             Technical Skills
           </h2>
+          {/* Reads technicalSkillsGrouped when available */}
           {isEditing ? (
             <textarea
               value={resumeData.technicalSkills || ""}
               onChange={(e) => handleEdit("technicalSkills", e.target.value)}
               className="w-full border rounded p-2 focus:border-orange-500 focus:outline-none"
-              rows={2}
+              rows={3}
             />
-          ) : resumeData.appendedSkills?.length > 0 ? (
-            <p className="text-sm">
-              {resumeData.technicalSkills.split(", ").map((skill, i, arr) => {
-                const isNew = resumeData.appendedSkills.includes(skill);
-                return (
-                  <span key={i}>
-                    <span className={isNew ? "bg-green-100 rounded px-1" : ""}>
-                      {skill}
-                    </span>
-                    {i < arr.length - 1 ? ", " : ""}
-                  </span>
-                );
-              })}
-            </p>
           ) : (
-            <p className="text-sm">{resumeData.technicalSkills}</p>
+            (() => {
+              // Use structured grouped data if present (set by ResumeGenerator)
+              const grouped = resumeData.technicalSkillsGrouped;
+              const appendedSet = new Set(resumeData.appendedSkills || []);
+
+              if (grouped && grouped.length > 0) {
+                return (
+                  <div className="text-sm space-y-1">
+                    {grouped.map((group, gi) => {
+                      const hasNew = group.skills.some((s) =>
+                        appendedSet.has(s),
+                      );
+                      return (
+                        <p key={gi}>
+                          <span className="font-semibold">
+                            {group.category}:
+                          </span>{" "}
+                          {group.skills.map((skill, si) => (
+                            <span key={si}>
+                              <span
+                                style={
+                                  appendedSet.has(skill)
+                                    ? {
+                                        background: "rgba(16,185,129,0.15)",
+                                        borderRadius: 3,
+                                        padding: "1px 3px",
+                                        borderBottom: "2px solid #10b981",
+                                      }
+                                    : undefined
+                                }
+                              >
+                                {skill}
+                              </span>
+                              {si < group.skills.length - 1 ? ", " : ""}
+                            </span>
+                          ))}
+                          {hasNew && (
+                            <span className="text-xs bg-emerald-600 text-white px-1.5 py-0.5 rounded align-middle ml-2">
+New                            </span>
+                          )}
+                        </p>
+                      );
+                    })}
+                  </div>
+                );
+              }
+
+              // Fallback: existing flat/pipe-string rendering
+              const raw = resumeData.technicalSkills || "";
+              const isGrouped = raw.includes(":") && raw.includes("|");
+
+              if (isGrouped) {
+                return (
+                  <div className="text-sm space-y-1">
+                    {raw.split("|").map((g, gi) => {
+                      const g2 = g.trim();
+                      const colonIdx = g2.indexOf(":");
+                      if (colonIdx === -1) return <p key={gi}>{g2}</p>;
+                      const cat = g2.slice(0, colonIdx).trim();
+                      const skills = g2
+                        .slice(colonIdx + 1)
+                        .trim()
+                        .split(",")
+                        .map((s) => s.trim())
+                        .filter(Boolean);
+                      const hasNew = skills.some((s) => appendedSet.has(s));
+                      return (
+                        <p key={gi}>
+                          <span className="font-semibold">{cat}:</span>{" "}
+                          {skills.map((skill, si) => (
+                            <span key={si}>
+                              <span
+                                style={
+                                  appendedSet.has(skill)
+                                    ? {
+                                        background: "rgba(16,185,129,0.15)",
+                                        borderRadius: 3,
+                                        padding: "1px 3px",
+                                        borderBottom: "2px solid #10b981",
+                                      }
+                                    : undefined
+                                }
+                              >
+                                {skill}
+                              </span>
+                              {si < skills.length - 1 ? ", " : ""}
+                            </span>
+                          ))}
+                          {hasNew && (
+                            <span className="text-xs bg-emerald-600 text-white px-1.5 py-0.5 rounded align-middle ml-2">
+New                            </span>
+                          )}
+                        </p>
+                      );
+                    })}
+                  </div>
+                );
+              }
+
+              return <p className="text-sm">{raw}</p>;
+            })()
           )}
         </div>
 

@@ -34,8 +34,9 @@ const MiniPreview = ({ userDetails, user }) => {
               Professional Summary
             </h2>
             <p className="text-gray-600 italic">
-              {userDetails?.summary ||
-                "This section will be auto-generated as your per job description and desired skills. In 5-8 lines, highlighting your background, education and main skills as needed."}
+              {userDetails?.savedSummary ||
+                userDetails?.summary ||
+                "This section will be auto-generated as per job description and desired skills..."}
             </p>
           </div>
 

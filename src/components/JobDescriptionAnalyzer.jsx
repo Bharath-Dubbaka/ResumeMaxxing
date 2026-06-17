@@ -75,7 +75,7 @@ export default function JobDescriptionAnalyzer() {
   useEffect(() => {
     if (skillMappings.length > 0) {
       removeDuplicateSkillMappings();
-    }
+    } 
   }, []);
 
   useEffect(() => {
@@ -140,27 +140,57 @@ export default function JobDescriptionAnalyzer() {
     }
   }, [analysis?.technicalSkills, userDetails]);
 
+  // const initializeCombinedSkills = () => {
+  //   const customSkillSet = new Set(
+  //     userDetails?.customSkills?.map((cs) => cs.skill) || [],
+  //   );
+  //   const allIndices = userDetails?.experience?.map((_, i) => i) || []; // ← ADD THIS
+
+  //   const generated =
+  //     analysis?.technicalSkills
+  //       ?.filter((skill) => !customSkillSet.has(skill))
+  //       .map((skill) => ({
+  //         skill,
+  //         experienceMappings:
+  //           skillMappings.find((m) => m.skill === skill)?.experienceMappings ||
+  //           allIndices, // ← now defined
+  //         type: "generated",
+  //       })) || [];
+  //   const custom =
+  //     userDetails?.customSkills?.map((skill) => ({
+  //       ...skill,
+  //       type: "custom",
+  //     })) || [];
+  //   return [...generated, ...custom];
+  // };
+
+  // reads category from skillMappings
   const initializeCombinedSkills = () => {
     const customSkillSet = new Set(
       userDetails?.customSkills?.map((cs) => cs.skill) || [],
     );
-    const allIndices = userDetails?.experience?.map((_, i) => i) || []; // ← ADD THIS
+    const allIndices = userDetails?.experience?.map((_, i) => i) || [];
 
     const generated =
       analysis?.technicalSkills
         ?.filter((skill) => !customSkillSet.has(skill))
-        .map((skill) => ({
-          skill,
-          experienceMappings:
-            skillMappings.find((m) => m.skill === skill)?.experienceMappings ||
-            allIndices, // ← now defined
-          type: "generated",
-        })) || [];
+        .map((skill) => {
+          const mapping = skillMappings.find((m) => m.skill === skill);
+          return {
+            skill,
+            experienceMappings: mapping?.experienceMappings || allIndices,
+            category: mapping?.category || "Other", // ← KEY FIX
+            type: "generated",
+            _fromJD: true,
+          };
+        }) || [];
+
     const custom =
-      userDetails?.customSkills?.map((skill) => ({
-        ...skill,
+      userDetails?.customSkills?.map((s) => ({
+        ...s,
         type: "custom",
       })) || [];
+
     return [...generated, ...custom];
   };
 
@@ -275,38 +305,49 @@ export default function JobDescriptionAnalyzer() {
   };
 
   const handleSkillChange = (newSkill, index) => {
-    const currentSkill = combinedSkills[index]?.skill;
+    const skillObj = combinedSkills[index];
+    if (!skillObj) return;
+    const currentSkill = skillObj.skill;
+
+    // Update combinedSkills display array
     setCombinedSkills((prev) => {
       const updated = [...prev];
-      if (updated[index])
-        updated[index] = { ...updated[index], skill: newSkill };
+      updated[index] = { ...updated[index], skill: newSkill };
       return updated;
     });
-    setAnalysis((prev) => {
-      if (!prev) return null;
-      const updatedSkills = [...prev.technicalSkills];
-      const technicalIndex = updatedSkills.indexOf(currentSkill);
-      if (technicalIndex !== -1) updatedSkills[technicalIndex] = newSkill;
-      return { ...prev, technicalSkills: updatedSkills };
-    });
-    setSkillMappings((prev) => {
-      const currentMapping = prev.find(
-        (mapping) => mapping.skill === currentSkill,
+
+    if (skillObj.type === "custom") {
+      // Custom skill — update userDetails.customSkills directly
+      const updatedCustom = userDetails.customSkills.map((cs) =>
+        cs.skill === currentSkill ? { ...cs, skill: newSkill } : cs,
       );
-      if (!currentMapping) return prev;
-      return [
-        ...prev.filter((mapping) => mapping.skill !== currentSkill),
-        {
-          skill: newSkill,
-          experienceMappings: currentMapping.experienceMappings || [],
-        },
-      ];
-    });
-    dispatch(
-      setSkills((prevSkills) =>
-        prevSkills.map((skill) => (skill === currentSkill ? newSkill : skill)),
-      ),
-    );
+      dispatch(setUserDetails({ ...userDetails, customSkills: updatedCustom }));
+      // Note: this is local Redux only, user must save via their master profile Save button
+      // or you can call UserDetailsService.saveUserDetails here if you want auto-save
+    } else {
+      // Generated skill — update analysis and skillMappings
+      setAnalysis((prev) => {
+        if (!prev) return null;
+        const updatedSkills = prev.technicalSkills.map((s) =>
+          s === currentSkill ? newSkill : s,
+        );
+        return { ...prev, technicalSkills: updatedSkills };
+      });
+      setSkillMappings((prev) =>
+        prev.map((mapping) =>
+          mapping.skill === currentSkill
+            ? { ...mapping, skill: newSkill }
+            : mapping,
+        ),
+      );
+      dispatch(
+        setSkills((prevSkills) =>
+          prevSkills.map((skill) =>
+            skill === currentSkill ? newSkill : skill,
+          ),
+        ),
+      );
+    }
   };
 
   const handleRemoveSkill = (index) => {
@@ -341,6 +382,139 @@ export default function JobDescriptionAnalyzer() {
     );
   };
 
+  // It takes flat JD-extracted skill strings and the user's existing category structure,
+  // then returns each new skill assigned to a category.
+
+  async function categorizeNewSkills(newSkills, existingCategories) {
+    if (!newSkills.length) return {};
+
+    const existingContext =
+      existingCategories.length > 0
+        ? `The user's existing skill categories are (use EXACT spelling if reusing):
+${existingCategories.map((c) => `  - "${c}"`).join("\n")}
+Assign to an existing category only if it genuinely belongs there. Otherwise create a new specific one.`
+        : `The user has no existing categories. Create appropriate ones from scratch.`;
+
+    const prompt = `Categorize these skills for a professional resume. Return ONLY a flat JSON object.
+
+${existingContext}
+
+STRICT RULES — read carefully:
+1. NEVER use "Technical Skills", "From Job Description", "Skills", or "Other" — too vague
+2. Human spoken languages (Spanish, French, German, Chinese, Telugu, Hindi, Arabic, etc.) ALWAYS go under "Languages" — never under programming categories
+3. CSS, SQL, HTML, PHP are "Programming Languages" — not soft skills, not tools
+4. "Template Conversion", "Data Mapping", "Grouping Skills", "ETL" → "Data Processing"
+5. "JavaScript", "TypeScript", "Python", "Java", "PHP" → "Programming Languages"
+6. "React", "Vue", "Angular", "Next.js", "Express" → "Frameworks & Libraries"
+7. "AWS", "Docker", "Kubernetes", "CI/CD" → "Cloud & DevOps"
+8. "MySQL", "PostgreSQL", "MongoDB", "Redis" → "Databases"
+9. "Machine Learning", "AI", "LLM", "GPT", "TensorFlow" → "AI & ML"
+10. "Git", "Jira", "Figma", "Postman" → "Tools & Platforms"
+11. "Communication", "Leadership", "Initiative", "Teamwork" → "Soft Skills"
+12. New category names must be 2-4 words, specific and professional
+
+Skills to categorize: ${JSON.stringify(newSkills)}
+
+Return ONLY this exact JSON format, nothing else:
+{"skill1": "Category Name", "skill2": "Category Name"}`;
+
+    try {
+      const completion = await groq.chat.completions.create({
+        model: "llama-3.3-70b-versatile",
+        messages: [
+          {
+            role: "system",
+            content: `You are a professional resume skill categorizer.
+CRITICAL: Never use "Technical Skills", "From Job Description", "Skills", or "Other".
+Human spoken languages ALWAYS go under "Languages".
+CSS/SQL/HTML/PHP are "Programming Languages".
+Return ONLY valid JSON, no markdown, no explanation.`,
+          },
+          { role: "user", content: prompt },
+        ],
+        temperature: 0.1,
+        max_tokens: 600,
+        response_format: { type: "json_object" },
+      });
+
+      const result = JSON.parse(completion.choices[0].message.content || "{}");
+      console.log("[JDA] Categorization result:", result);
+
+      // Post-process: catch any vague categories that slipped through
+      const vague = new Set([
+        "Skills",
+        "Other",
+        "",
+      ]);
+      const humanLang =
+        /^(spanish|french|german|chinese|japanese|arabic|portuguese|russian|italian|korean|hindi|telugu|tamil|bengali|urdu|dutch|swedish|turkish|polish)$/i;
+      const progLang =
+        /^(javascript|typescript|python|java|php|c\+\+|ruby|swift|kotlin|go|rust|css|sql|html|scala|perl|r|matlab)$/i;
+      const frameworks =
+        /react|vue|angular|next\.?js|express|django|laravel|spring|rails|svelte|fastapi/i;
+      const cloud = /aws|azure|gcp|docker|kubernetes|terraform|jenkins|ci\/cd/i;
+      const databases =
+        /mysql|postgres|mongodb|redis|firebase|dynamodb|sqlite|oracle/i;
+      const aiml =
+        /machine learning|deep learning|ai\b|llm|gpt|bert|tensorflow|pytorch|nlp/i;
+      const dataProc =
+        /mapping|conversion|processing|transformation|pipeline|etl|grouping/i;
+      const softSkill =
+        /communication|leadership|teamwork|management|initiative|motivation|problem.solv/i;
+
+      for (const skill of newSkills) {
+        if (!result[skill] || vague.has(result[skill])) {
+          if (humanLang.test(skill)) result[skill] = "Languages";
+          else if (progLang.test(skill))
+            result[skill] = "Programming Languages";
+          else if (frameworks.test(skill))
+            result[skill] = "Frameworks & Libraries";
+          else if (cloud.test(skill)) result[skill] = "Cloud & DevOps";
+          else if (databases.test(skill)) result[skill] = "Databases";
+          else if (aiml.test(skill)) result[skill] = "AI & ML";
+          else if (dataProc.test(skill)) result[skill] = "Data Processing";
+          else if (softSkill.test(skill)) result[skill] = "Soft Skills";
+          else result[skill] = "Tools & Platforms";
+        }
+      }
+
+      return result;
+    } catch (err) {
+      console.error("[JDA] categorizeNewSkills error:", err);
+      // Full rule-based fallback
+      const humanLang =
+        /^(spanish|french|german|chinese|japanese|arabic|portuguese|russian|italian|korean|hindi|telugu|tamil|bengali|urdu|dutch|swedish|turkish|polish)$/i;
+      const fallback = {};
+      for (const skill of newSkills) {
+        if (humanLang.test(skill)) fallback[skill] = "Languages";
+        else if (
+          /javascript|typescript|python|java|php|css|sql|html/i.test(skill)
+        )
+          fallback[skill] = "Programming Languages";
+        else if (/react|vue|angular|next|express|django|laravel/i.test(skill))
+          fallback[skill] = "Frameworks & Libraries";
+        else if (/aws|azure|gcp|docker|kubernetes/i.test(skill))
+          fallback[skill] = "Cloud & DevOps";
+        else if (/mysql|postgres|mongodb|redis/i.test(skill))
+          fallback[skill] = "Databases";
+        else if (/mapping|conversion|processing|grouping|etl/i.test(skill))
+          fallback[skill] = "Data Processing";
+        else if (/communication|leadership|initiative/i.test(skill))
+          fallback[skill] = "Soft Skills";
+        else fallback[skill] = "Tools & Platforms";
+      }
+      return fallback;
+    }
+  }
+
+  // ─── REPLACE the analyzeJobDescription function body ─────────────────────────
+  // The key addition is the categorization call after Groq extracts flat skills.
+
+  // Key rule: NEVER touch userDetails or dispatch(setUserDetails(...)) here.
+  // JD skills stay in skillMappings local state only.
+  // Category is attached to each skillMapping entry so the chip UI can group them.
+  // User explicitly saves a skill to master via the + (handleSaveToCustomSkills) button.
+
   const analyzeJobDescription = async () => {
     setIsAnalyzing(true);
     try {
@@ -350,19 +524,19 @@ export default function JobDescriptionAnalyzer() {
         throw new Error("Parsing quota exceeded. Please upgrade your plan.");
 
       const prompt = `Analyze this job description as a professional resume writer. Return ONLY a JSON object in this exact format, no other text:
+{
+  "technicalSkills": [array of strings],
+  "yearsOfExperience": number,
+  "roleDescriptions": [
     {
-      "technicalSkills": [array of strings],
-      "yearsOfExperience": number,
-      "roleDescriptions": [
-        {
-          "title": string,
-          "organization": string,
-          "description": string
-        }
-      ]
+      "title": string,
+      "organization": string,
+      "description": string
     }
-
-    Job Description: ${jobDescription}`;
+  ]
+}
+ 
+Job Description: ${jobDescription}`;
 
       const completion = await groq.chat.completions.create({
         model: "llama-3.3-70b-versatile",
@@ -384,6 +558,62 @@ export default function JobDescriptionAnalyzer() {
       );
       setAnalysis(analysisResult);
       dispatch(setSkills(analysisResult.technicalSkills));
+
+      // ── Categorize JD skills and store in skillMappings LOCAL STATE only ──
+      // Nothing touches userDetails. User saves explicitly via + button per chip.
+      const jdSkills = analysisResult.technicalSkills || [];
+
+      // Filter out skills user already has (JS Set, no AI)
+      const userSkillNames = new Set(
+        (userDetails?.customSkills || []).map((s) => s.skill),
+      );
+      const brandNewSkills = jdSkills.filter((s) => !userSkillNames.has(s));
+      console.log(
+        "[JDA] Brand new skills not in master profile:",
+        brandNewSkills,
+      );
+
+      // Get user's existing category names for context
+      const existingCategories = [
+        ...new Set(
+          (userDetails?.customSkills || [])
+            .map((s) => s.category)
+            .filter(Boolean),
+        ),
+      ];
+
+      // Ask Groq which category each new skill belongs to
+      const skillCategoryMap =
+        brandNewSkills.length > 0
+          ? await categorizeNewSkills(brandNewSkills, existingCategories)
+          : {};
+
+      // Build allIndices for experienceMappings
+      const allIndices = (userDetails?.experience || []).map((_, i) => i);
+
+      // Update skillMappings local state with category attached
+      // This is what the chip UI reads — userDetails is untouched
+      setSkillMappings((prev) => {
+        const updatedMappings = jdSkills.map((skill) => {
+          const existing = prev.find((m) => m.skill === skill);
+          if (existing) return existing; // keep existing mapping if already there
+
+          const customSkill = userDetails?.customSkills?.find(
+            (cs) => cs.skill === skill,
+          );
+          if (customSkill) return customSkill; // already in master, use as-is
+
+          // Brand new JD skill — attach category
+          return {
+            skill,
+            category: skillCategoryMap[skill] || "Technical Skills",
+            experienceMappings: [...allIndices],
+          };
+        });
+        dispatch(setSkillsMapped(updatedMappings));
+        return updatedMappings;
+      });
+
       await QuotaService.incrementUsage(user.uid, "parsing");
       return analysisResult;
     } catch (error) {
@@ -395,13 +625,22 @@ export default function JobDescriptionAnalyzer() {
   };
 
   const handleSaveToCustomSkills = async (skill) => {
-    const currentMappings =
-      skillMappings.find((m) => m.skill === skill)?.experienceMappings || [];
-    const newCustomSkill = { skill, experienceMappings: currentMappings };
+    const mapping = skillMappings.find((m) => m.skill === skill);
+    const currentMappings = mapping?.experienceMappings || [];
+    const category = mapping?.category || "Technical Skills";
+
+    const newCustomSkill = {
+      skill,
+      category,
+      experienceMappings: currentMappings,
+    };
+
+    // Remove from JDA generated list
     setAnalysis((prev) => ({
       ...prev,
       technicalSkills: prev.technicalSkills.filter((s) => s !== skill),
     }));
+
     const updatedUserDetails = {
       ...userDetails,
       customSkills: [...(userDetails.customSkills || []), newCustomSkill],
@@ -766,149 +1005,244 @@ export default function JobDescriptionAnalyzer() {
               Technical Skills &mdash; {combinedSkills.length} found
             </p>
 
-            <div className="jda-skills-grid">
-              {combinedSkills.map((skillObj, index) => (
-                <div
-                  key={index}
-                  className={`jda-chip ${skillObj.type === "custom" ? "custom" : "generated"}`}
-                >
-                  {/* Type badge */}
-                  <span
-                    className={`jda-badge ${skillObj.type === "custom" ? "custom" : "generated"}`}
-                  >
-                    {skillObj.type === "custom" ? "saved" : "ai"}
-                  </span>
+            {(() => {
+              // Build grouped structure
+              const groups = {};
+              const order = [];
+              combinedSkills.forEach((skillObj, index) => {
+                const cat =
+                  skillObj.category ||
+                  (skillObj.type === "custom" ? "Other" : "Uncategorized");
+                if (!groups[cat]) {
+                  groups[cat] = [];
+                  order.push(cat);
+                }
+                groups[cat].push({ skillObj, index });
+              });
 
-                  {/* Editable skill name */}
-                  <input
-                    type="text"
-                    className="jda-skill-input ro-tooltip"
-                    data-tooltip="Click to rename this skill"
-                    value={skillObj.skill}
-                    onChange={(e) => handleSkillChange(e.target.value, index)}
-                    placeholder="Skill name"
-                    title="Edit skill"
-                  />
-
-                  {/* Save to custom (only for generated) */}
-                  {skillObj.type === "generated" && (
-                    <button
-                      className="jda-chip-btn save ro-tooltip"
-                      data-tooltip="Save this to your Master profile"
-                      title="Save to custom skills"
-                      onClick={() => handleSaveToCustomSkills(skillObj.skill)}
+              return (
+                <div style={{ marginBottom: 16 }}>
+                  {order.map((categoryName) => (
+                    <div
+                      key={categoryName}
+                      style={{
+                        marginBottom: 10,
+                        display: "flex",
+                        alignItems: "flex-start",
+                        gap: 8,
+                      }}
                     >
-                      <PlusCircle size={12} />
-                    </button>
-                  )}
-
-                  {/* Delete */}
-                  <button
-                    className="jda-chip-btn del ro-tooltip"
-                    data-tooltip="Remove this skill"
-                    title="Remove skill"
-                    onClick={() =>
-                      skillObj.type === "custom"
-                        ? handleDeleteCustomSkill(skillObj.skill)
-                        : handleRemoveSkill(index)
-                    }
-                  >
-                    <Trash2 size={12} />
-                  </button>
-
-                  {/* Map to experience */}
-                  <button
-                    data-index={index}
-                    className={`jda-chip-btn map ro-tooltip${openDropdown === index ? " active" : ""}`}
-                    data-tooltip="Map this skill to specific work experiences"
-                    title="Map to experience"
-                    onClick={() => handleDropdownToggle(index)}
-                  >
-                    <MapIcon size={12} />
-                  </button>
-
-                  {/* Mapping dropdown */}
-                  {openDropdown === index && (
-                    <div ref={dropdownRef} className="jda-dropdown ">
-                      <p className="jda-dropdown-title">Map to experience</p>
-                      <div className="jda-dropdown-scroll">
-                        {userDetails.experience.map((exp, i) => {
-                          const isLocked = exp.responsibilityType === "none";
-                          const isTitleBased =
-                            exp.responsibilityType === "titleBased";
-                          const isDisabled = isTitleBased || isLocked;
-                          const inputId = `jda-mapping-${index}-${i}`;
-                          const isMapped =
-                            skillObj.type === "custom"
-                              ? userDetails.customSkills
-                                  .find((cs) => cs.skill === skillObj.skill)
-                                  ?.experienceMappings?.includes(i) // ← i (index)
-                              : skillMappings
-                                  .find((m) => m.skill === skillObj.skill)
-                                  ?.experienceMappings?.includes(i); // ← i (index)
-                          return (
-                            <div
-                              key={i}
-                              className="jda-dropdown-item"
-                              style={{ opacity: isDisabled ? 0.4 : 1 }}
-                            >
-                              <input
-                                id={inputId}
-                                type="checkbox"
-                                checked={isMapped || false}
-                                disabled={isDisabled}
-                                onChange={(e) =>
-                                  handleSkillMappingChange(
-                                    skillObj.skill,
-                                    i,
-                                    e.target.checked,
-                                    skillObj.type === "custom",
-                                  )
+                      {/* Category label */}
+                      <span
+                        style={{
+                          fontSize: 12,
+                          fontWeight: 700,
+                          color: "#1e293b",
+                          minWidth: 0,
+                          flexShrink: 0,
+                          paddingTop: 2,
+                        }}
+                      >
+                        {categoryName}:
+                      </span>
+                      {/* Skills as inline chips */}
+                      <div
+                        style={{
+                          display: "flex",
+                          flexWrap: "wrap",
+                          gap: 6,
+                          flex: 1,
+                        }}
+                      >
+                        {groups[categoryName].map(({ skillObj, index }) => (
+                          <div
+                            key={index}
+                            style={{
+                              display: "inline-flex",
+                              alignItems: "center",
+                              gap: 4,
+                              background:
+                                skillObj.type === "custom"
+                                  ? "#f0fdf4"
+                                  : "#f5f3ff",
+                              border: `1px solid ${skillObj.type === "custom" ? "#86efac" : "#c4b5fd"}`,
+                              borderRadius: 6,
+                              padding: "3px 8px",
+                              position: "relative",
+                            }}
+                          >
+                            {/* Editable skill name */}
+                            <input
+                              type="text"
+                              value={skillObj.skill}
+                              onChange={(e) =>
+                                handleSkillChange(e.target.value, index)
+                              }
+                              style={{
+                                fontSize: 12,
+                                fontWeight: 600,
+                                color: "#1e293b",
+                                background: "transparent",
+                                border: "none",
+                                outline: "none",
+                                width: `${Math.max((skillObj.skill || "").length, 4)}ch`,
+                                minWidth: 40,
+                              }}
+                              placeholder="skill"
+                            />
+                            {/* Save to master (generated only) */}
+                            {skillObj.type === "generated" && (
+                              <button
+                                title="Save to Master Profile"
+                                onClick={() =>
+                                  handleSaveToCustomSkills(skillObj.skill)
                                 }
-                              />
-                              <label
-                                htmlFor={inputId}
                                 style={{
-                                  cursor: isDisabled
-                                    ? "not-allowed"
-                                    : "pointer",
+                                  background: "none",
+                                  border: "none",
+                                  cursor: "pointer",
+                                  color: "#16a34a",
+                                  padding: 0,
+                                  display: "flex",
+                                  alignItems: "center",
                                 }}
                               >
-                                {exp.title}
-                                {isLocked && (
-                                  <span
-                                    style={{
-                                      color: "#64748b",
-                                      marginLeft: 4,
-                                      fontSize: 11,
-                                    }}
-                                  >
-                                    (Locked)
-                                  </span>
-                                )}
-                                {isTitleBased && !isLocked && (
-                                  <span
-                                    style={{
-                                      color: "#64748b",
-                                      marginLeft: 4,
-                                      fontSize: 11,
-                                    }}
-                                  >
-                                    (Title-based)
-                                  </span>
-                                )}
-                              </label>
-                            </div>
-                          );
-                        })}
+                                <PlusCircle size={11} />
+                              </button>
+                            )}
+                            {/* Delete */}
+                            <button
+                              title="Remove"
+                              onClick={() =>
+                                skillObj.type === "custom"
+                                  ? handleDeleteCustomSkill(skillObj.skill)
+                                  : handleRemoveSkill(index)
+                              }
+                              style={{
+                                background: "none",
+                                border: "none",
+                                cursor: "pointer",
+                                color: "#ef4444",
+                                padding: 0,
+                                display: "flex",
+                                alignItems: "center",
+                              }}
+                            >
+                              <Trash2 size={11} />
+                            </button>
+                            {/* Map to experience */}
+                            <button
+                              title="Map to experience"
+                              onClick={() => handleDropdownToggle(index)}
+                              style={{
+                                background: "none",
+                                border: "none",
+                                cursor: "pointer",
+                                color:
+                                  openDropdown === index
+                                    ? "#f97316"
+                                    : "#6366f1",
+                                padding: 0,
+                                display: "flex",
+                                alignItems: "center",
+                              }}
+                            >
+                              <MapIcon size={11} />
+                            </button>
+                            {/* Mapping dropdown */}
+                            {openDropdown === index && (
+                              <div ref={dropdownRef} className="jda-dropdown">
+                                <p className="jda-dropdown-title">
+                                  Map to experience
+                                </p>
+                                <div className="jda-dropdown-scroll">
+                                  {userDetails.experience.map((exp, i) => {
+                                    const isLocked =
+                                      exp.responsibilityType === "none";
+                                    const isTitleBased =
+                                      exp.responsibilityType === "titleBased";
+                                    const isDisabled = isTitleBased || isLocked;
+                                    const inputId = `jda-mapping-${index}-${i}`;
+                                    const isMapped =
+                                      skillObj.type === "custom"
+                                        ? userDetails.customSkills
+                                            .find(
+                                              (cs) =>
+                                                cs.skill === skillObj.skill,
+                                            )
+                                            ?.experienceMappings?.includes(i)
+                                        : skillMappings
+                                            .find(
+                                              (m) => m.skill === skillObj.skill,
+                                            )
+                                            ?.experienceMappings?.includes(i);
+                                    return (
+                                      <div
+                                        key={i}
+                                        className="jda-dropdown-item"
+                                        style={{
+                                          opacity: isDisabled ? 0.4 : 1,
+                                        }}
+                                      >
+                                        <input
+                                          id={inputId}
+                                          type="checkbox"
+                                          checked={isMapped || false}
+                                          disabled={isDisabled}
+                                          onChange={(e) =>
+                                            handleSkillMappingChange(
+                                              skillObj.skill,
+                                              i,
+                                              e.target.checked,
+                                              skillObj.type === "custom",
+                                            )
+                                          }
+                                        />
+                                        <label
+                                          htmlFor={inputId}
+                                          style={{
+                                            cursor: isDisabled
+                                              ? "not-allowed"
+                                              : "pointer",
+                                          }}
+                                        >
+                                          {exp.title}
+                                          {isLocked && (
+                                            <span
+                                              style={{
+                                                color: "#64748b",
+                                                marginLeft: 4,
+                                              }}
+                                            >
+                                              (Locked)
+                                            </span>
+                                          )}
+                                          {isTitleBased && !isLocked && (
+                                            <span
+                                              style={{
+                                                color: "#64748b",
+                                                marginLeft: 4,
+                                              }}
+                                            >
+                                              (Title-based)
+                                            </span>
+                                          )}
+                                        </label>
+                                      </div>
+                                    );
+                                  })}
+                                </div>
+                              </div>
+                            )}
+                          </div>
+                        ))}
                       </div>
                     </div>
-                  )}
+                  ))}
                 </div>
-              ))}
-            </div>
+              );
+            })()}
 
-            {/* Add new skill */}
             <button className="jda-add-btn" onClick={handleAddSkill}>
               <PlusCircle size={13} />
               Add Skill

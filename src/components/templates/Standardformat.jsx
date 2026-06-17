@@ -104,16 +104,39 @@ export const Standardformat = (resumeData) =>
               },
             },
           }),
-          new Paragraph({
-            children: [
-              new TextRun({
-                text: resumeData.technicalSkills,
-                size: 24,
-                font: "Roboto",
-              }),
-            ],
-            spacing: { after: 400 },
-          }),
+          ...(resumeData.technicalSkillsGrouped &&
+          resumeData.technicalSkillsGrouped.length > 0
+            ? resumeData.technicalSkillsGrouped.map(
+                (group) =>
+                  new Paragraph({
+                    children: [
+                      new TextRun({
+                        text: `${group.category}: `,
+                        bold: true,
+                        size: 24,
+                        font: "Roboto",
+                      }),
+                      new TextRun({
+                        text: group.skills.join(", "),
+                        size: 24,
+                        font: "Roboto",
+                      }),
+                    ],
+                    spacing: { before: 80, after: 80 },
+                  }),
+              )
+            : [
+                new Paragraph({
+                  children: [
+                    new TextRun({
+                      text: resumeData.technicalSkills,
+                      size: 24,
+                      font: "Roboto",
+                    }),
+                  ],
+                  spacing: { after: 400 },
+                }),
+              ]),
 
           // Professional Experience
           new Paragraph({
@@ -191,7 +214,7 @@ export const Standardformat = (resumeData) =>
                   },
                   indent: { left: 720 }, // Indent for bullet points
                   spacing: { before: 100, after: 100 },
-                })
+                }),
             ),
           ]),
 
@@ -309,7 +332,7 @@ export const Standardformat = (resumeData) =>
                         level: 0,
                       },
                       spacing: { before: 100 },
-                    })
+                    }),
                 ),
               ]
             : []),

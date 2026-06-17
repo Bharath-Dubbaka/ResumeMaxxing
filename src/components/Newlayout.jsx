@@ -100,17 +100,19 @@ function StepLabel({ number, icon, title, badge }) {
 // Add this small component above DashboardContent:
 function SkillInput({ value, onSave }) {
   const [local, setLocal] = useState(value);
-
   useEffect(() => {
     setLocal(value);
   }, [value]);
-
   return (
     <input
       value={local}
       onChange={(e) => setLocal(e.target.value)}
       onBlur={() => {
         if (local !== value) onSave(local);
+      }}
+      onKeyDown={(e) => {
+        if (e.key === "Enter") e.target.blur();
+        if (e.key === "Escape") setLocal(value);
       }}
       style={{
         fontSize: 12,
@@ -121,6 +123,48 @@ function SkillInput({ value, onSave }) {
         outline: "none",
         width: `${Math.max((local || "").length, 4)}ch`,
       }}
+    />
+  );
+}
+
+// ADD this new component right after SkillInput:
+function CategoryInput({ categoryName, allSkills, userDetails, onSave }) {
+  const [local, setLocal] = useState(categoryName);
+  useEffect(() => {
+    setLocal(categoryName);
+  }, [categoryName]);
+  return (
+    <input
+      value={local}
+      onChange={(e) => setLocal(e.target.value)}
+      onBlur={() => {
+        const trimmed = local.trim();
+        if (trimmed && trimmed !== categoryName) {
+          const updated = allSkills.map((s) =>
+            s.category === categoryName ? { ...s, category: trimmed } : s,
+          );
+          onSave({ ...userDetails, customSkills: updated });
+        }
+      }}
+      onKeyDown={(e) => {
+        if (e.key === "Enter") e.target.blur();
+        if (e.key === "Escape") setLocal(categoryName);
+      }}
+      style={{
+        fontSize: 10,
+        fontWeight: 700,
+        textTransform: "uppercase",
+        letterSpacing: "0.06em",
+        color: "#6366f1",
+        background: "transparent",
+        border: "none",
+        outline: "none",
+        borderBottom: "1px dashed #c7d2fe",
+        minWidth: 40,
+        width: `${Math.max((local || "").length, 6)}ch`,
+        padding: "1px 0",
+      }}
+      title="Click to rename — Enter or click away to save"
     />
   );
 }
@@ -637,230 +681,352 @@ function DashboardContent() {
                         )}
                       </p>
 
-                      <div
-                        style={{
-                          display: "flex",
-                          flexWrap: "wrap",
-                          gap: 6,
-                          marginBottom: 8,
-                        }}
-                      >
-                        {userDetails?.customSkills?.map((s, i) => (
-                          <div
-                            key={i}
-                            data-compact-dropdown=""
-                            style={{
-                              position: "relative",
-                              display: "flex",
-                              alignItems: "center",
-                              gap: 4,
-                              background: "#eef2ff",
-                              border: "1px solid #c7d2fe",
-                              borderRadius: 6,
-                              padding: "3px 8px",
-                            }}
-                          >
-                            {/* Skill name — debounced direct save on blur */}
-                            <span
-                              className="ro-tooltip"
-                              data-tooltip="Click to rename this skill"
-                            >
-                              <SkillInput
-                                value={s.skill}
-                                onSave={(newVal) => {
-                                  const updated = userDetails.customSkills.map(
-                                    (sk, idx) =>
-                                      idx === i ? { ...sk, skill: newVal } : sk,
-                                  );
-                                  handleDirectSave({
-                                    ...userDetails,
-                                    customSkills: updated,
-                                  });
-                                }}
-                              />
-                            </span>
+                      {(() => {
+                        const allSkills = userDetails?.customSkills || [];
 
-                            {/* Map button */}
-                            <button
-                              className="ro-tooltip"
-                              data-tooltip="Map this skill to specific work experiences"
-                              onClick={() =>
-                                setCompactDropdown(
-                                  compactDropdown === i ? null : i,
-                                )
-                              }
-                              style={{
-                                background: "none",
-                                border: "none",
-                                cursor: "pointer",
-                                color:
-                                  compactDropdown === i ? "#f97316" : "#6366f1",
-                                fontSize: 12,
-                                padding: 0,
-                                lineHeight: 1,
-                              }}
-                              title="Map to experience"
-                            >
-                              ⇄
-                            </button>
+                        // Build ordered groups — store actual flat indices alongside each skill
+                        const groups = {};
+                        const order = [];
+                        allSkills.forEach((s, flatIdx) => {
+                          const key = s.category || "Other";
+                          if (!groups[key]) {
+                            groups[key] = [];
+                            order.push(key);
+                          }
+                          groups[key].push({ skill: s, flatIdx }); // ← store real flat index
+                        });
 
-                            {/* Delete — direct save */}
-                            <button
-                              className="ro-tooltip"
-                              data-tooltip="Remove this skill"
-                              onClick={() => {
-                                const updated = userDetails.customSkills.filter(
-                                  (_, idx) => idx !== i,
-                                );
-                                handleDirectSave({
-                                  ...userDetails,
-                                  customSkills: updated,
-                                });
-                              }}
-                              style={{
-                                background: "none",
-                                border: "none",
-                                cursor: "pointer",
-                                color: "#a5b4fc",
-                                fontSize: 12,
-                                padding: 0,
-                                lineHeight: 1,
-                              }}
-                            >
-                              ✕
-                            </button>
+                        return order.map((categoryName) => {
+                          const categoryEntries = groups[categoryName];
 
-                            {/* Mapping dropdown */}
-                            {compactDropdown === i && (
+                          return (
+                            <div
+                              key={categoryName}
+                              style={{ marginBottom: 12 }}
+                            >
+                              {/* Category label — editable inline */}
                               <div
                                 style={{
-                                  position: "absolute",
-                                  top: "calc(100% + 6px)",
-                                  left: 0,
-                                  zIndex: 9999,
-                                  background: "#1e293b",
-                                  color: "#f1f5f9",
-                                  borderRadius: 10,
-                                  padding: 12,
-                                  boxShadow: "0 8px 24px rgba(0,0,0,0.18)",
-                                  minWidth: 200,
-                                  border: "1px solid #334155",
+                                  display: "flex",
+                                  alignItems: "center",
+                                  gap: 6,
+                                  marginBottom: 6,
                                 }}
                               >
-                                <p
-                                  style={{
-                                    fontSize: 10,
-                                    fontWeight: 700,
-                                    textTransform: "uppercase",
-                                    letterSpacing: "0.06em",
-                                    color: "#64748b",
-                                    marginBottom: 8,
+                                <CategoryInput
+                                  categoryName={categoryName}
+                                  allSkills={allSkills}
+                                  userDetails={userDetails}
+                                  onSave={handleDirectSave}
+                                />
+                                <button
+                                  onClick={() => {
+                                    const updated = allSkills.filter(
+                                      (s) => s.category !== categoryName,
+                                    );
+                                    handleDirectSave({
+                                      ...userDetails,
+                                      customSkills: updated,
+                                    });
                                   }}
+                                  style={{
+                                    background: "none",
+                                    border: "none",
+                                    cursor: "pointer",
+                                    color: "#cbd5e1",
+                                    fontSize: 11,
+                                    padding: 0,
+                                    lineHeight: 1,
+                                  }}
+                                  title="Remove this category and all its skills"
                                 >
-                                  Map to experience
-                                </p>
-                                {userDetails.experience?.map((exp, ei) => {
-                                  const isLocked =
-                                    exp.responsibilityType === "none";
-                                  const isTitleBased =
-                                    exp.responsibilityType === "titleBased";
-                                  const isDisabled = isTitleBased || isLocked;
-                                  const isMapped =
-                                    s.experienceMappings?.includes(ei); // ← ei not exp.title
-                                  const cbId = `compact-map-${i}-${ei}`;
-                                  return (
+                                  ✕
+                                </button>
+                              </div>
+
+                              {/* Skills in this category */}
+                              <div
+                                style={{
+                                  display: "flex",
+                                  flexWrap: "wrap",
+                                  gap: 6,
+                                  paddingLeft: 4,
+                                }}
+                              >
+                                {categoryEntries.map(
+                                  ({ skill: s, flatIdx: i }) => (
                                     <div
-                                      key={ei}
+                                      key={i}
+                                      data-compact-dropdown=""
                                       style={{
+                                        position: "relative",
                                         display: "flex",
                                         alignItems: "center",
-                                        gap: 8,
-                                        padding: "4px 0",
-                                        opacity: isDisabled ? 0.4 : 1,
+                                        gap: 4,
+                                        background: "#eef2ff",
+                                        border: "1px solid #c7d2fe",
+                                        borderRadius: 6,
+                                        padding: "3px 8px",
                                       }}
                                     >
-                                      <input
-                                        type="checkbox"
-                                        id={cbId}
-                                        checked={isMapped || false}
-                                        disabled={isDisabled}
-                                        onChange={(e) => {
-                                          const updated =
-                                            userDetails.customSkills.map(
-                                              (sk, idx) => {
-                                                if (idx !== i) return sk;
-                                                const mappings = e.target
-                                                  .checked
-                                                  ? [
-                                                      ...new Set([
-                                                        ...(sk.experienceMappings ||
-                                                          []),
-                                                        ei,
-                                                      ]),
-                                                    ] // ← ei
-                                                  : (
-                                                      sk.experienceMappings ||
-                                                      []
-                                                    ).filter((m) => m !== ei); // ← ei
-                                                return {
-                                                  ...sk,
-                                                  experienceMappings: mappings,
-                                                };
-                                              },
+                                      <span
+                                        className="ro-tooltip"
+                                        data-tooltip="Click to rename this skill"
+                                      >
+                                        <SkillInput
+                                          value={s.skill}
+                                          onSave={(newVal) => {
+                                            const updated = allSkills.map(
+                                              (sk, idx) =>
+                                                idx === i
+                                                  ? { ...sk, skill: newVal }
+                                                  : sk,
                                             );
+                                            handleDirectSave({
+                                              ...userDetails,
+                                              customSkills: updated,
+                                            });
+                                          }}
+                                        />
+                                      </span>
+
+                                      {/* Map button */}
+                                      <button
+                                        className="ro-tooltip"
+                                        data-tooltip="Map this skill to specific work experiences"
+                                        onClick={() =>
+                                          setCompactDropdown(
+                                            compactDropdown === i ? null : i,
+                                          )
+                                        }
+                                        style={{
+                                          background: "none",
+                                          border: "none",
+                                          cursor: "pointer",
+                                          color:
+                                            compactDropdown === i
+                                              ? "#f97316"
+                                              : "#6366f1",
+                                          fontSize: 12,
+                                          padding: 0,
+                                          lineHeight: 1,
+                                        }}
+                                      >
+                                        ⇄
+                                      </button>
+
+                                      {/* Delete skill — use flatIdx directly, no counter */}
+                                      <button
+                                        className="ro-tooltip"
+                                        data-tooltip="Remove this skill"
+                                        onClick={() => {
+                                          const updated = allSkills.filter(
+                                            (_, idx) => idx !== i,
+                                          );
                                           handleDirectSave({
                                             ...userDetails,
                                             customSkills: updated,
                                           });
                                         }}
-                                      />
-                                      <label
-                                        htmlFor={cbId}
                                         style={{
+                                          background: "none",
+                                          border: "none",
+                                          cursor: "pointer",
+                                          color: "#a5b4fc",
                                           fontSize: 12,
-                                          cursor: isDisabled
-                                            ? "not-allowed"
-                                            : "pointer",
+                                          padding: 0,
+                                          lineHeight: 1,
                                         }}
                                       >
-                                        {exp.title}
-                                        {isLocked && (
-                                          <span
-                                            style={{
-                                              color: "#64748b",
-                                              marginLeft: 4,
-                                            }}
-                                          >
-                                            (Locked)
-                                          </span>
-                                        )}
-                                        {isTitleBased && !isLocked && (
-                                          <span
-                                            style={{
-                                              color: "#64748b",
-                                              marginLeft: 4,
-                                            }}
-                                          >
-                                            (Title-based)
-                                          </span>
-                                        )}
-                                      </label>
-                                    </div>
-                                  );
-                                })}
-                              </div>
-                            )}
-                          </div>
-                        ))}
-                      </div>
+                                        ✕
+                                      </button>
 
-                      {/* Add skill — direct save */}
+                                      {/* Mapping dropdown */}
+                                      {compactDropdown === i && (
+                                        <div
+                                          style={{
+                                            position: "absolute",
+                                            top: "calc(100% + 6px)",
+                                            left: 0,
+                                            zIndex: 9999,
+                                            background: "#1e293b",
+                                            color: "#f1f5f9",
+                                            borderRadius: 10,
+                                            padding: 12,
+                                            boxShadow:
+                                              "0 8px 24px rgba(0,0,0,0.18)",
+                                            minWidth: 200,
+                                            border: "1px solid #334155",
+                                          }}
+                                        >
+                                          <p
+                                            style={{
+                                              fontSize: 10,
+                                              fontWeight: 700,
+                                              textTransform: "uppercase",
+                                              letterSpacing: "0.06em",
+                                              color: "#64748b",
+                                              marginBottom: 8,
+                                            }}
+                                          >
+                                            Map to experience
+                                          </p>
+                                          {userDetails.experience?.map(
+                                            (exp, ei) => {
+                                              const isLocked =
+                                                exp.responsibilityType ===
+                                                "none";
+                                              const isTitleBased =
+                                                exp.responsibilityType ===
+                                                "titleBased";
+                                              const isDisabled =
+                                                isTitleBased || isLocked;
+                                              const isMapped =
+                                                s.experienceMappings?.includes(
+                                                  ei,
+                                                );
+                                              const cbId = `compact-map-${i}-${ei}`;
+                                              return (
+                                                <div
+                                                  key={ei}
+                                                  style={{
+                                                    display: "flex",
+                                                    alignItems: "center",
+                                                    gap: 8,
+                                                    padding: "4px 0",
+                                                    opacity: isDisabled
+                                                      ? 0.4
+                                                      : 1,
+                                                  }}
+                                                >
+                                                  <input
+                                                    type="checkbox"
+                                                    id={cbId}
+                                                    checked={isMapped || false}
+                                                    disabled={isDisabled}
+                                                    onChange={(e) => {
+                                                      const updated =
+                                                        allSkills.map(
+                                                          (sk, idx) => {
+                                                            if (idx !== i)
+                                                              return sk;
+                                                            const mappings = e
+                                                              .target.checked
+                                                              ? [
+                                                                  ...new Set([
+                                                                    ...(sk.experienceMappings ||
+                                                                      []),
+                                                                    ei,
+                                                                  ]),
+                                                                ]
+                                                              : (
+                                                                  sk.experienceMappings ||
+                                                                  []
+                                                                ).filter(
+                                                                  (m) =>
+                                                                    m !== ei,
+                                                                );
+                                                            return {
+                                                              ...sk,
+                                                              experienceMappings:
+                                                                mappings,
+                                                            };
+                                                          },
+                                                        );
+                                                      handleDirectSave({
+                                                        ...userDetails,
+                                                        customSkills: updated,
+                                                      });
+                                                    }}
+                                                  />
+                                                  <label
+                                                    htmlFor={cbId}
+                                                    style={{
+                                                      fontSize: 12,
+                                                      cursor: isDisabled
+                                                        ? "not-allowed"
+                                                        : "pointer",
+                                                    }}
+                                                  >
+                                                    {exp.title}
+                                                    {isLocked && (
+                                                      <span
+                                                        style={{
+                                                          color: "#64748b",
+                                                          marginLeft: 4,
+                                                        }}
+                                                      >
+                                                        (Locked)
+                                                      </span>
+                                                    )}
+                                                    {isTitleBased &&
+                                                      !isLocked && (
+                                                        <span
+                                                          style={{
+                                                            color: "#64748b",
+                                                            marginLeft: 4,
+                                                          }}
+                                                        >
+                                                          (Title-based)
+                                                        </span>
+                                                      )}
+                                                  </label>
+                                                </div>
+                                              );
+                                            },
+                                          )}
+                                        </div>
+                                      )}
+                                    </div>
+                                  ),
+                                )}
+
+                                {/* Add skill to THIS category */}
+                                <button
+                                  onClick={() => {
+                                    const updated = [
+                                      ...allSkills,
+                                      {
+                                        skill: "",
+                                        category: categoryName,
+                                        experienceMappings:
+                                          userDetails.experience?.map(
+                                            (_, i) => i,
+                                          ) || [],
+                                      },
+                                    ];
+                                    handleDirectSave({
+                                      ...userDetails,
+                                      customSkills: updated,
+                                    });
+                                  }}
+                                  style={{
+                                    fontSize: 11,
+                                    fontWeight: 600,
+                                    color: "#6366f1",
+                                    background: "#eef2ff",
+                                    border: "1px solid #c7d2fe",
+                                    borderRadius: 6,
+                                    padding: "3px 8px",
+                                    cursor: "pointer",
+                                  }}
+                                >
+                                  +
+                                </button>
+                              </div>
+                            </div>
+                          );
+                        });
+                      })()}
+
+                      {/* Add new category */}
                       <button
                         onClick={() => {
                           const updated = [
                             ...(userDetails.customSkills || []),
                             {
                               skill: "",
+                              category: "New Category",
                               experienceMappings:
                                 userDetails.experience?.map((_, i) => i) || [],
                             },
@@ -870,7 +1036,6 @@ function DashboardContent() {
                             customSkills: updated,
                           });
                         }}
-                        // disabled={inlineSaving}
                         style={{
                           fontSize: 11,
                           fontWeight: 600,
@@ -880,10 +1045,10 @@ function DashboardContent() {
                           borderRadius: 6,
                           padding: "4px 10px",
                           cursor: "pointer",
-                          // opacity: inlineSaving ? 0.6 : 1,
+                          marginTop: 4,
                         }}
                       >
-                        + Add Skill
+                        + Add Category
                       </button>
                     </div>
 
