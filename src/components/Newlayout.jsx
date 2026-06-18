@@ -763,8 +763,8 @@ function DashboardContent() {
                                         display: "flex",
                                         alignItems: "center",
                                         gap: 4,
-                                        background: "#eef2ff",
-                                        border: "1px solid #c7d2fe",
+                                        background: "#f0fdf4",
+                                        border: "1px solid #86efac",
                                         borderRadius: 6,
                                         padding: "3px 8px",
                                       }}

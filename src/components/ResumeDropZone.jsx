@@ -117,7 +117,7 @@ Resume text:
 ${rawText.slice(0, 12000)}`;
 
   const completion = await groq.chat.completions.create({
-    model: "llama-3.3-70b-versatile",
+    model: "llama-3.1-8b-instant",
     messages: [
       {
         role: "system",
@@ -191,7 +191,7 @@ function normaliseAndMap(parsed) {
         .map((skill) => ({
           skill: skill.trim(),
           category: (category || "Other").trim(),
-          experienceMappings: allIndices.length > 0 ? [...allIndices] : [],
+          experienceMappings: [],
         })),
     );
   } else if (
@@ -202,7 +202,7 @@ function normaliseAndMap(parsed) {
     safe.customSkills = parsed.customSkills.map((skillObj) => ({
       skill: typeof skillObj === "string" ? skillObj : skillObj.skill || "",
       category: skillObj.category || "Other",
-      experienceMappings: allIndices.length > 0 ? [...allIndices] : [],
+      experienceMappings: [],
     }));
   }
 

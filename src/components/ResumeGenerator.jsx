@@ -289,7 +289,7 @@ const ResumeGenerator = () => {
 
     try {
       const completion = await groq.chat.completions.create({
-        model: "llama-3.3-70b-versatile",
+        model: "llama-3.1-8b-instant",
         messages: [
           {
             role: "system",
@@ -353,7 +353,7 @@ const ResumeGenerator = () => {
 
     try {
       const completion = await groq.chat.completions.create({
-        model: "llama-3.3-70b-versatile",
+        model: "llama-3.1-8b-instant",
         messages: [
           {
             role: "system",
@@ -445,7 +445,7 @@ Return ONLY JSON: { "appended": "sentence one. sentence two." }`;
 
     try {
       const completion = await groq.chat.completions.create({
-        model: "llama-3.3-70b-versatile",
+        model: "llama-3.1-8b-instant",
         messages: [
           {
             role: "system",

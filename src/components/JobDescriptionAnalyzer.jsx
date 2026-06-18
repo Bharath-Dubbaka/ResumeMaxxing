@@ -59,6 +59,86 @@ function StepLabel({ number, icon, title, badge }) {
     </div>
   );
 }
+// JDA category label — editable on click, saves on blur/Enter
+function JDACategoryInput({
+  categoryName,
+  combinedSkills,
+  onRename,
+  isDragOver,
+}) {
+  const [local, setLocal] = useState(categoryName);
+  useEffect(() => {
+    setLocal(categoryName);
+  }, [categoryName]);
+  return (
+    <input
+      value={local}
+      onChange={(e) => setLocal(e.target.value)}
+      onBlur={() => {
+        const trimmed = local.trim();
+        if (trimmed && trimmed !== categoryName)
+          onRename(categoryName, trimmed);
+        else setLocal(categoryName); // reset if empty or unchanged
+      }}
+      onKeyDown={(e) => {
+        if (e.key === "Enter") e.target.blur();
+        if (e.key === "Escape") setLocal(categoryName);
+      }}
+      style={{
+        fontSize: 10,
+        fontWeight: 700,
+        textTransform: "uppercase",
+        letterSpacing: "0.06em",
+        color: "#6366f1",
+        background: "transparent",
+        border: "none",
+        outline: "none",
+        borderBottom: isDragOver ? "2px solid #6366f1" : "1px dashed #c7d2fe",
+        minWidth: 40,
+        width: `${Math.max((local || "").length, 6)}ch`,
+        padding: "1px 0",
+        cursor: "text",
+        transition: "border-color 0.15s",
+      }}
+      title="Click to rename — Enter or click away to save"
+    />
+  );
+}
+
+// JDA skill chip text — editable on click, saves on blur
+function JDASkillInput({ value, onSave }) {
+  const [local, setLocal] = useState(value);
+  useEffect(() => {
+    setLocal(value);
+  }, [value]);
+  return (
+    <input
+      value={local}
+      onChange={(e) => setLocal(e.target.value)}
+      onBlur={() => {
+        if (local !== value) onSave(local);
+      }}
+      onKeyDown={(e) => {
+        if (e.key === "Enter") e.target.blur();
+        if (e.key === "Escape") setLocal(value);
+      }}
+      onMouseDown={(e) => e.stopPropagation()}
+      style={{
+        fontSize: 12,
+        fontWeight: 600,
+        color: "#3730a3",
+        background: "transparent",
+        border: "none",
+        outline: "none",
+        width: `${Math.max((local || "").length, 3)}ch`,
+        minWidth: 28,
+        cursor: "text",
+        padding: "3px",
+      }}
+      placeholder="skill"
+    />
+  );
+}
 
 export default function JobDescriptionAnalyzer() {
   const { user } = useSelector((state) => state.auth);
@@ -71,11 +151,13 @@ export default function JobDescriptionAnalyzer() {
   const [skillMappings, setSkillMappings] = useState([]);
   const dropdownRef = useRef(null);
   const [combinedSkills, setCombinedSkills] = useState([]);
+  const [draggedSkillIndex, setDraggedSkillIndex] = useState(null);
+  const [dragOverCategory, setDragOverCategory] = useState(null);
 
   useEffect(() => {
     if (skillMappings.length > 0) {
       removeDuplicateSkillMappings();
-    } 
+    }
   }, []);
 
   useEffect(() => {
@@ -420,7 +502,7 @@ Return ONLY this exact JSON format, nothing else:
 
     try {
       const completion = await groq.chat.completions.create({
-        model: "llama-3.3-70b-versatile",
+        model: "llama-3.1-8b-instant",
         messages: [
           {
             role: "system",
@@ -441,11 +523,7 @@ Return ONLY valid JSON, no markdown, no explanation.`,
       console.log("[JDA] Categorization result:", result);
 
       // Post-process: catch any vague categories that slipped through
-      const vague = new Set([
-        "Skills",
-        "Other",
-        "",
-      ]);
+      const vague = new Set(["Skills", "Other", ""]);
       const humanLang =
         /^(spanish|french|german|chinese|japanese|arabic|portuguese|russian|italian|korean|hindi|telugu|tamil|bengali|urdu|dutch|swedish|turkish|polish)$/i;
       const progLang =
@@ -539,7 +617,7 @@ Return ONLY valid JSON, no markdown, no explanation.`,
 Job Description: ${jobDescription}`;
 
       const completion = await groq.chat.completions.create({
-        model: "llama-3.3-70b-versatile",
+        model: "llama-3.1-8b-instant",
         messages: [
           {
             role: "system",
@@ -712,6 +790,56 @@ Job Description: ${jobDescription}`;
     dispatch(setUserDetails(updatedUserDetails));
   };
 
+  const handleDragStart = (e, index) => {
+    setDraggedSkillIndex(index);
+    e.dataTransfer.effectAllowed = "move";
+    // store the index as string in dataTransfer as well (belt + suspenders)
+    e.dataTransfer.setData("text/plain", String(index));
+  };
+
+  const handleDragOver = (e, categoryName) => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = "move";
+    setDragOverCategory(categoryName);
+  };
+
+  const handleDrop = (e, targetCategory) => {
+    e.preventDefault();
+    if (draggedSkillIndex === null) return;
+
+    const draggedSkill = combinedSkills[draggedSkillIndex];
+    if (!draggedSkill || draggedSkill.category === targetCategory) {
+      setDraggedSkillIndex(null);
+      setDragOverCategory(null);
+      return;
+    }
+
+    // Update category in combinedSkills
+    const updated = combinedSkills.map((s, i) =>
+      i === draggedSkillIndex ? { ...s, category: targetCategory } : s,
+    );
+    setCombinedSkills(updated);
+    dispatch({ type: "skills/setCombinedSkills", payload: updated });
+
+    // Also update skillMappings category if it's a generated skill
+    if (draggedSkill.type === "generated") {
+      setSkillMappings((prev) =>
+        prev.map((m) =>
+          m.skill === draggedSkill.skill
+            ? { ...m, category: targetCategory }
+            : m,
+        ),
+      );
+    }
+
+    setDraggedSkillIndex(null);
+    setDragOverCategory(null);
+  };
+
+  const handleDragEnd = () => {
+    setDraggedSkillIndex(null);
+    setDragOverCategory(null);
+  };
   // ─────────────────────────────────────────────────────────────────────────────
   // RENDER
   // ─────────────────────────────────────────────────────────────────────────────
@@ -1002,17 +1130,14 @@ Job Description: ${jobDescription}`;
         {analysis && (
           <div>
             <p className="jda-skills-header">
-              Technical Skills &mdash; {combinedSkills.length} found
+              Technical Skills — {combinedSkills.length} found
             </p>
 
             {(() => {
-              // Build grouped structure
               const groups = {};
               const order = [];
               combinedSkills.forEach((skillObj, index) => {
-                const cat =
-                  skillObj.category ||
-                  (skillObj.type === "custom" ? "Other" : "Uncategorized");
+                const cat = skillObj.category || "Other";
                 if (!groups[cat]) {
                   groups[cat] = [];
                   order.push(cat);
@@ -1025,72 +1150,131 @@ Job Description: ${jobDescription}`;
                   {order.map((categoryName) => (
                     <div
                       key={categoryName}
-                      style={{
-                        marginBottom: 10,
-                        display: "flex",
-                        alignItems: "flex-start",
-                        gap: 8,
+                      style={{ marginBottom: 12 }}
+                      onDragOver={(e) => {
+                        e.preventDefault();
+                        setDragOverCategory(categoryName);
                       }}
+                      onDrop={(e) => handleDrop(e, categoryName)}
+                      onDragLeave={() => setDragOverCategory(null)}
                     >
-                      {/* Category label */}
-                      <span
+                      {/* Category label row — IDENTICAL to compact view */}
+                      <div
                         style={{
-                          fontSize: 12,
-                          fontWeight: 700,
-                          color: "#1e293b",
-                          minWidth: 0,
-                          flexShrink: 0,
-                          paddingTop: 2,
+                          display: "flex",
+                          alignItems: "center",
+                          gap: 6,
+                          marginBottom: 6,
                         }}
                       >
-                        {categoryName}:
-                      </span>
-                      {/* Skills as inline chips */}
+                        <JDACategoryInput
+                          categoryName={categoryName}
+                          combinedSkills={combinedSkills}
+                          onRename={(oldCat, newCat) => {
+                            const updated = combinedSkills.map((s) =>
+                              s.category === oldCat
+                                ? { ...s, category: newCat }
+                                : s,
+                            );
+                            setCombinedSkills(updated);
+                            dispatch({
+                              type: "skills/setCombinedSkills",
+                              payload: updated,
+                            });
+                            setSkillMappings((prev) =>
+                              prev.map((m) =>
+                                m.category === oldCat
+                                  ? { ...m, category: newCat }
+                                  : m,
+                              ),
+                            );
+                          }}
+                          isDragOver={dragOverCategory === categoryName}
+                        />
+                        {/* Delete entire category */}
+                        <button
+                          onClick={() => {
+                            const updated = combinedSkills.filter(
+                              (s) => s.category !== categoryName,
+                            );
+                            setCombinedSkills(updated);
+                            dispatch({
+                              type: "skills/setCombinedSkills",
+                              payload: updated,
+                            });
+                          }}
+                          style={{
+                            background: "none",
+                            border: "none",
+                            cursor: "pointer",
+                            color: "#cbd5e1",
+                            fontSize: 11,
+                            padding: 0,
+                            lineHeight: 1,
+                          }}
+                          title="Remove this category and all its skills"
+                        >
+                          ✕
+                        </button>
+                      </div>
+
+                      {/* Skills chips — IDENTICAL style to compact view */}
                       <div
                         style={{
                           display: "flex",
                           flexWrap: "wrap",
                           gap: 6,
-                          flex: 1,
+                          paddingLeft: 4,
                         }}
                       >
                         {groups[categoryName].map(({ skillObj, index }) => (
                           <div
                             key={index}
+                            draggable
+                            onDragStart={(e) => {
+                              setDraggedSkillIndex(index);
+                              e.dataTransfer.effectAllowed = "move";
+                            }}
+                            onDragEnd={() => {
+                              setDraggedSkillIndex(null);
+                              setDragOverCategory(null);
+                            }}
+                            data-compact-dropdown=""
                             style={{
-                              display: "inline-flex",
+                              position: "relative",
+                              display: "flex",
                               alignItems: "center",
                               gap: 4,
                               background:
-                                skillObj.type === "custom"
-                                  ? "#f0fdf4"
-                                  : "#f5f3ff",
-                              border: `1px solid ${skillObj.type === "custom" ? "#86efac" : "#c4b5fd"}`,
+                                draggedSkillIndex === index
+                                  ? "rgba(99,102,241,0.10)"
+                                  : skillObj.type === "custom"
+                                    ? "#f0fdf4"
+                                    : "#eef2ff",
+                              border: `1px solid ${
+                                draggedSkillIndex === index
+                                  ? "#6366f1"
+                                  : skillObj.type === "custom"
+                                    ? "#86efac"
+                                    : "#c7d2fe"
+                              }`,
                               borderRadius: 6,
                               padding: "3px 8px",
-                              position: "relative",
+                              opacity: draggedSkillIndex === index ? 0.45 : 1,
+                              cursor: "grab",
+                              userSelect: "none",
+                              transition: "opacity 0.15s",
                             }}
                           >
-                            {/* Editable skill name */}
-                            <input
-                              type="text"
+                            {/* Editable skill name — same as SkillInput */}
+                            <JDASkillInput
                               value={skillObj.skill}
-                              onChange={(e) =>
-                                handleSkillChange(e.target.value, index)
+                              onSave={(newVal) =>
+                                handleSkillChange(newVal, index)
                               }
-                              style={{
-                                fontSize: 12,
-                                fontWeight: 600,
-                                color: "#1e293b",
-                                background: "transparent",
-                                border: "none",
-                                outline: "none",
-                                width: `${Math.max((skillObj.skill || "").length, 4)}ch`,
-                                minWidth: 40,
-                              }}
-                              placeholder="skill"
                             />
-                            {/* Save to master (generated only) */}
+
+                            {/* Save to master — only for JD-generated skills */}
                             {skillObj.type === "generated" && (
                               <button
                                 title="Save to Master Profile"
@@ -1103,6 +1287,7 @@ Job Description: ${jobDescription}`;
                                   cursor: "pointer",
                                   color: "#16a34a",
                                   padding: 0,
+                                  lineHeight: 1,
                                   display: "flex",
                                   alignItems: "center",
                                 }}
@@ -1110,27 +1295,8 @@ Job Description: ${jobDescription}`;
                                 <PlusCircle size={11} />
                               </button>
                             )}
-                            {/* Delete */}
-                            <button
-                              title="Remove"
-                              onClick={() =>
-                                skillObj.type === "custom"
-                                  ? handleDeleteCustomSkill(skillObj.skill)
-                                  : handleRemoveSkill(index)
-                              }
-                              style={{
-                                background: "none",
-                                border: "none",
-                                cursor: "pointer",
-                                color: "#ef4444",
-                                padding: 0,
-                                display: "flex",
-                                alignItems: "center",
-                              }}
-                            >
-                              <Trash2 size={11} />
-                            </button>
-                            {/* Map to experience */}
+
+                            {/* Map ⇄ */}
                             <button
                               title="Map to experience"
                               onClick={() => handleDropdownToggle(index)}
@@ -1142,20 +1308,68 @@ Job Description: ${jobDescription}`;
                                   openDropdown === index
                                     ? "#f97316"
                                     : "#6366f1",
+                                fontSize: 12,
                                 padding: 0,
-                                display: "flex",
-                                alignItems: "center",
+                                lineHeight: 1,
                               }}
                             >
-                              <MapIcon size={11} />
+                              ⇄
                             </button>
+
+                            {/* Delete ✕ */}
+                            <button
+                              title="Remove"
+                              onClick={() =>
+                                skillObj.type === "custom"
+                                  ? handleDeleteCustomSkill(skillObj.skill)
+                                  : handleRemoveSkill(index)
+                              }
+                              style={{
+                                background: "none",
+                                border: "none",
+                                cursor: "pointer",
+                                color: "#a5b4fc",
+                                fontSize: 12,
+                                padding: 0,
+                                lineHeight: 1,
+                              }}
+                            >
+                              ✕
+                            </button>
+
                             {/* Mapping dropdown */}
                             {openDropdown === index && (
-                              <div ref={dropdownRef} className="jda-dropdown">
-                                <p className="jda-dropdown-title">
+                              <div
+                                ref={dropdownRef}
+                                style={{
+                                  position: "absolute",
+                                  zIndex: 9999,
+                                  background: "#1e293b",
+                                  color: "#f1f5f9",
+                                  borderRadius: 10,
+                                  padding: 12,
+                                  boxShadow: "0 10px 28px rgba(0,0,0,0.22)",
+                                  minWidth: 200,
+                                  top: "calc(100% + 6px)",
+                                  left: 0,
+                                  border: "1px solid #334155",
+                                }}
+                              >
+                                <p
+                                  style={{
+                                    fontSize: 10,
+                                    fontWeight: 700,
+                                    textTransform: "uppercase",
+                                    letterSpacing: "0.06em",
+                                    color: "#64748b",
+                                    marginBottom: 8,
+                                  }}
+                                >
                                   Map to experience
                                 </p>
-                                <div className="jda-dropdown-scroll">
+                                <div
+                                  style={{ maxHeight: 180, overflowY: "auto" }}
+                                >
                                   {userDetails.experience.map((exp, i) => {
                                     const isLocked =
                                       exp.responsibilityType === "none";
@@ -1179,8 +1393,12 @@ Job Description: ${jobDescription}`;
                                     return (
                                       <div
                                         key={i}
-                                        className="jda-dropdown-item"
                                         style={{
+                                          display: "flex",
+                                          alignItems: "center",
+                                          gap: 8,
+                                          padding: "4px 0",
+                                          fontSize: 12,
                                           opacity: isDisabled ? 0.4 : 1,
                                         }}
                                       >
@@ -1236,9 +1454,116 @@ Job Description: ${jobDescription}`;
                             )}
                           </div>
                         ))}
+
+                        {/* + add skill to this category */}
+                        <button
+                          onClick={() => {
+                            const newObj = {
+                              skill: "",
+                              category: categoryName,
+                              experienceMappings:
+                                userDetails.experience?.map((_, i) => i) || [],
+                              type: "generated",
+                              _fromJD: true,
+                            };
+                            const updated = [...combinedSkills, newObj];
+                            setCombinedSkills(updated);
+                            dispatch({
+                              type: "skills/setCombinedSkills",
+                              payload: updated,
+                            });
+                            setSkillMappings((prev) => [
+                              ...prev,
+                              {
+                                skill: "",
+                                category: categoryName,
+                                experienceMappings:
+                                  userDetails.experience?.map((_, i) => i) ||
+                                  [],
+                              },
+                            ]);
+                            // setAnalysis((prev) =>
+                            //   prev
+                            //     ? {
+                            //         ...prev,
+                            //         technicalSkills: [
+                            //           ...(prev.technicalSkills || []),
+                            //           "",
+                            //         ],
+                            //       }
+                            //     : prev,
+                            // );
+                          }}
+                          style={{
+                            fontSize: 11,
+                            fontWeight: 600,
+                            color: "#6366f1",
+                            background: "#eef2ff",
+                            border: "1px solid #c7d2fe",
+                            borderRadius: 6,
+                            padding: "3px 8px",
+                            cursor: "pointer",
+                          }}
+                        >
+                          +
+                        </button>
                       </div>
                     </div>
                   ))}
+
+                  {/* Add new category — identical to compact view */}
+                  <button
+                    onClick={() => {
+                      const newCat = "New Category";
+                      const newObj = {
+                        skill: "",
+                        category: newCat,
+                        experienceMappings:
+                          userDetails.experience?.map((_, i) => i) || [],
+                        type: "generated",
+                        _fromJD: true,
+                      };
+                      const updated = [...combinedSkills, newObj];
+                      setCombinedSkills(updated);
+                      dispatch({
+                        type: "skills/setCombinedSkills",
+                        payload: updated,
+                      });
+                      setSkillMappings((prev) => [
+                        ...prev,
+                        {
+                          skill: "",
+                          category: newCat,
+                          experienceMappings:
+                            userDetails.experience?.map((_, i) => i) || [],
+                        },
+                      ]);
+                      // setAnalysis((prev) =>
+                      //   prev
+                      //     ? {
+                      //         ...prev,
+                      //         technicalSkills: [
+                      //           ...(prev.technicalSkills || []),
+                      //           "",
+                      //         ],
+                      //       }
+                      //     : prev,
+                      // );
+                    }}
+                    style={{
+                      fontSize: 11,
+                      fontWeight: 600,
+                      color: "#6366f1",
+                      background: "#eef2ff",
+                      border: "1px solid #c7d2fe",
+                      borderRadius: 6,
+                      padding: "4px 10px",
+                      cursor: "pointer",
+                      marginTop: 4,
+                    }}
+                  >
+                    + Add Category
+                  </button>
                 </div>
               );
             })()}
